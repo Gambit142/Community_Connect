@@ -1,0 +1,30 @@
+services:
+  server:
+    build:
+      context: ./server
+      target: production
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./server/.env
+    environment:
+      - NODE_ENV=production
+    networks:
+      - app-network
+
+  client:
+    build:
+      context: ./client
+      target: production
+    ports:
+      - "80:80"
+    env_file:
+      - ./client/.env
+    depends_on:
+      - server
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
