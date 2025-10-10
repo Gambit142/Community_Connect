@@ -41,3 +41,8 @@ coverage/
 dist
 dist-ssr
 *.local
+
+# Ignore local helper scripts
+create_frontend_patch.sh
+apply_frontend_patch.sh
+
