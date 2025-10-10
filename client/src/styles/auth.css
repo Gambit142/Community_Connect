@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Vercel-like minimal font and utility tweaks */
+:root{
+	color-scheme: light dark;
+}
+
+@layer base {
+	body { @apply bg-white text-neutral-900 font-sans }
+	h1,h2,h3 { @apply text-neutral-900 }
+}
+
+@layer components {
+	.btn-black{
+		@apply inline-flex items-center justify-center px-4 py-2 bg-black text-white rounded-md text-sm font-semibold hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black;
+	}
+}
+

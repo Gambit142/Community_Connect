@@ -3,6 +3,11 @@ node_modules/
 client/node_modules/
 server/node_modules/
 
+# ignore large zip files
+*.zip
+client/*.zip
+server/*.zip
+
 # Ignore environment files
 .env
 client/.env
