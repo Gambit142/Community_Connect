@@ -1,0 +1,42 @@
+/* Minimal fallback styles for signup form utilities used in the app */
+:root{ --neutral-700:#374151; --neutral-900:#0f172a; --neutral-500:#6b7280; --neutral-200:#e5e7eb; }
+.space-y-6 > * + *{ margin-top:1.5rem; }
+.text-red-600{ color:#dc2626; }
+.text-sm{ font-size:0.875rem; }
+.block{ display:block; }
+.font-medium{ font-weight:500; }
+.text-neutral-700{ color:var(--neutral-700); }
+.mt-2{ margin-top:0.5rem; }
+.w-full{ width:100%; }
+.p-3{ padding:0.75rem; }
+.border{ border:1px solid var(--neutral-200); }
+.border-neutral-200{ border-color:var(--neutral-200); }
+.rounded-md{ border-radius:0.375rem; }
+.flex{ display:flex; }
+.items-center{ align-items:center; }
+.justify-end{ justify-content:flex-end; }
+.inline-flex{ display:inline-flex; }
+.btn-black{ display:inline-flex; align-items:center; justify-content:center; padding:0.5rem 1rem; background:#000; color:#fff; border-radius:0.375rem; font-size:0.875rem; font-weight:600; border:none; cursor:pointer; }
+.btn-black[disabled]{ opacity:0.6; cursor:not-allowed; }
+.p-10{ padding:2.5rem; }
+.md\:w-1\/2{ width:100%; }
+.max-w-5xl{ max-width:64rem; }
+.mx-4{ margin-left:1rem; margin-right:1rem; }
+.rounded-2xl{ border-radius:1rem; }
+.shadow-lg{ box-shadow:0 10px 15px rgba(0,0,0,0.1); }
+.overflow-hidden{ overflow:hidden; }
+.flex-col{ flex-direction:column; }
+.md\:flex-row{ flex-direction:row; }
+.relative{ position:relative; }
+.h-56{ height:14rem; }
+.md\:h-auto{ height:auto; }
+.object-cover{ object-fit:cover; }
+.absolute{ position:absolute; }
+.inset-0{ top:0; right:0; bottom:0; left:0; }
+.w-full{ width:100%; }
+.h-full{ height:100%; }
+.text-3xl{ font-size:1.875rem; line-height:2.25rem; }
+.font-extrabold{ font-weight:800; }
+.text-neutral-500{ color:var(--neutral-500); }
+.hover\:underline:hover{ text-decoration:underline; }
+.gap-4{ gap:1rem; }
