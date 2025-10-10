@@ -5,6 +5,7 @@ export default function Signup(){
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
+  const [userType, setUserType] = useState('individual') // Add this line
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
@@ -19,7 +20,7 @@ export default function Signup(){
       const res = await fetch(`${apiUrl}/auth/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password })
+        body: JSON.stringify({ name, email, password, userType }) // Include userType in the request
       })
       if(!res.ok) throw new Error('Signup failed')
       const data = await res.json()
@@ -38,6 +39,14 @@ export default function Signup(){
       <div>
         <label className="block text-sm font-medium text-neutral-700">Email</label>
         <input value={email} onChange={e=>setEmail(e.target.value)} required type="email" placeholder="you@company.com" className="mt-2 block w-full p-3 border border-neutral-200 rounded-md" />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-neutral-700">User type</label>
+        <select value={userType} onChange={e=>setUserType(e.target.value)} className="mt-2 block w-full p-3 border border-neutral-200 rounded-md">
+          <option value="individual">Individual</option>
+          <option value="organization">Organization</option>
+          <option value="business">Business</option>
+        </select>
       </div>
       <div>
         <label className="block text-sm font-medium text-neutral-700">Password</label>
