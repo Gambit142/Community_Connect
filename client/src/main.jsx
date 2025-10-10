@@ -5,6 +5,7 @@ import './styles/auth.css'
 import AuthLayout from './components/AuthLayout'
 import Login from './pages/auth/Login'
 import Signup from './pages/auth/Signup'
+import Forgot from './pages/auth/Forgot'
 
 function App(){
   return (
