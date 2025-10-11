@@ -2,12 +2,16 @@ const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer');
 const Joi = require('joi');
 const User = require('../../models/User.js');
+const PendingUser = require('../../models/PendingUser.js');
 const crypto = require('crypto');
 
 const registerSchema = Joi.object({
   username: Joi.string().min(3).max(30).required(),
   email: Joi.string().email().required(),
   password: Joi.string().min(6).required(),
+  confirmPassword: Joi.string().valid(Joi.ref('password')).required().messages({
+    'any.only': 'Confirm password must match password',
+  }),
   userType: Joi.string().valid('individual', 'company', 'organization').required(),
   bio: Joi.string().optional(),
   location: Joi.string().optional(),
@@ -31,6 +35,21 @@ const register = async (req, res) => {
 
     const verificationToken = crypto.randomBytes(20).toString('hex');
 
+    const pendingUser = new PendingUser({
+      username,
+      email,
+      passwordHash: hashedPassword,
+      userType,
+      bio,
+      location,
+      interests,
+      profilePic,
+      organizationDetails,
+      verificationToken,
+    });
+
+    await pendingUser.save();
+
     const transporter = nodemailer.createTransport({
       host: 'sandbox.smtp.mailtrap.io',
       port: 2525,
@@ -49,7 +68,7 @@ const register = async (req, res) => {
     }
 
     const mailOptions = {
-      from: process.env.EMAIL_USER, 
+      from: 'no-reply@demomailtrap.com',
       to: email,
       subject: 'Confirm Your Registration',
       text: `Please confirm your registration by clicking the link: http://localhost:5000/api/auth/verify/${verificationToken}`,
@@ -64,37 +83,33 @@ const register = async (req, res) => {
 };
 
 const verify = async (req, res) => {
-  const { token, username, email, passwordHash, userType, bio, location, interests, profilePic, organizationDetails } = req.query;
+  const { token } = req.params;
 
   try {
-    const decodedUsername = decodeURIComponent(username);
-    const decodedEmail = decodeURIComponent(email);
-    const decodedPasswordHash = decodeURIComponent(passwordHash);
-    const decodedUserType = decodeURIComponent(userType);
-    const decodedBio = decodeURIComponent(bio) || undefined;
-    const decodedLocation = decodeURIComponent(location) || undefined;
-    const decodedInterests = JSON.parse(decodeURIComponent(interests)) || undefined;
-    const decodedProfilePic = decodeURIComponent(profilePic) || undefined;
-    const decodedOrganizationDetails = JSON.parse(decodeURIComponent(organizationDetails)) || undefined;
+    const pendingUser = await PendingUser.findOne({ verificationToken: token });
+    if (!pendingUser) return res.status(400).json({ message: 'Invalid or expired verification token' });
 
-    let user = await User.findOne({ email: decodedEmail });
+    const { username, email, passwordHash, userType, bio, location, interests, profilePic, organizationDetails } = pendingUser;
+
+    let user = await User.findOne({ email });
     if (user) return res.status(400).json({ message: 'User already exists' });
 
     user = new User({
-      username: decodedUsername,
-      email: decodedEmail,
-      passwordHash: decodedPasswordHash,
-      userType: decodedUserType,
-      bio: decodedBio,
-      location: decodedLocation,
-      interests: decodedInterests,
-      profilePic: decodedProfilePic,
-      organizationDetails: decodedOrganizationDetails,
+      username,
+      email,
+      passwordHash,
+      userType,
+      bio,
+      location,
+      interests,
+      profilePic,
+      organizationDetails,
       verificationToken: token,
       isVerified: true,
     });
 
     await user.save();
+    await PendingUser.deleteOne({ verificationToken: token });
 
     const transporter = nodemailer.createTransport({
       host: 'sandbox.smtp.mailtrap.io',
@@ -114,14 +129,14 @@ const verify = async (req, res) => {
     }
 
     const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: decodedEmail,
+      from: 'no-reply@demomailtrap.com',
+      to: email,
       subject: 'Registration Confirmed',
-      text: 'Your registration has been confirmed. You can now log in.',
+      text: 'Your registration has been confirmed. You can now log in at: http://localhost:5173/auth/login',
     };
 
     await transporter.sendMail(mailOptions);
-    res.status(200).json({ message: 'Registration confirmed' });
+    res.redirect('http://localhost:5173/auth/login');
   } catch (err) {
     console.error('Verification error:', err.message);
     res.status(500).json({ message: err.message });
