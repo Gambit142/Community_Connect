@@ -143,4 +143,4 @@ const verify = async (req, res) => {
   }
 };
 
-module.exports = { register, verify };
+module.exports = { register, verify, registerSchema };
