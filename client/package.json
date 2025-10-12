@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "cypress:open": "cypress open",
+    "cypress:run": "cypress run"
   },
   "dependencies": {
     "@mui/material": "^7.3.4",
@@ -26,6 +28,7 @@
   "devDependencies": {
     "@vitejs/plugin-react": "^4.0.0",
     "autoprefixer": "^10.4.21",
+    "cypress": "^15.4.0",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.18",
     "vite": "^5.2.0"
