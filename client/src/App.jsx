@@ -4,10 +4,11 @@ import { Provider } from 'react-redux';
 import store from './store/store.js';
 import './styles/auth.css';
 import AuthLayout from './components/AuthLayout';
+import Home from './pages/Home';
 import Login from './pages/auth/Login';
 import Signup from './pages/auth/Signup';
 import Forgot from './pages/auth/Forgot';
-import Home from './pages/Home';
+import Reset from './pages/auth/Reset';
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
             <Route path="login" element={<Login />} />
             <Route path="signup" element={<Signup />} />
             <Route path="forgot" element={<Forgot />} />
+            <Route path="reset" element={<Reset />} />
           </Route>
           <Route path="/home" element={<Home />} />
           <Route path="/" element={<Navigate to="/auth/login" replace />} />
