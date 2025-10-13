@@ -8,7 +8,6 @@ const connectDB = async () => {
     const nodeEnv = process.env.NODE_ENV || 'development';
     console.log(`NODE_ENV in connectDB: ${nodeEnv}`);
     const uri = process.env.NODE_ENV === 'test' ? process.env.MONGO_URI_TEST : process.env.MONGO_URI_DEV;
-    console.log(`Connecting to MongoDB with URI: ${uri}`); // Debug log
     await mongoose.connect(uri);
     console.log('MongoDB connected and ready to go!');
   } catch (err) {
