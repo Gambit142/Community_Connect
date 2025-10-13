@@ -1,29 +1,21 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { forgotPassword, clearMessage } from '../../store/auth/forgotSlice.js';
 
-export default function Forgot(){
-  const [email, setEmail] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [message, setMessage] = useState(null)
-  const [error, setError] = useState(null)
+export default function Forgot() {
+  const [email, setEmail] = useState('');
+  const dispatch = useDispatch();
+  const { loading, message, error } = useSelector((state) => state.forgot);
 
-  const apiUrl = import.meta.env.VITE_API_URL || ''
-
-  async function handleSubmit(e){
-    e.preventDefault()
-    setMessage(null); setError(null)
-    setLoading(true)
-    try{
-      const res = await fetch(`${apiUrl}/auth/forgot`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
-      })
-      if(!res.ok) throw new Error('Request failed')
-      const data = await res.json()
-      setMessage(data.message || 'If your email exists, you will receive a reset link')
-    }catch(err){ setError(err.message) }
-    finally{ setLoading(false) }
+  async function handleSubmit(e) {
+    e.preventDefault();
+    if (!email) return;
+    dispatch(forgotPassword(email));
   }
+
+  useEffect(() => {
+    return () => dispatch(clearMessage()); // Clear on unmount
+  }, [dispatch]);
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -31,11 +23,21 @@ export default function Forgot(){
       {error && <div className="text-red-600 text-sm">{error}</div>}
       <div>
         <label className="block text-sm font-medium text-neutral-700">Email</label>
-        <input value={email} onChange={e=>setEmail(e.target.value)} required type="email" placeholder="you@company.com" className="mt-2 block w-full p-3 border border-neutral-200 rounded-md" />
+        <input
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          type="email"
+          placeholder="you@company.com"
+          className="mt-2 block w-full p-3 border border-neutral-200 rounded-md"
+          disabled={loading}
+        />
       </div>
       <div className="flex items-center justify-end">
-        <button className="btn-black" disabled={loading}>{loading? 'Sending...' : 'Send reset link'}</button>
+        <button className="btn-black" disabled={loading || !email}>
+          {loading ? 'Sending...' : 'Send reset link'}
+        </button>
       </div>
     </form>
-  )
+  );
 }
