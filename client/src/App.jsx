@@ -9,6 +9,8 @@ import Login from './pages/auth/Login';
 import Signup from './pages/auth/Signup';
 import Forgot from './pages/auth/Forgot';
 import Reset from './pages/auth/Reset';
+import Home from './pages/Home';
+import AdminDashboard from './pages/admin/AdminDashboard';
 
 function App() {
   return (
@@ -23,6 +25,7 @@ function App() {
             <Route path="reset" element={<Reset />} />
           </Route>
           <Route path="/home" element={<Home />} />
+          <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/" element={<Navigate to="/auth/login" replace />} />
         </Routes>
       </BrowserRouter>
