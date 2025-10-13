@@ -4,7 +4,6 @@ import { Provider } from 'react-redux';
 import store from './store/store.js';
 import './styles/auth.css';
 import AuthLayout from './components/AuthLayout';
-import Home from './pages/Home';
 import Login from './pages/auth/Login';
 import Signup from './pages/auth/Signup';
 import Forgot from './pages/auth/Forgot';
