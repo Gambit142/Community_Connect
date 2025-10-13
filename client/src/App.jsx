@@ -7,6 +7,7 @@ import AuthLayout from './components/AuthLayout';
 import Login from './pages/auth/Login';
 import Signup from './pages/auth/Signup';
 import Forgot from './pages/auth/Forgot';
+import Home from './pages/Home';
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
             <Route path="signup" element={<Signup />} />
             <Route path="forgot" element={<Forgot />} />
           </Route>
+          <Route path="/home" element={<Home />} />
           <Route path="/" element={<Navigate to="/auth/login" replace />} />
         </Routes>
       </BrowserRouter>

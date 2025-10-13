@@ -1,13 +1,60 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import axios from 'axios';
+
+export const loginUser = createAsyncThunk(
+  'login/loginUser',
+  async (userData, { rejectWithValue }) => {
+    try {
+      const apiUrl = process.env.NODE_ENV === 'test' ? import.meta.env.VITE_API_URL_TEST : import.meta.env.VITE_API_URL;
+      const response = await axios.post(`${apiUrl}/auth/login`, userData);
+      // Store token in localStorage for persistence (optional, but recommended)
+      localStorage.setItem('token', response.data.token);
+      return response.data;
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.message || 'Login failed');
+    }
+  }
+);
 
 const loginSlice = createSlice({
-  name: 'auth/login',
+  name: 'login',
   initialState: {
     user: null,
+    token: null,
     loading: false,
     error: null,
+    successMessage: null,
   },
-  reducers: {},
+  reducers: {
+    clearError: (state) => {
+      state.error = null;
+    },
+    logout: (state) => {
+      state.user = null;
+      state.token = null;
+      state.successMessage = null;
+      localStorage.removeItem('token');
+    },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(loginUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.successMessage = null;
+      })
+      .addCase(loginUser.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload.user;
+        state.token = action.payload.token;
+        state.successMessage = 'Login successful';
+      })
+      .addCase(loginUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
+  },
 });
 
+export const { clearError, logout } = loginSlice.actions;
 export default loginSlice.reducer;
