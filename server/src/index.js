@@ -4,6 +4,7 @@ const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const authRoutes = require('./routes/auth.js');
+const protectedRoutes = require('./routes/protected.js');
 
 const app = express();
 
@@ -14,7 +15,7 @@ connectDB();
 app.use(helmet());
 app.use(cors({
   origin: ['http://localhost:5173', 'http://localhost:5174'],
-  methods: ['GET', 'POST'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true,
 }));
 app.use(express.json());
@@ -28,6 +29,7 @@ app.use(limiter);
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api', protectedRoutes); // Protected routes under /api
 
 // Health check route
 app.get('/', (req, res) => res.status(200).send('Server is running'));

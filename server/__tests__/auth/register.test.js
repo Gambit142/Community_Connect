@@ -39,7 +39,7 @@ describe('Registration Validation and Hashing', () => {
   beforeEach(async () => {
     await User.deleteMany({});
     await PendingUser.deleteMany({});
-  });
+  }, 10000);
 
   it('should validate user input with Joi', () => {
     const data = {
@@ -79,7 +79,7 @@ describe('Registration API Integration', () => {
   beforeEach(async () => {
     await User.deleteMany({});
     await PendingUser.deleteMany({});
-  });
+  }, 10000);
 
   it('should register a user and send verification email', async () => {
     const res = await request(app)
