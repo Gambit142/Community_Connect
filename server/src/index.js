@@ -3,10 +3,15 @@ const connectDB = require('./config/db.js');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
+const http = require('http'); // For Socket.io server
+const { Server } = require('socket.io'); // Socket.io import
+const { setupSocketAuth } = require('./middleware/socketAuth.js'); // Import setup
 const authRoutes = require('./routes/auth.js');
 const protectedRoutes = require('./routes/protected.js');
+const postRoutes = require('./routes/posts.js');
 
 const app = express();
+const server = http.createServer(app); // HTTP server for Socket.io
 
 // Connect to DB
 connectDB();
@@ -29,10 +34,25 @@ app.use(limiter);
 
 // Routes
 app.use('/api/auth', authRoutes);
-app.use('/api', protectedRoutes); // Protected routes under /api
+app.use('/api', protectedRoutes);
+app.use('/api/posts', postRoutes);
 
 // Health check route
 app.get('/', (req, res) => res.status(200).send('Server is running'));
+
+// Socket.io setup
+const io = new Server(server, {
+  cors: {
+    origin: ['http://localhost:5173', 'http://localhost:5174'],
+    methods: ['GET', 'POST'],
+    credentials: true,
+  },
+});
+
+setupSocketAuth(io); // Attach middleware/handlers
+
+// Export io for controllers
+module.exports.io = io; // Add this line
 
 // HTTPS in production
 if (process.env.NODE_ENV === 'production') {
@@ -48,9 +68,9 @@ if (process.env.NODE_ENV === 'production') {
 // Listen only if not in test mode
 if (process.env.NODE_ENV !== 'test') {
   const PORT = process.env.PORT || 5000;
-  app.listen(PORT, '0.0.0.0', () => {
+  server.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on port ${PORT} in ${process.env.NODE_ENV || 'undefined'} mode`);
   });
 }
 
-module.exports = app;
+module.exports = app; // Export app for tests
