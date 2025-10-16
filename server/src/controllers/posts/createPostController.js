@@ -3,8 +3,9 @@ const Post = require('../../models/Post.js');
 const Notification = require('../../models/Notification.js');
 const nodemailer = require('nodemailer');
 const User = require('../../models/User.js');
+const io = require('../../index.js').io; // Import configured io from index.js
 
-// Joi validation schema for create post
+// Joi validation schema for create post (existing)
 const postSchema = Joi.object({
   title: Joi.string().required().trim().max(200).messages({ 'string.empty': 'Title is required', 'string.max': 'Title too long' }),
   description: Joi.string().required().trim().max(2000).messages({ 'string.empty': 'Description is required', 'string.max': 'Description too long' }),
@@ -56,7 +57,7 @@ const createPost = async (req, res) => {
 
     const savedPost = await newPost.save();
 
-    // Notify admins: Email + In-App Notification
+    // Notify admins: Email + In-App Notification + Socket.io
     const admins = await User.find({ role: 'admin' }).select('email username _id');
     if (admins.length > 0) {
       const adminEmails = admins.map(admin => admin.email).join(',');
@@ -93,6 +94,17 @@ const createPost = async (req, res) => {
 
       await Notification.insertMany(notifications);
       console.log(`Created ${notifications.length} in-app notifications for admins`);
+
+      // Real-time Socket.io push to admin room
+      io.to('role-admin').emit('new-post-pending', {
+        postID: savedPost._id,
+        title,
+        category,
+        type,
+        user: { username: req.user.username, email: req.user.email },
+        timestamp: new Date().toISOString(),
+      });
+      console.log('Socket.io notification emitted to admins');
     }
 
     // Response: Exclude sensitive fields

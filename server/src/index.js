@@ -51,6 +51,9 @@ const io = new Server(server, {
 
 setupSocketAuth(io); // Attach middleware/handlers
 
+// Export io for controllers
+module.exports.io = io; // Add this line
+
 // HTTPS in production
 if (process.env.NODE_ENV === 'production') {
   app.use((req, res, next) => {
@@ -70,4 +73,4 @@ if (process.env.NODE_ENV !== 'test') {
   });
 }
 
-module.exports = app; // Export app for tests (io is internal)
+module.exports = app; // Export app for tests
