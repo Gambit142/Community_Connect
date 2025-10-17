@@ -3,15 +3,14 @@ const connectDB = require('./config/db.js');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
-const http = require('http'); // For Socket.io server
-const { Server } = require('socket.io'); // Socket.io import
-const { setupSocketAuth } = require('./middleware/socketAuth.js'); // Import setup
+const http = require('http');
 const authRoutes = require('./routes/auth.js');
 const protectedRoutes = require('./routes/protected.js');
 const postRoutes = require('./routes/posts.js');
+const { initSocket } = require('./config/socket.js'); // Import init
 
 const app = express();
-const server = http.createServer(app); // HTTP server for Socket.io
+const server = http.createServer(app); // HTTP server
 
 // Connect to DB
 connectDB();
@@ -40,19 +39,8 @@ app.use('/api/posts', postRoutes);
 // Health check route
 app.get('/', (req, res) => res.status(200).send('Server is running'));
 
-// Socket.io setup
-const io = new Server(server, {
-  cors: {
-    origin: ['http://localhost:5173', 'http://localhost:5174'],
-    methods: ['GET', 'POST'],
-    credentials: true,
-  },
-});
-
-setupSocketAuth(io); // Attach middleware/handlers
-
-// Export io for controllers
-module.exports.io = io; // Add this line
+// Initialize Socket.io
+initSocket(server);
 
 // HTTPS in production
 if (process.env.NODE_ENV === 'production') {

@@ -3,19 +3,22 @@ const Post = require('../../models/Post.js');
 const Notification = require('../../models/Notification.js');
 const nodemailer = require('nodemailer');
 const User = require('../../models/User.js');
-const io = require('../../index.js').io; // Import configured io from index.js
+const { cloudinary } = require('../../config/cloudinary.js'); // Cloudinary for images
+const { initSocket } = require('../../config/socket.js');
 
-// Joi validation schema for create post (existing)
+// Get configured io
+const io = initSocket();
+
+// Joi validation schema for create post (allow string for tags/details)
 const postSchema = Joi.object({
   title: Joi.string().required().trim().max(200).messages({ 'string.empty': 'Title is required', 'string.max': 'Title too long' }),
   description: Joi.string().required().trim().max(2000).messages({ 'string.empty': 'Description is required', 'string.max': 'Description too long' }),
   category: Joi.string().required().valid('food', 'tutoring', 'ridesharing', 'housing', 'jobs', 'health', 'education', 'goods', 'events', 'transportation', 'financial').messages({ 'any.only': 'Invalid category' }),
-  tags: Joi.array().items(Joi.string().trim().lowercase().max(50)).optional(),
+  tags: Joi.string().optional().allow(''), // String (comma-separated)
   type: Joi.string().required().valid('donation', 'service', 'request').messages({ 'any.only': 'Invalid post type' }),
   price: Joi.number().min(0).optional(),
   location: Joi.string().trim().max(200).optional(),
-  details: Joi.object().optional(),
-  images: Joi.array().items(Joi.string()).optional(),
+  details: Joi.string().optional().allow(''), // JSON string
 });
 
 // Nodemailer transporter for admin notifications (reuse from auth)
@@ -35,7 +38,43 @@ const createPost = async (req, res) => {
       return res.status(400).json({ message: error.details[0].message });
     }
 
-    const { title, description, category, tags = [], type, price = 0, location, details = {}, images = [] } = req.body;
+    const { title, description, category, tags: tagsStr = '', type, price = 0, location, details: detailsStr = '{}' } = req.body;
+
+    // Parse tags (string to array)
+    const tags = tagsStr.split(',').map(tag => tag.trim().toLowerCase()).filter(tag => tag);
+
+    // Parse details (string to object)
+    let details = {};
+    try {
+      details = detailsStr ? JSON.parse(detailsStr) : {};
+    } catch (parseErr) {
+      console.warn('Invalid details JSON:', parseErr);
+    }
+
+    // Handle image uploads to Cloudinary (if files present)
+    let images = [];
+    if (req.files && req.files.length > 0) {
+      const uploadPromises = req.files.map(async (file) => {
+        return new Promise((resolve, reject) => {
+          cloudinary.uploader.upload_stream(
+            { folder: 'community_posts', resource_type: 'image' },
+            (error, result) => {
+              if (error) {
+                console.error('Cloudinary upload error:', error);
+                reject(error);
+              } else {
+                resolve(result.secure_url);
+              }
+            }
+          ).end(file.buffer); // Use memory buffer from multer
+        });
+      });
+
+      images = await Promise.all(uploadPromises).catch(err => {
+        console.error('Image upload failed:', err);
+        return []; // Continue without images on failure
+      });
+    }
 
     // Ensure authenticated user (from middleware)
     const userID = req.user._id;

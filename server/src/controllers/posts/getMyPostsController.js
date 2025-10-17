@@ -3,7 +3,7 @@ const Post = require('../../models/Post.js');
 
 // Query validation for my-posts (status filter, pagination)
 const querySchema = Joi.object({
-  status: Joi.string().valid('Pending Approval', 'Published', 'Rejected').optional(),
+  status: Joi.string().valid('Pending Approval', 'Published', 'Rejected').allow('').optional(), // Allow empty for no filter
   page: Joi.number().integer().min(1).default(1),
   limit: Joi.number().integer().min(1).max(50).default(10),
 });
@@ -19,9 +19,9 @@ const getMyPosts = async (req, res) => {
     const userID = req.user._id;
     const skip = (page - 1) * limit;
 
-    // Build query: always filter by userID, optional status
+    // Build query: always filter by userID, optional status (skip if empty)
     const query = { userID };
-    if (status) {
+    if (status && status !== '') {
       query.status = status;
     }
 
