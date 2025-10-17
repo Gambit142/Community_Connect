@@ -10,6 +10,8 @@ import Forgot from './pages/auth/Forgot';
 import Reset from './pages/auth/Reset';
 import Home from './pages/Home';
 import AdminDashboard from './pages/admin/AdminDashboard';
+import CreatePost from './pages/posts/CreatePost';
+import MyPosts from './pages/posts/MyPosts'; 
 
 function App() {
   return (
@@ -25,6 +27,8 @@ function App() {
           </Route>
           <Route path="/home" element={<Home />} />
           <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/posts/create" element={<CreatePost />} />
+          <Route path="/posts/my-posts" element={<MyPosts />} />
           <Route path="/" element={<Navigate to="/auth/login" replace />} />
         </Routes>
       </BrowserRouter>
