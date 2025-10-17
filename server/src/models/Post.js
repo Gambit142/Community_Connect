@@ -22,7 +22,7 @@ const postSchema = new mongoose.Schema({
   type: { 
     type: String, 
     required: true, 
-    enum: ['donation', 'service', 'request'] 
+    enum: ['donation', 'service', 'request', 'gathering'] 
   },
   price: { type: Number, min: 0, default: 0 }, // 0 for free
   location: { type: String, trim: true, maxlength: 200 },
