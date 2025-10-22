@@ -1,18 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { getMyPosts, clearError } from '../../store/posts/postsSlice.js';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 export default function MyPosts() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
   const { posts, pagination, loading, error } = useSelector((state) => state.posts);
   const [filters, setFilters] = useState({ status: undefined, page: 1, limit: 10 }); // status undefined for all
+  const [successMessage, setSuccessMessage] = useState(location.state?.success || null); // From nav state
 
   useEffect(() => {
     dispatch(getMyPosts(filters));
     return () => dispatch(clearError());
   }, [dispatch, filters]);
+
+  // Auto-hide success message after 5s
+  useEffect(() => {
+    if (successMessage) {
+      const timer = setTimeout(() => setSuccessMessage(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage]);
 
   const handlePageChange = (newPage) => {
     setFilters(prev => ({ ...prev, page: newPage }));
@@ -28,6 +38,14 @@ export default function MyPosts() {
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-6xl mx-auto">
         <h1 className="text-2xl font-bold mb-6">My Posts</h1>
+        
+        {/* Success Message from Nav State */}
+        {successMessage && (
+          <div className="w-full mb-4 p-4 bg-green-600 text-white rounded text-lg">
+            {successMessage}
+          </div>
+        )}
+        
         {error && <div className="text-red-600 mb-4">{error}</div>}
         <div className="bg-white shadow rounded-lg p-6 mb-6">
           <div className="flex flex-wrap gap-4 mb-4">

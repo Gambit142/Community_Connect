@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { createPost, clearError } from '../../store/posts/postsSlice.js';
 import { useNavigate } from 'react-router-dom';
+import styles from '../../assets/css/CreatePost.module.css';
 
 export default function CreatePost() {
   const [formData, setFormData] = useState({
@@ -15,33 +16,63 @@ export default function CreatePost() {
     detailsRaw: '', // Raw string for textarea input
   });
   const [images, setImages] = useState([]);
+  const [clientError, setClientError] = useState(''); // Local state for client-side errors
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { loading, error, successMessage } = useSelector((state) => state.posts);
+  const { loading, error } = useSelector((state) => state.posts); // No longer select successMessage here
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!formData.title || !formData.description) return;
+    setClientError(''); // Clear previous client errors
+
+    // Client-side validation for required fields
+    if (!formData.title.trim()) {
+      setClientError('Title is required');
+      return;
+    }
+    if (!formData.description.trim()) {
+      setClientError('Description is required');
+      return;
+    }
+
+    // Client-side check for images count
+    if (images.length > 5) {
+      setClientError('Maximum 5 images allowed');
+      return;
+    }
+
     // Parse detailsRaw to object for submit
     let details = {};
     try {
       details = formData.detailsRaw ? JSON.parse(formData.detailsRaw) : {};
     } catch {
-      console.warn('Invalid JSON in details—using empty object');
+      setClientError('Invalid JSON in details—use valid format like {"quantity": 5}');
+      return;
     }
+
     // Convert tags string to array for thunk
     const submitData = {
-      title: formData.title,
-      description: formData.description,
+      title: formData.title.trim(),
+      description: formData.description.trim(),
       category: formData.category,
       tags: formData.tags.split(',').map(t => t.trim()).filter(Boolean),
       type: formData.type,
-      price: formData.price,
-      location: formData.location,
+      price: parseFloat(formData.price) || 0,
+      location: formData.location.trim(),
       details, // Explicitly add parsed details object
       images,
     };
-    dispatch(createPost(submitData));
+
+    dispatch(createPost(submitData)).unwrap().then((result) => {
+      // On success, navigate immediately with the message in state
+      navigate('/posts/my-posts', { 
+        state: { 
+          success: result.message || 'Post created successfully and pending approval' 
+        } 
+      });
+    }).catch(() => {
+      // Errors are already handled via Redux
+    });
   };
 
   const handleChange = (e) => {
@@ -50,134 +81,204 @@ export default function CreatePost() {
   };
 
   const handleFileChange = (e) => {
-    setImages(Array.from(e.target.files));
-  };
-
-  const handleSuccess = () => {
-    if (successMessage) {
-      setTimeout(() => {
-        navigate('/posts/my-posts');
-      }, 2000);
+    const selectedFiles = Array.from(e.target.files);
+    if (selectedFiles.length > 5) {
+      setClientError('Maximum 5 images allowed');
+      e.target.value = ''; // Clear the input
+      setImages([]);
+      return;
     }
+    setClientError(''); // Clear error if valid
+    setImages(selectedFiles);
   };
 
-  React.useEffect(() => {
-    handleSuccess();
-    return () => dispatch(clearError());
-  }, [successMessage, dispatch, navigate]);
+  // Clear client error when server error changes (to avoid overlap)
+  useEffect(() => {
+    if (error) {
+      setClientError('');
+    }
+  }, [error]);
+
+  // Show server errors in clientError if no client error
+  const displayError = clientError || error;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
-      <div className="max-w-2xl mx-auto bg-white shadow-lg rounded-lg p-6">
-        <h1 className="text-2xl font-bold mb-6">Create New Post</h1>
-        {error && <div className="text-red-600 mb-4">{error}</div>}
-        {successMessage && <div className="text-green-600 mb-4">{successMessage}</div>}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Title</label>
-            <input
-              name="title"
-              value={formData.title}
-              onChange={handleChange}
-              required
-              className="mt-1 block w-full p-3 border border-gray-300 rounded-md"
-            />
+    <div className="min-h-screen bg-[#111111] py-12 px-4 font-sans antialiased">
+      <form onSubmit={handleSubmit} className={`${styles.form} max-w-[48em] mx-auto relative`}>
+        
+        {/* Error Messages Only (No Success Here) */}
+        {displayError && (
+          <div className="w-full mb-8 p-4 bg-red-600 text-white rounded text-lg">
+            {displayError}
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Description</label>
-            <textarea
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              required
-              rows={4}
-              className="mt-1 block w-full p-3 border border-gray-300 rounded-md"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Category</label>
-            <select name="category" value={formData.category} onChange={handleChange} className="mt-1 block w-full p-3 border border-gray-300 rounded-md">
-              <option value="food">Food</option>
-              <option value="tutoring">Tutoring</option>
-              <option value="ridesharing">Ridesharing</option>
-              <option value="housing">Housing</option>
-              <option value="jobs">Jobs</option>
-              <option value="health">Health</option>
-              <option value="education">Education</option>
-              <option value="goods">Goods</option>
-              <option value="events">Events</option>
-              <option value="transportation">Transportation</option>
-              <option value="financial">Financial</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Type</label>
-            <select name="type" value={formData.type} onChange={handleChange} className="mt-1 block w-full p-3 border border-gray-300 rounded-md">
-              <option value="donation">Donation</option>
-              <option value="service">Service</option>
-              <option value="request">Request</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Tags (comma-separated)</label>
-            <input
-              name="tags"
-              value={formData.tags}
-              onChange={handleChange}
-              placeholder="free, urgent"
-              className="mt-1 block w-full p-3 border border-gray-300 rounded-md"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Price (0 for free)</label>
-            <input
-              type="number"
-              name="price"
-              value={formData.price}
-              onChange={handleChange}
-              min="0"
-              className="mt-1 block w-full p-3 border border-gray-300 rounded-md"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Location</label>
-            <input
-              name="location"
-              value={formData.location}
-              onChange={handleChange}
-              className="mt-1 block w-full p-3 border border-gray-300 rounded-md"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Images (up to 5)</label>
-            <input
-              type="file"
-              multiple
-              accept="image/*"
-              onChange={handleFileChange}
-              className="mt-1 block w-full p-3 border border-gray-300 rounded-md"
-            />
-            {images.length > 0 && <p className="text-sm text-gray-500 mt-1">{images.length} files selected</p>}
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Details (JSON, optional)</label>
-            <textarea
-              placeholder='{"quantity": 5, "expiry": "2025-10-20"}'
-              value={formData.detailsRaw}
-              onChange={(e) => setFormData(prev => ({ ...prev, detailsRaw: e.target.value }))}
-              rows={3}
-              className="mt-1 block w-full p-3 border border-gray-300 rounded-md"
-            />
-          </div>
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-black text-white py-3 px-4 rounded-md hover:bg-gray-800 disabled:opacity-50"
+        )}
+
+        {/* Title - Required */}
+        <p className={`${styles.field} ${styles.required} mb-8`}>
+          <label className={`${styles.label} ${styles.labelRequired} block text-white font-bold mb-3`} htmlFor="title">
+            Title
+          </label>
+          <input
+            className={styles.textInput}
+            id="title"
+            name="title"
+            required
+            type="text"
+            value={formData.title}
+            onChange={handleChange}
+          />
+        </p>
+
+        {/* Description - Required */}
+        <p className={`${styles.field} ${styles.required} mb-8`}>
+          <label className={`${styles.label} ${styles.labelRequired} block text-white font-bold mb-3`} htmlFor="description">
+            Description
+          </label>
+          <textarea
+            className={styles.textarea}
+            id="description"
+            name="description"
+            required
+            rows="4"
+            value={formData.description}
+            onChange={handleChange}
+          />
+        </p>
+
+        {/* Category & Type - Half Width */}
+        <p className={`${styles.field} ${styles.fieldHalf} ${styles.required} mb-8`}>
+          <label className={`${styles.label} block text-white font-bold mb-3`} htmlFor="category">
+            Category
+          </label>
+          <select 
+            className={styles.select}
+            id="category"
+            name="category"
+            value={formData.category}
+            onChange={handleChange}
           >
-            {loading ? 'Creating...' : 'Create Post'}
-          </button>
-        </form>
-      </div>
+            <option value="food">Food</option>
+            <option value="tutoring">Tutoring</option>
+            <option value="ridesharing">Ridesharing</option>
+            <option value="housing">Housing</option>
+            <option value="jobs">Jobs</option>
+            <option value="health">Health</option>
+            <option value="education">Education</option>
+            <option value="goods">Goods</option>
+            <option value="events">Events</option>
+            <option value="transportation">Transportation</option>
+            <option value="financial">Financial</option>
+          </select>
+        </p>
+
+        <p className={`${styles.field} ${styles.fieldHalf} mb-8`}>
+          <label className={`${styles.label} block text-white font-bold mb-3`} htmlFor="type">
+            Type
+          </label>
+          <select 
+            className={styles.select}
+            id="type"
+            name="type"
+            value={formData.type}
+            onChange={handleChange}
+          >
+            <option value="donation">Donation</option>
+            <option value="service">Service</option>
+            <option value="request">Request</option>
+          </select>
+        </p>
+
+        {/* Tags */}
+        <p className={`${styles.field} mb-8`}>
+          <label className={`${styles.label} block text-white font-bold mb-3`} htmlFor="tags">
+            Tags (comma-separated)
+          </label>
+          <input
+            className={styles.textInput}
+            id="tags"
+            name="tags"
+            type="text"
+            placeholder="free, urgent"
+            value={formData.tags}
+            onChange={handleChange}
+          />
+        </p>
+
+        {/* Price & Location - Half Width */}
+        <p className={`${styles.field} ${styles.fieldHalf} mb-8`}>
+          <label className={`${styles.label} block text-white font-bold mb-3`} htmlFor="price">
+            Price (0 for free)
+          </label>
+          <input
+            className={styles.textInput}
+            id="price"
+            name="price"
+            type="number"
+            min="0"
+            value={formData.price}
+            onChange={handleChange}
+          />
+        </p>
+
+        <p className={`${styles.field} ${styles.fieldHalf} mb-8`}>
+          <label className={`${styles.label} block text-white font-bold mb-3`} htmlFor="location">
+            Location
+          </label>
+          <input
+            className={styles.textInput}
+            id="location"
+            name="location"
+            type="text"
+            value={formData.location}
+            onChange={handleChange}
+          />
+        </p>
+
+        {/* Images */}
+        <p className={`${styles.field} mb-8`}>
+          <label className={`${styles.label} block text-white font-bold mb-3`} htmlFor="images">
+            Images (up to 5)
+          </label>
+          <input
+            className={styles.textInput}
+            id="images"
+            name="images"
+            type="file"
+            multiple
+            accept="image/*"
+            onChange={handleFileChange}
+          />
+          {images.length > 0 && !clientError && (
+            <p className="text-base text-gray-400 mt-3">{images.length} files selected</p>
+          )}
+        </p>
+
+        {/* Details JSON */}
+        <p className={`${styles.field} mb-8`}>
+          <label className={`${styles.label} block text-white font-bold mb-3`} htmlFor="detailsRaw">
+            Details (JSON, optional)
+          </label>
+          <textarea
+            className={styles.textarea}
+            id="detailsRaw"
+            name="detailsRaw"
+            placeholder='{"quantity": 5, "expiry": "2025-10-20"}'
+            rows="3"
+            value={formData.detailsRaw}
+            onChange={(e) => setFormData(prev => ({ ...prev, detailsRaw: e.target.value }))}
+          />
+        </p>
+
+        {/* Submit Button */}
+        <p className={`${styles.field} ${styles.fieldHalf} mb-8`}>
+          <input
+            className={`${styles.button} w-full ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+            type="submit"
+            value={loading ? 'Creating...' : 'Create Post'}
+            disabled={loading}
+          />
+        </p>
+      </form>
     </div>
   );
 }
