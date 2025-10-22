@@ -35,6 +35,7 @@ const postSchema = new mongoose.Schema({
 });
 
 // Index for efficient queries
+postSchema.index({ status: 1, createdAt: -1 });
 postSchema.index({ category: 1, status: 1 });
 postSchema.index({ tags: 1 });
 postSchema.index({ userID: 1, status: 1 });

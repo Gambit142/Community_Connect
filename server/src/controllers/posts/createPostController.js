@@ -11,14 +11,14 @@ const io = initSocket();
 
 // Joi validation schema for create post (allow string for tags/details)
 const postSchema = Joi.object({
-  title: Joi.string().required().trim().max(200).messages({ 'string.empty': 'Title is required', 'string.max': 'Title too long' }),
-  description: Joi.string().required().trim().max(2000).messages({ 'string.empty': 'Description is required', 'string.max': 'Description too long' }),
-  category: Joi.string().required().valid('food', 'tutoring', 'ridesharing', 'housing', 'jobs', 'health', 'education', 'goods', 'events', 'transportation', 'financial').messages({ 'any.only': 'Invalid category' }),
-  tags: Joi.string().optional().allow(''), // String (comma-separated)
-  type: Joi.string().required().valid('donation', 'service', 'request').messages({ 'any.only': 'Invalid post type' }),
-  price: Joi.number().min(0).optional(),
-  location: Joi.string().trim().max(200).optional(),
-  details: Joi.string().optional().allow(''), // JSON string
+  title: Joi.string().required().trim().max(200).messages({ 'string.empty': 'Title is required', 'string.max': 'Title too long (max 200 chars)' }),
+  description: Joi.string().required().trim().max(2000).messages({ 'string.empty': 'Description is required', 'string.max': 'Description too long (max 2000 chars)' }),
+  category: Joi.string().required().valid('food', 'tutoring', 'ridesharing', 'housing', 'jobs', 'health', 'education', 'goods', 'events', 'transportation', 'financial').messages({ 'any.only': 'Invalid category—choose from available options' }),
+  tags: Joi.string().optional().allow('').max(500).messages({ 'string.max': 'Tags too long (max 500 chars)' }), // String (comma-separated)
+  type: Joi.string().required().valid('donation', 'service', 'request').messages({ 'any.only': 'Invalid post type—choose donation, service, or request' }),
+  price: Joi.number().min(0).optional().messages({ 'number.min': 'Price cannot be negative' }),
+  location: Joi.string().trim().max(200).optional().messages({ 'string.max': 'Location too long (max 200 chars)' }),
+  details: Joi.string().optional().allow('').max(2000).messages({ 'string.max': 'Details too long (max 2000 chars)' }), // JSON string
 });
 
 // Nodemailer transporter for admin notifications (reuse from auth)
@@ -48,12 +48,18 @@ const createPost = async (req, res) => {
     try {
       details = detailsStr ? JSON.parse(detailsStr) : {};
     } catch (parseErr) {
-      console.warn('Invalid details JSON:', parseErr);
+      return res.status(400).json({ message: 'Invalid JSON in details—use valid format like {"quantity": 5}' });
     }
+
+    // Ensure authenticated user (from middleware)
+    const userID = req.user._id;
 
     // Handle image uploads to Cloudinary (if files present)
     let images = [];
     if (req.files && req.files.length > 0) {
+      if (req.files.length > 5) {
+        return res.status(400).json({ message: 'Maximum 5 images allowed' });
+      }
       const uploadPromises = req.files.map(async (file) => {
         return new Promise((resolve, reject) => {
           cloudinary.uploader.upload_stream(
@@ -61,7 +67,7 @@ const createPost = async (req, res) => {
             (error, result) => {
               if (error) {
                 console.error('Cloudinary upload error:', error);
-                reject(error);
+                reject(new Error(`Image upload failed: ${error.message}`));
               } else {
                 resolve(result.secure_url);
               }
@@ -72,12 +78,9 @@ const createPost = async (req, res) => {
 
       images = await Promise.all(uploadPromises).catch(err => {
         console.error('Image upload failed:', err);
-        return []; // Continue without images on failure
+        return res.status(400).json({ message: `Image upload failed: ${err.message}` });
       });
     }
-
-    // Ensure authenticated user (from middleware)
-    const userID = req.user._id;
 
     // Create post with pending status
     const newPost = new Post({
@@ -154,7 +157,7 @@ const createPost = async (req, res) => {
     });
   } catch (error) {
     console.error('Create post error:', error);
-    res.status(500).json({ message: 'Server error during post creation' });
+    res.status(500).json({ message: `Server error during post creation: ${error.message}` });
   }
 };
 

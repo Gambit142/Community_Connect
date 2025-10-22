@@ -1,0 +1,668 @@
+[
+  {
+    "title": "Fresh Organic Vegetables Donation from Local Farm",
+    "description": "I'm a local farmer in the Mississauga area looking to donate a variety of fresh organic vegetables including carrots, kale, tomatoes, and beets. These are grown without pesticides and are perfect for families looking for healthy, affordable produce. The donation is available for pickup this weekend, and I can provide up to 20 pounds per family. This is part of my initiative to support the community and reduce food waste from the harvest. If you're interested, please contact me to arrange pickup times and quantities. Let's make sure no good food goes to waste and everyone gets a chance to enjoy nutritious meals. The vegetables are packed with vitamins and minerals, ideal for cooking soups, salads, or stir-fries. Don't miss this opportunity to stock up on free, high-quality produce!",
+    "category": "food",
+    "tags": ["organic", "free", "vegetables", "family"],
+    "type": "donation",
+    "price": 0,
+    "location": "123 Farm Lane, Mississauga, ON L5M 1A1",
+    "details": {
+      "quantity": 20,
+      "expiry": "2025-10-25",
+      "pickup": "Saturday 9AM-12PM",
+      "phoneNumber": "555-123-4567"
+    },
+    "images": [
+      "https://picsum.photos/400/300?random=1",
+      "https://picsum.photos/400/300?random=2",
+      "https://picsum.photos/400/300?random=3"
+    ]
+  },
+  {
+    "title": "Bakery Surplus Bread and Pastries Sharing",
+    "description": "As a small bakery owner in Milton, I have daily surplus of freshly baked bread, croissants, muffins, and pastries that I can't sell by the end of the day. Rather than throwing them away, I'm offering them for free to community members who can pick them up. This includes whole loaves of sourdough, baguettes, and sweet treats like cinnamon rolls. It's a great way to reduce food waste and provide affordable baked goods to those in need. Pickup is available every evening after 6 PM, and quantities are first-come, first-served. These items are still safe to eat (baked that day) and perfect for breakfast or snacks. Join me in this sustainable effort—your participation helps the environment and supports local business. Feel free to message for special requests or larger quantities for families.",
+    "category": "food",
+    "tags": ["bread", "pastries", "free", "waste-reduction"],
+    "type": "donation",
+    "price": 0,
+    "location": "456 Bakery Street, Milton, ON L9T 1A2",
+    "details": {
+      "quantity": 50,
+      "expiry": "same day",
+      "pickup": "Daily after 6PM"
+    },
+    "images": [
+      "https://picsum.photos/400/300?random=4",
+      "https://picsum.photos/400/300?random=5",
+      "https://picsum.photos/400/300?random=6"
+    ]
+  },
+  {
+    "title": "Grocery Vouchers for Low-Income Families",
+    "description": "Through my organization, we're distributing $50 grocery vouchers to eligible low-income families in the Halton Region. These vouchers can be used at local supermarkets for essentials like fruits, vegetables, dairy, and grains. The program aims to bridge the gap during tough times and promote healthy eating habits. To qualify, families must reside in the area and provide proof of income. Distribution events are held monthly at community centers, and we also offer nutrition workshops alongside. This initiative has helped over 200 families last year, and we're expanding to include culturally specific food options. If you know someone in need or want to volunteer, reach out—together, we can ensure no one goes hungry. Vouchers are redeemable immediately, and the program is funded by local donations.",
+    "category": "food",
+    "tags": ["vouchers", "low-income", "essentials", "nutrition"],
+    "type": "service",
+    "price": 0,
+    "location": "Halton Community Center, 789 Voucher Ave, Oakville, ON L6J 0A3",
+    "details": {
+      "value": 50,
+      "validUntil": "2025-12-31",
+      "workshop": "Monthly nutrition class"
+    },
+    "images": [
+      "https://picsum.photos/400/300?random=7",
+      "https://picsum.photos/400/300?random=8"
+    ]
+  },
+  {
+    "title": "Private Math Tutoring for High School Students",
+    "description": "Experienced math teachers with 10+ years in high school curriculum offering one-on-one tutoring sessions for grades 9-12. Covering algebra, geometry, calculus, and trigonometry, with a focus on building confidence and problem-solving skills. Sessions are 1 hour long, tailored to individual needs, and can be held online or in-person. We use interactive methods like visual aids and real-world examples to make math engaging. Past students have seen average grade improvements of 20%. Rates are affordable, and a free 30-minute consultation is available to assess needs. Whether you're struggling with homework or preparing for exams, We'll help you succeed. References available upon request. Let's turn math challenges into achievements!",
+    "category": "tutoring",
+    "tags": ["math", "high-school", "online", "exam-prep"],
+    "type": "service",
+    "price": 25,
+    "location": "Virtual or Oakville, ON L6H 1A4",
+    "details": {
+      "subjects": ["algebra", "geometry", "calculus", "trigonometry"],
+      "duration": "1 hour",
+      "format": "online or in-person"
+    },
+    "images": [
+      "https://picsum.photos/400/300?random=9",
+      "https://picsum.photos/400/300?random=10",
+      "https://picsum.photos/400/300?random=11"
+    ]
+  },
+  {
+    "title": "English Language Conversation Practice Group",
+    "description": "Join our weekly English conversation group for immigrants and ESL learners in the GTA. This is a casual, supportive environment where participants practice speaking, listening, and vocabulary through themed discussions (e.g., daily life, culture, hobbies). No homework or tests—just fun interaction with native speakers and peers. Sessions are 90 minutes, free, and held at the local library. We accommodate all levels, from beginner to advanced, and provide conversation prompts and feedback. Over 50 participants have joined last semester, many reporting improved fluency. Bring a snack to share if you'd like! Registration is open, and we can accommodate drop-ins. This is a great way to make friends and build confidence in English. Contact for more details or to reserve a spot.",
+    "category": "tutoring",
+    "tags": ["english", "conversation", "immigrants", "free"],
+    "type": "service",
+    "price": 0,
+    "location": "Milton Library, 123 Main St, Milton, ON L9T 1A5",
+    "details": {
+      "level": "all levels",
+      "duration": "90 minutes",
+      "frequency": "weekly"
+    },
+    "images": [
+      "https://picsum.photos/400/300?random=12",
+      "https://picsum.photos/400/300?random=13"
+    ]
+  },
+  {
+    "title": "Science Tutoring for Middle School Kids",
+    "description": "Dedicated science tutor specializing in middle school curriculum (grades 6-8), including biology, physics, and chemistry basics. Hands-on lessons with experiments, diagrams, and quizzes to make science fun and understandable. Sessions cover homework help, test prep, and concept clarification, with progress tracking. I have a background in teaching and use age-appropriate methods to spark curiosity. Rates are flexible, and materials are provided. Parents welcome to join for feedback. In the past year, I've helped 15 students improve grades from C to A. Whether it's understanding ecosystems or simple circuits, I'll tailor sessions to your child's needs. Free trial session available. Let's ignite a love for science together!",
+    "category": "tutoring",
+    "tags": ["science", "middle-school", "homework", "experiments"],
+    "type": "service",
+    "price": 20,
+    "location": "Burlington, ON L7R 0A6 (in-home or online)",
+    "details": {
+      "grades": "6-8",
+      "subjects": ["biology", "physics", "chemistry"],
+      "materials": "provided"
+    },
+    "images": [
+      "https://picsum.photos/400/300?random=14",
+      "https://picsum.photos/400/300?random=15",
+      "https://picsum.photos/400/300?random=16"
+    ]
+  },
+  {
+    "title": "Carpool for Weekly Grocery Shopping in Mississauga",
+    "description": "Looking for 2-3 people to share a carpool for grocery shopping at the local Walmart every Saturday morning. Route: From Milton to Mississauga Walmart and back, leaving 9AM, returning by 12PM. Cost split: $5 per person for gas. This is ideal for families or individuals without reliable transport, helping reduce traffic and costs. We can chat during the drive and even coordinate bulk buys. The driver has a reliable SUV with space for carts. This has been running for 6 months with reliable participants. Safety first—masks optional, sanitized car. If interested, message with your location and availability. Let's make shopping easier and more social!",
+    "category": "ridesharing",
+    "tags": ["grocery", "saturday", "family", "affordable"],
+    "type": "service",
+    "price": 5,
+    "location": "Milton to Mississauga Walmart, ON",
+    "details": {
+      "seats": 3,
+      "schedule": "Saturdays 9AM",
+      "vehicle": "SUV"
+    },
+    "images": [
+      "https://picsum.photos/400/300?random=17",
+      "https://picsum.photos/400/300?random=18"
+    ]
+  },
+  {
+    "title": "Airport Shuttle Service for Pearson International",
+    "description": "Reliable shared shuttle service from Burlington to Toronto Pearson Airport (YYZ) for early morning flights. Pick up at 4AM, arrive by 6AM—perfect for 7-8AM departures. $25 per person (max 4 passengers). Includes door-to-door pickup, comfortable minivan, Wi-Fi, and bottled water. Book in advance for groups or solo travelers. I've been providing this for 2 years with 4.9-star reviews. Flight delays? Free wait time up to 30 min. Child seats available. This beats taxi prices and parking fees. Confirm booking with flight details. Let's get you to the airport stress-free and on time!",
+    "category": "ridesharing",
+    "tags": ["airport", "shuttle", "early-morning", "group"],
+    "type": "service",
+    "price": 15,
+    "location": "Burlington to Toronto Pearson Airport (YYZ)",
+    "details": {
+      "capacity": 4,
+      "departure": "4AM",
+      "amenities": ["Wi-Fi", "water", "child seats"]
+    },
+    "images": [
+      "https://picsum.photos/400/300?random=19",
+      "https://picsum.photos/400/300?random=20",
+      "https://picsum.photos/400/300?random=21"
+    ]
+  },
+  {
+    "title": "Weekend Ride Share to Toronto Downtown Events",
+    "description": "Organizing a shared ride for weekend events in downtown Toronto—concerts, markets, or festivals. Leaving Oakville Saturday 6PM, back Sunday 10PM. $10 round-trip, 4 seats available. Great for groups heading to Harbourfront or Yonge-Dundas. Driver is experienced, music-friendly, and stops for snacks. This is casual—no strict schedule, but RSVP required. Past trips to TIFF and Nuit Blanche were a hit. Chat in the car or use the time to rest. Fuel-efficient hybrid vehicle. If you're solo or with friends, join to meet like-minded people and save on Uber. Spots limited—message to reserve!",
+    "category": "ridesharing",
+    "tags": ["weekend", "events", "downtown", "group"],
+    "type": "request",
+    "price": 10,
+    "location": "Oakville to Toronto Downtown",
+    "details": {
+      "seats": 4,
+      "duration": "round-trip",
+      "dates": "Saturdays"
+    },
+    "images": [
+      "https://picsum.photos/400/300?random=22",
+      "https://picsum.photos/400/300?random=23"
+    ]
+  },
+  {
+    "title": "Affordable Room Rental in Quiet Neighborhood",
+    "description": "Spacious 1-bedroom basement apartment for rent in a peaceful Milton neighborhood. $1200/month including utilities, parking, and laundry. Close to schools, transit, and shopping—ideal for students or young professionals. Newly renovated with hardwood floors, full kitchen, private entrance, and high-speed internet. No pets, non-smokers preferred. Available November 1st for 6-month lease. The area is family-friendly with parks and low crime. Previous tenants loved the privacy and location. Viewings by appointment—contact for details or to schedule. This is a great opportunity for affordable, comfortable living in a growing community.",
+    "category": "housing",
+    "tags": ["basement", "affordable", "students", "laundry"],
+    "type": "service",
+    "price": 1200,
+    "location": "Quiet Lane, Milton, ON L9T 2A7",
+    "details": {
+      "bedrooms": 1,
+      "utilities": "included",
+      "lease": "6 months"
+    },
+    "images": [
+      "https://picsum.photos/400/300?random=24",
+      "https://picsum.photos/400/300?random=25",
+      "https://picsum.photos/400/300?random=26"
+    ]
+  },
+  {
+    "title": "Roommate Wanted for 2-Bedroom Apartment",
+    "description": "Seeking a responsible roommate for a modern 2-bedroom apartment in Burlington's downtown area. Rent $800/month (split utilities). Shared living room, kitchen, and balcony with lake view. Close to GO station, shops, and restaurants—perfect for commuters. Must be clean, respectful, and employed/student. No pets, no smoking. Available immediately. The building has gym, pool, and security. Previous roommate moved for work; looking for long-term (1+ year). Includes parking spot. Viewings this weekend. This is a great setup for someone wanting urban convenience without high costs. Serious inquiries only—include about yourself.",
+    "category": "housing",
+    "tags": ["roommate", "downtown", "furnished", "commuter"],
+    "type": "request",
+    "price": 800,
+    "location": "Downtown Burlington, ON L7R 0A8",
+    "details": {
+      "bedrooms": 2,
+          "amenities": ["gym", "pool", "parking"],
+          "availability": "immediate"
+        },
+        "images": [
+          "https://picsum.photos/400/300?random=27",
+          "https://picsum.photos/400/300?random=28"
+        ]
+      },
+      {
+        "title": "Furniture Donation: Sofa and Coffee Table",
+        "description": "Donating a gently used leather sofa and wooden coffee table to a good home in Halton Region. The sofa is 2-seater, dark blue, excellent condition (no stains/tears), and the table is oak with glass top. Perfect for a living room setup. Some other furnitures are also up for grabs. Pickup required in Oakville—can disassemble if needed. This is part of decluttering my home; items are clean and ready to go. Ideal for new apartment or student housing. No delivery, but happy to hold for a day. First come, first served. Message with pickup date/time. Let's keep these quality pieces out of landfill and into a home where they'll be appreciated.",
+        "category": "housing",
+        "tags": ["furniture", "donation", "leather", "oak"],
+        "type": "donation",
+        "price": 0,
+        "location": "Oakville, ON L6K 1A9",
+        "details": {
+          "items": ["sofa", "coffee table"],
+          "condition": "excellent",
+          "pickup": "self-pickup"
+        },
+        "images": [
+          "https://picsum.photos/400/300?random=29",
+          "https://picsum.photos/400/300?random=30",
+          "https://picsum.photos/400/300?random=31"
+        ]
+      },
+      {
+        "title": "Entry-Level Software Developer Position",
+        "description": "Exciting opportunity for a junior software developer at our Milton tech startup. Responsibilities include coding features, debugging, and collaborating on agile teams. Skills: JavaScript, React, Node.js; bonus for AWS. Full-time, $55K salary, benefits, remote-hybrid. We're a small team building innovative community apps, with room for growth. Apply with resume, portfolio, and cover letter. Interviews start next week. This is ideal for recent grads or career changers—training provided. Join us to make a real impact in local tech. Equal opportunity employer; diverse applicants encouraged. Questions? Email careers@techmilton.com.",
+        "category": "jobs",
+        "tags": ["junior", "software", "react", "remote"],
+        "type": "service",
+        "price": 55000,
+        "location": "Milton Tech Hub, ON L9T 3A6",
+        "details": {
+          "skills": ["JavaScript", "React", "Node.js"],
+          "type": "full-time",
+          "benefits": ["health", "remote-hybrid"]
+        },
+        "images": [
+          "https://picsum.photos/400/300?random=32",
+          "https://picsum.photos/400/300?random=33"
+        ]
+      },
+      {
+        "title": "Resume Writing and Job Search Coaching",
+        "description": "Professional resume writer and career coach offering services for job seekers in the GTA. Tailored resumes, cover letters, and LinkedIn profiles that get interviews. Specializing in tech, healthcare, and admin roles. 1-hour coaching sessions cover interview prep, networking, and salary negotiation. $100/resume, $75/hour coaching. All work confidential, ATS-optimized. Past clients landed roles at Google, hospitals, and banks. Free 15-min consult. This is more than writing—it's strategy for your career success. Let's craft documents that showcase your strengths and open doors. Schedule via email or call.",
+        "category": "jobs",
+        "tags": ["resume", "coaching", "tech", "healthcare"],
+        "type": "service",
+        "price": 100,
+        "location": "Virtual / Burlington, ON L7L 0A7",
+        "details": {
+          "services": ["resume", "cover letter", "coaching"],
+          "specialties": ["tech", "healthcare", "admin"]
+        },
+        "images": [
+          "https://picsum.photos/400/300?random=34",
+          "https://picsum.photos/400/300?random=35"
+        ]
+      },
+      {
+        "title": "Volunteer Coordinator Role at Local NGO",
+        "description": "NGO in Halton seeking part-time volunteer coordinator to manage recruitment, training, and events. 20 hours/week, $25/hour. Duties: Match volunteers to opportunities, organize orientations, track hours. Ideal for social work grads or experienced organizers. Flexible hours, remote options. This role makes a difference in community programs for youth and seniors. Apply with CV and references. Interviews virtual. We're committed to equity—encourage applications from underrepresented groups. Join a passionate team changing lives through service. Questions? Contact volunteer@haltonngo.org.",
+        "category": "jobs",
+        "tags": ["volunteer", "coordinator", "part-time", "ngo"],
+        "type": "service",
+        "price": 25,
+        "location": "Halton Region, ON (remote/hybrid)",
+        "details": {
+          "hours": "20/week",
+          "duties": ["recruitment", "training", "events"],
+          "benefits": ["flexible", "equity"]
+        },
+        "images": [
+          "https://picsum.photos/400/300?random=36",
+          "https://picsum.photos/400/300?random=37",
+          "https://picsum.photos/400/300?random=38"
+        ]
+      },
+      {
+        "title": "Free Mental Health Support Group for New Parents",
+        "description": "Facilitated support group for new parents dealing with postpartum anxiety, sleep deprivation, and parenting challenges. Weekly 1.5-hour sessions with licensed counselor, peer sharing, and coping strategies. Confidential, non-judgmental space. No cost, donations appreciated. Held at community health center; virtual option available. This has helped 100+ parents since launch—build connections and tools for well-being. Topics: bonding, self-care, partner communication. Childcare provided. First session free—no commitment needed. Register or drop-in. You're not alone—reach out for support during this transformative time.",
+        "category": "health",
+        "tags": ["mental-health", "parents", "free", "support"],
+        "type": "service",
+        "price": 0,
+        "location": "Burlington Community Health Center, ON L7R 1A8",
+        "details": {
+          "duration": "1.5 hours",
+          "topics": ["anxiety", "sleep", "bonding"],
+          "format": "in-person/virtual"
+        },
+        "images": [
+          "https://picsum.photos/400/300?random=39",
+          "https://picsum.photos/400/300?random=40"
+        ]
+      },
+      {
+        "title": "Yoga Classes for Stress Relief and Wellness",
+        "description": "Beginner-friendly yoga classes focusing on stress reduction, flexibility, and mindfulness. 45-minute sessions twice weekly, including poses, breathing, and meditation. Suitable for all ages/fitness levels. $10/drop-in or $80/month unlimited. Mats provided. In a serene studio with calming music and props. Certified instructor with 5 years experience. Benefits: improved sleep, lower anxiety, better posture. Small groups for personalized attention. First class free. This is more than exercise—it's self-care. Join to unwind and recharge. Private sessions available. Namaste!",
+        "category": "health",
+        "tags": ["yoga", "stress-relief", "beginner", "mindfulness"],
+        "type": "service",
+        "price": 10,
+        "location": "Yoga Studio, Oakville, ON L6H 1B2",
+        "details": {
+          "duration": "45 minutes",
+          "frequency": "twice weekly",
+          "level": "beginner"
+        },
+        "images": [
+          "https://picsum.photos/400/300?random=41",
+          "https://picsum.photos/400/300?random=42",
+          "https://picsum.photos/400/300?random=43"
+        ]
+      },
+      {
+        "title": "Community Health Clinic for Free Check-Ups",
+        "description": "Monthly free health clinic offering blood pressure checks, glucose testing, and basic consultations with nurses. Walk-ins welcome, no insurance needed. Focus on preventive care for underserved communities. Held at local center with multilingual staff (English, Spanish, Punjabi). Includes nutrition advice and referrals. This program has screened 500+ residents, catching issues early. Time: 10AM-2PM first Saturday. Bring ID. Volunteers needed too. Health is wealth—don't miss this accessible service. Sponsored by Halton Health Authority. Questions? Call 905-123-4567.",
+        "category": "health",
+        "tags": ["free", "check-up", "preventive", "multilingual"],
+        "type": "service",
+        "price": 0,
+        "location": "Halton Community Center, Burlington, ON L7P 0A9",
+        "details": {
+          "services": ["blood pressure", "glucose", "consultation"],
+          "languages": ["English", "Spanish", "Punjabi"],
+          "time": "10AM-2PM first Saturday"
+        },
+        "images": [
+          "https://picsum.photos/400/300?random=44",
+          "https://picsum.photos/400/300?random=45"
+        ]
+      },
+      {
+        "title": "Online Coding Bootcamp for Beginners",
+        "description": "6-week online coding bootcamp teaching Python and web development basics. Live sessions, projects, and mentorship. For absolute beginners—no prior experience needed. Covers variables, loops, functions, HTML/CSS, and simple apps. $300 total, payment plans available. 10 hours/week, flexible schedule. Graduates get portfolio and job placement assistance. Taught by industry pros with 15+ years. 95% completion rate. Join to launch your tech career from home. Includes community Slack and lifetime access to materials. Enroll now—next cohort starts November!",
+        "category": "education",
+        "tags": ["coding", "beginner", "online", "python"],
+        "type": "service",
+        "price": 300,
+        "location": "Online (Virtual)",
+        "details": {
+          "duration": "6 weeks",
+          "schedule": "10 hours/week",
+          "languages": ["Python", "HTML/CSS"]
+        },
+        "images": [
+          "https://picsum.photos/400/300?random=46",
+          "https://picsum.photos/400/300?random=47",
+          "https://picsum.photos/400/300?random=48"
+        ]
+      },
+      {
+        "title": "Language Exchange Meetup for French Learners",
+        "description": "Casual language exchange group for English speakers learning French and French speakers practicing English. Weekly 2-hour meetups at coffee shop with conversation partners matched by level. Free, bring your own drink. Activities: Role-plays, games, cultural sharing. For all ages/levels. This has built lasting friendships and improved fluency for 30+ members. No pressure—just practice. Upcoming theme: French cuisine. RSVP via email. Great for immigrants or travelers. Let's learn together in a fun, relaxed setting!",
+        "category": "education",
+        "tags": ["language", "french", "exchange", "free"],
+        "type": "service",
+        "price": 0,
+        "location": "Coffee Shop, Mississauga, ON L5M 1B3",
+        "details": {
+          "languages": ["English", "French"],
+          "level": "all",
+          "duration": "2 hours"
+        },
+        "images": [
+          "https://picsum.photos/400/300?random=49",
+          "https://picsum.photos/400/300?random=50"
+        ]
+      },
+      {
+        "title": "After-School Homework Help Program",
+        "description": "Free after-school program for grades 1-6 offering homework help in math, reading, and science. Certified teachers and volunteers available 3-5PM weekdays. Includes snacks and outdoor play. Capacity 20 students. This program has boosted grades for 80% of participants and provides a safe space. Registration open for fall semester. Parents, drop off or pick up. Funded by community grants. Focus on fun learning—no pressure. Sibling discounts. Join to support your child's success and build confidence. Contact for assessment.",
+        "category": "education",
+        "tags": ["homework", "kids", "free", "after-school"],
+        "type": "service",
+        "price": 0,
+        "location": "Oakville Elementary School, ON L6H 2A1",
+        "details": {
+          "grades": "1-6",
+          "subjects": ["math", "reading", "science"],
+          "time": "3-5PM weekdays"
+        },
+        "images": [
+          "https://picsum.photos/400/300?random=51",
+          "https://picsum.photos/400/300?random=52",
+          "https://picsum.photos/400/300?random=53"
+        ]
+      },
+      {
+        "title": "Wardrobe Swap Event for Sustainable Fashion",
+        "description": "Annual wardrobe swap event where participants bring clean clothes to exchange for new-to-them items. All sizes/styles welcome—focus on reuse to reduce waste. Free entry, donations accepted for charity. Held at community hall with 500+ attendees last year. Sort by category (men's, women's, kids). Refreshments provided. This promotes eco-friendly fashion and community bonding. Upcoming: November 15th, 10AM-3PM. Bring hangers if possible. No sales—just swaps. Help the planet and refresh your closet!",
+        "category": "goods",
+        "tags": ["clothing", "swap", "sustainable", "free"],
+        "type": "service",
+        "price": 0,
+        "location": "Milton Community Hall, ON L9T 4K5",
+        "details": {
+          "types": ["men's", "women's", "kids"],
+          "date": "November 15, 2025",
+          "time": "10AM-3PM"
+        },
+        "images": [
+          "https://picsum.photos/400/300?random=54",
+          "https://picsum.photos/400/300?random=55"
+        ]
+      },
+      {
+        "title": "Tool Lending Library for DIY Projects",
+        "description": "Borrow tools for home improvement from our community lending library—drills, saws, ladders, and more. Free for members (annual fee $10). Check out for 1 week, return clean. Includes safety gear. This saves money and encourages DIY skills. Over 200 tools available, catalog online. Volunteers maintain inventory. Upcoming workshop: Basic Plumbing. Join to access quality tools without buying. Perfect for renters or occasional users. Library open Wednesdays 5-8PM. Apply online or in-person.",
+        "category": "goods",
+        "tags": ["tools", "diy", "lending", "free"],
+        "type": "service",
+        "price": 10,
+        "location": "DIY Center, Burlington, ON L7M 0A4",
+        "details": {
+          "tools": 200,
+          "loanPeriod": "1 week",
+          "fee": "annual $10"
+        },
+        "images": [
+          "https://picsum.photos/400/300?random=56",
+          "https://picsum.photos/400/300?random=57",
+          "https://picsum.photos/400/300?random=58"
+        ]
+      },
+      {
+        "title": "Electronics Recycling Drive and Swap",
+        "description": "Community drive for old electronics recycling with swap table for working devices (phones, laptops, chargers). Free drop-off, certified e-waste handling. Swap gently used items—bring what you have, take what you need. Event partners with local recycler. Last year, 300 devices diverted from landfill. Time: 10AM-2PM, December 22nd. Volunteers needed. This promotes reuse and environmental responsibility. Questions? Email recycle@halton.org. Let's clear clutter and connect community through tech sharing!",
+        "category": "goods",
+        "tags": ["electronics", "recycling", "swap", "e-waste"],
+        "type": "service",
+        "price": 0,
+        "location": "Halton Recycle Center, Oakville, ON L6L 9B8",
+        "details": {
+          "items": ["phones", "laptops", "chargers"],
+          "date": "December 22, 2025",
+          "time": "10AM-2PM"
+        },
+        "images": [
+          "https://picsum.photos/400/300?random=59",
+          "https://picsum.photos/400/300?random=60"
+        ]
+      },
+      {
+        "title": "Budgeting Workshop for Young Adults",
+        "description": "Free 2-hour workshop on personal budgeting, saving, and debt management for ages 18-30. Led by certified financial planner with interactive exercises, templates, and Q&A. Topics: Tracking expenses, emergency funds, credit scores. Held monthly at library. Last session had 25 attendees, many reporting better financial habits. No sales—just practical advice. Register online or walk-in. This empowers youth to achieve financial independence. Materials provided. Next: November 10th, 7PM. Let's take control of your money!",
+        "category": "financial",
+        "tags": ["budgeting", "debt", "free", "young-adults"],
+        "type": "service",
+        "price": 0,
+        "location": "Milton Public Library, ON L9T 2Y5",
+        "details": {
+          "age": "18-30",
+          "duration": "2 hours",
+          "topics": ["expenses", "savings", "credit"]
+        },
+        "images": [
+          "https://picsum.photos/400/300?random=61",
+          "https://picsum.photos/400/300?random=62"
+        ]
+      },
+      {
+        "title": "Tax Preparation Assistance for Seniors",
+        "description": "Volunteer-led tax help for seniors 65+—free filing for simple returns, including pensions, RRSPs, and credits. Appointments 30-60 min, in-person or phone. Bring T4s, SIN. This service has filed 150+ returns last year, saving $1K+ in fees. No complex investments. Schedule via call. CRA-certified volunteers. Season: January-April. This eases tax stress and maximizes refunds. Questions? Hotline 905-555-1234. Empowering seniors with financial peace of mind.",
+        "category": "financial",
+        "tags": ["tax", "seniors", "free", "pensions"],
+        "type": "service",
+        "price": 0,
+        "location": "Senior Center, Burlington, ON L7S 0A1",
+        "details": {
+          "age": "65+",
+          "services": ["simple returns", "credits"],
+          "season": "Jan-Apr"
+        },
+        "images": [
+          "https://picsum.photos/400/300?random=63",
+          "https://picsum.photos/400/300?random=64",
+          "https://picsum.photos/400/300?random=65"
+        ]
+      },
+      {
+        "title": "Grant Writing Workshop for Non-Profits",
+        "description": "Hands-on workshop for non-profit leaders on writing successful grant proposals. Cover needs assessment, budgeting, narrative, and submission tips. 3 hours, $50 (includes templates). Taught by grant writer with $2M+ funded. Small group for feedback. Next: December 5th. This skill unlocks funding for your mission. Past participants secured $100K+. Materials emailed. Register now—spots limited. Empower your organization!",
+        "category": "financial",
+        "tags": ["grants", "non-profit", "workshop", "funding"],
+        "type": "service",
+        "price": 50,
+        "location": "Virtual Webinar",
+        "details": {
+          "duration": "3 hours",
+          "materials": "templates included",
+          "date": "December 5, 2025"
+        },
+        "images": [
+          "https://picsum.photos/400/300?random=66",
+          "https://picsum.photos/400/300?random=67"
+        ]
+      },
+      {
+        "title": "Book Club for Science Fiction Enthusiasts",
+        "description": "Monthly science fiction book club meeting to discuss classics and new releases like Dune or The Expanse. 2-hour sessions with themed snacks, author talks, and guest authors. Free for members ($20/year). Virtual/in-person hybrid. 40 members strong, diverse group. Upcoming: October 28th, 'Neuromancer'. This fosters literary passion and friendships. New members welcome—bring your favorite SF book. RSVP via email. Let's explore the universe through pages!",
+        "category": "goods",
+        "tags": ["book-club", "sci-fi", "free", "hybrid"],
+        "type": "request",
+        "price": 20,
+        "location": "Burlington Library / Virtual",
+        "details": {
+          "genre": "science fiction",
+          "frequency": "monthly",
+          "duration": "2 hours"
+        },
+        "images": [
+          "https://picsum.photos/400/300?random=68",
+          "https://picsum.photos/400/300?random=69",
+          "https://picsum.photos/400/300?random=70"
+        ]
+      },
+      {
+        "title": "Art Supplies Exchange for Artists",
+        "description": "Community exchange for art supplies—paints, brushes, canvases, sketchbooks. Bring what you have, take what you need. Free, no trade required. Held quarterly at art center. Last event swapped 200+ items. This promotes creativity and reduces waste. Open to all skill levels. Upcoming: November 20th, 2-5PM. Volunteers help sort. Bring in good condition. Let's share resources and inspire each other. Questions? Art@mississauga.org.",
+        "category": "goods",
+        "tags": ["art", "exchange", "supplies", "free"],
+        "type": "service",
+        "price": 0,
+        "location": "Mississauga Art Center, ON L5N 8K7",
+        "details": {
+          "items": ["paints", "brushes", "canvases"],
+          "frequency": "quarterly",
+          "time": "2-5PM"
+        },
+        "images": [
+          "https://picsum.photos/400/300?random=71",
+          "https://picsum.photos/400/300?random=72"
+        ]
+      },
+      {
+        "title": "Baby Gear Swap for New Parents",
+        "description": "Swap event for baby gear—strollers, cribs, clothes, toys. Clean items only, sized 0-2 years. Free, bring/take as needed. Safety-checked by volunteers. Last swap helped 50 families. Promotes reuse and bonding. Upcoming: December 10th, 11AM-3PM. Registration encouraged. This eases financial burden and connects parents. Diaper station on-site. Questions? ParentSwap@halton.ca.",
+        "category": "goods",
+        "tags": ["baby", "swap", "parents", "free"],
+        "type": "request",
+        "price": 0,
+        "location": "Halton Parent Center, Oakville, ON L6M 4W5",
+        "details": {
+          "sizes": "0-2 years",
+          "items": ["strollers", "cribs", "clothes"],
+          "date": "December 10, 2025"
+        },
+        "images": [
+          "https://picsum.photos/400/300?random=73",
+          "https://picsum.photos/400/300?random=74",
+          "https://picsum.photos/400/300?random=75"
+        ]
+      },
+      {
+        "title": "Cultural Festival in the Park",
+        "description": "Annual cultural festival featuring music, dance, food stalls from around the world. Free entry, family-friendly with kids' activities. 10AM-6PM, October 25th. Performances by local artists, craft vendors, and international cuisine. Last year 5K attendees. This celebrates diversity and community. Volunteers needed for setup. Rain or shine. Parking available. Bring blanket for seating. More info: festival@mississauga.ca.",
+        "category": "events",
+        "tags": ["cultural", "music", "food", "family"],
+        "type": "service",
+        "price": 0,
+        "location": "Mississauga Park, ON L5N 1M4",
+        "details": {
+          "time": "10AM-6PM",
+          "date": "October 25, 2025",
+          "activities": ["music", "dance", "food"]
+        },
+        "images": [
+          "https://picsum.photos/400/300?random=76",
+          "https://picsum.photos/400/300?random=77",
+          "https://picsum.photos/400/300?random=78"
+        ]
+      },
+      {
+        "title": "Neighborhood Cleanup Volunteer Day",
+        "description": "Join our monthly cleanup to beautify the neighborhood—pick up litter, plant trees, paint benches. Free gloves/tools provided, pizza after. 9AM-12PM, first Sunday. Last event 75 volunteers, 10 bags collected. This builds community spirit and green spaces. All ages welcome, kids with parents. Sign up online. Sponsored by local council. Make a difference in 3 hours!",
+        "category": "events",
+        "tags": ["volunteer", "cleanup", "green", "community"],
+        "type": "request",
+        "price": 0,
+        "location": "Milton Neighborhood Park, ON L9T 8K2",
+        "details": {
+          "time": "9AM-12PM",
+          "frequency": "monthly",
+          "supplies": "provided"
+        },
+        "images": [
+          "https://picsum.photos/400/300?random=79",
+          "https://picsum.photos/400/300?random=80"
+        ]
+      },
+      {
+        "title": "Art Workshop for Kids: Painting Nature",
+        "description": "Hands-on art workshop for kids 5-12—paint nature scenes with watercolors and acrylics. 2 hours, $15/child (materials included). Led by local artist. Themes: Trees, animals, landscapes. Builds creativity and fine motor skills. Small groups, parent viewing. Monthly, next November 15th. Past kids loved taking home their artwork. Sibling discount. Register now—spaces limited. Inspire young artists!",
+        "category": "events",
+        "tags": ["kids", "art", "painting", "creative"],
+        "type": "service",
+        "price": 15,
+        "location": "Burlington Art Gallery, ON L7R 3X9",
+        "details": {
+          "ages": "5-12",
+          "duration": "2 hours",
+          "materials": "included"
+        },
+        "images": [
+          "https://picsum.photos/400/300?random=81",
+          "https://picsum.photos/400/300?random=82",
+          "https://picsum.photos/400/300?random=83"
+        ]
+      },
+      {
+        "title": "Carpool Group for Soccer Practice",
+        "description": "Shared carpool for kids' soccer practice in Oakville—pick up from school, drop at field, reverse after. Tuesdays/Thursdays 4-7PM. $8/week per child. Minivan seats 6, car seats available. Experienced driver, music during ride. This makes practice accessible for working parents. 4 spots open. Message with child's age/schedule. Safety first—background checked. Let's get the team to the field on time!",
+        "category": "transportation",
+        "tags": ["carpool", "kids", "soccer", "school"],
+        "type": "service",
+        "price": 8,
+        "location": "Oakville Schools to Soccer Field",
+        "details": {
+          "schedule": "Tue/Thu 4-7PM",
+          "seats": 6,
+          "carSeates": "available"
+        },
+        "images": [
+          "https://picsum.photos/400/300?random=84",
+          "https://picsum.photos/400/300?random=85"
+        ]
+      },
+      {
+        "title": "Bike Sharing Program for Commuters",
+        "description": "Community bike sharing for short trips around Halton—unlock via app, $2/hour. 20 bikes at stations. Helmets/locks included. This reduces car use and promotes fitness. Stations at libraries, parks. App tracks availability. First 30 min free for members. Maintenance weekly. Join to explore sustainably. Questions? bike@halton.ca.",
+        "category": "transportation",
+        "tags": ["bike", "sharing", "commute", "eco"],
+        "type": "service",
+        "price": 2,
+        "location": "Halton Stations (Burlington, Milton, Oakville)",
+        "details": {
+          "bikes": 20,
+          "rate": "$2/hour",
+          "free": "30 min for members"
+        },
+        "images": [
+          "https://picsum.photos/400/300?random=86",
+          "https://picsum.photos/400/300?random=87",
+          "https://picsum.photos/400/300?random=88"
+        ]
+      },
+      {
+        "title": "Public Transit Tips and Discount Cards",
+        "description": "Guidance on using GO Transit in GTA—routes, fares, apps. Free discount cards for low-income riders (50% off). Workshop covers schedules, multi-ride passes, accessibility. 1 hour, monthly. This makes public transport easier for newcomers. Last workshop 40 attendees. Next: November 18th. Register free. Sustainable commuting starts here!",
+        "category": "transportation",
+        "tags": ["transit", "discount", "go-train", "newcomers"],
+        "type": "service",
+        "price": 0,
+        "location": "GO Station Workshop Room, Mississauga, ON L5N 8H6",
+        "details": {
+          "discount": "50% off",
+          "duration": "1 hour",
+          "frequency": "monthly"
+        },
+        "images": [
+          "https://picsum.photos/400/300?random=89",
+          "https://picsum.photos/400/300?random=90"
+        ]
+      }
+]
