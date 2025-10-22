@@ -11,7 +11,9 @@ import Reset from './pages/auth/Reset';
 import Home from './pages/Home';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import CreatePost from './pages/posts/CreatePost';
-import MyPosts from './pages/posts/MyPosts'; 
+import MyPosts from './pages/posts/MyPosts';
+import PostsIndex from './pages/posts/PostsIndex';
+import PostDetails from './pages/posts/PostDetails';
 
 function App() {
   return (
@@ -27,6 +29,8 @@ function App() {
           </Route>
           <Route path="/home" element={<Home />} />
           <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/posts" element={<PostsIndex />} />
+          <Route path="/posts/:id" element={<PostDetails />} />
           <Route path="/posts/create" element={<CreatePost />} />
           <Route path="/posts/my-posts" element={<MyPosts />} />
           <Route path="/" element={<Navigate to="/auth/login" replace />} />
