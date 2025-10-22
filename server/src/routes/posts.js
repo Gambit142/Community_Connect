@@ -1,27 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const multer = require('multer'); // For file uploads
-const { cloudinary } = require('../config/cloudinary.js'); // Cloudinary config
-const { authenticateToken, authorizeRoles } = require('../middleware/auth.js');
+const { authenticateToken } = require('../middleware/auth.js');
+const { uploadMiddleware } = require('../middleware/multerConfig.js'); // Import from middleware
 const { createPost } = require('../controllers/posts/createPostController.js');
 const { getMyPosts } = require('../controllers/posts/getMyPostsController.js');
-
-// Multer storage config (memory for processing, not disk)
-const storage = multer.memoryStorage();
-const upload = multer({
-  storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB per file
-  fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith('image/')) {
-      cb(null, true);
-    } else {
-      cb(new Error('Only image files allowed'), false);
-    }
-  },
-});
+const { getPosts } = require('../controllers/posts/postsController.js');
+const { getPostById, getSimilarPosts } = require('../controllers/posts/getPostController.js'); // New import
 
 // Create post (member only, pending approval) with image upload (up to 5 images)
-router.post('/', authenticateToken, upload.array('images', 5), createPost);
+router.post('/', authenticateToken, uploadMiddleware, createPost);
 
 // Request Structure for Create Post with Images:
 // - Method: POST /api/posts (multipart/form-data)
@@ -52,5 +39,40 @@ router.get('/my-posts', authenticateToken, getMyPosts);
 // Response Structure:
 // - Success (200): { "message": "string", "posts": [post objects], "pagination": { currentPage, totalPages, totalPosts, hasNext } }
 // - Errors: 400 { "message": "validation error" }, 401 { "message": "unauthorized" }, 500 { "message": "server error" }
+
+// Get all published posts (public, with filters/search/pagination)
+router.get('/', getPosts);
+
+// Request Structure for Get All Posts:
+// - Method: GET /api/posts
+// - Query Params: 
+//   ?search=query (title/description/location, optional)
+//   ?category=food (filter, optional)
+//   ?tags=free,urgent (comma-separated, optional)
+//   ?page=1 (optional, default 1)
+//   ?limit=6 (optional, default 6, max 12)
+// Response Structure:
+// - Success (200): { "message": "string", "posts": [post objects], "pagination": { currentPage, totalPages, totalPosts, hasNext } }
+// - Errors: 400 { "message": "validation error" }, 500 { "message": "server error" }
+
+// Get single post by ID (public, only published posts)
+router.get('/:id', getPostById);
+
+// Request Structure for Get Post by ID:
+// - Method: GET /api/posts/:id
+// - No body/headers required
+// Response Structure:
+// - Success (200): { "message": "string", "post": { ...post object } }
+// - Errors: 404 { "message": "Post not found" }, 500 { "message": "server error" }
+
+// Get similar posts (public, based on category, exclude current post)
+router.get('/:id/similar', getSimilarPosts);
+
+// Request Structure for Get Similar Posts:
+// - Method: GET /api/posts/:id/similar
+// - No body/headers required
+// Response Structure:
+// - Success (200): { "message": "string", "similarPosts": [post objects, max 5] }
+// - Errors: 404 { "message": "Post not found" }, 500 { "message": "server error" }
 
 module.exports = router;

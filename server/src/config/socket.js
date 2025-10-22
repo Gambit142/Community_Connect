@@ -6,7 +6,7 @@ const app = require('../index.js'); // Wait, circular—use passed app/server
 let io; // Singleton
 
 const initSocket = (server) => {
-  if (io) return io; // Already initialized
+  if (io) return io;
 
   io = new Server(server, {
     cors: {
