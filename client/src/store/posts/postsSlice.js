@@ -4,6 +4,8 @@ import { getMyPosts } from './getMyPostsThunk.js';
 import { getPosts } from './getPostsThunk.js';
 import { getPostById } from './getPostByIdThunk.js';  
 import { getSimilarPosts } from './getSimilarPostsThunk.js';  
+import { updatePost } from './updatePostThunk.js';
+import { deletePost } from './deletePostThunk.js';
 
 const postsSlice = createSlice({
   name: 'posts',
@@ -41,6 +43,37 @@ const postsSlice = createSlice({
         state.posts.unshift(action.payload.post); 
       })
       .addCase(createPost.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // Update Post
+      .addCase(updatePost.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updatePost.fulfilled, (state, action) => {
+        state.loading = false;
+        state.successMessage = action.payload.message;
+        const index = state.posts.findIndex(p => p._id === action.payload.post._id);
+        if (index !== -1) {
+          state.posts[index] = action.payload.post;
+        }
+      })
+      .addCase(updatePost.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // Delete Post
+      .addCase(deletePost.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deletePost.fulfilled, (state, action) => {
+        state.loading = false;
+        state.successMessage = action.payload.message;
+        state.posts = state.posts.filter(p => p._id !== action.meta.arg);
+      })
+      .addCase(deletePost.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
@@ -112,3 +145,5 @@ export { getMyPosts } from './getMyPostsThunk.js';
 export { getPosts } from './getPostsThunk.js';
 export { getPostById } from './getPostByIdThunk.js'; 
 export { getSimilarPosts } from './getSimilarPostsThunk.js';
+export { updatePost } from './updatePostThunk.js';
+export { deletePost } from './deletePostThunk.js';
