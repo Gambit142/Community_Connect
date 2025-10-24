@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
+import { verifyToken } from './verifyTokenThunk.js'; // New import
 
 export const loginUser = createAsyncThunk(
   'login/loginUser',
@@ -7,7 +8,7 @@ export const loginUser = createAsyncThunk(
     try {
       const apiUrl = process.env.NODE_ENV === 'test' ? import.meta.env.VITE_API_URL_TEST : import.meta.env.VITE_API_URL;
       const response = await axios.post(`${apiUrl}/auth/login`, userData);
-      // Store token in localStorage for persistence (optional, but recommended)
+      // Store token in localStorage for persistence
       localStorage.setItem('token', response.data.token);
       return response.data;
     } catch (err) {
@@ -52,6 +53,17 @@ const loginSlice = createSlice({
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+      // Handle verifyToken (reuse login fulfilled)
+      .addCase(verifyToken.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload.user;
+        state.token = localStorage.getItem('token');
+      })
+      .addCase(verifyToken.rejected, (state) => {
+        state.user = null;
+        state.token = null;
+        localStorage.removeItem('token');
       });
   },
 });
