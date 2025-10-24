@@ -22,12 +22,19 @@ export default function Pagination({ pagination, onPageChange }) {
     return range;
   };
 
+  const isPrevDisabled = pagination.currentPage === 1;
+  const isNextDisabled = pagination.currentPage === pagination.totalPages;
+
   return (
     <div className="flex justify-center items-center space-x-2 mt-8">
       <button
         onClick={() => onPageChange(pagination.currentPage - 1)}
-        disabled={pagination.currentPage === 1}
-        className="px-4 py-2 border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 bg-[#05213C] text-white"
+        disabled={isPrevDisabled}
+        className={`px-4 py-2 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${
+          isPrevDisabled
+            ? 'bg-gray-200 text-gray-500 border-gray-300'
+            : 'bg-[#05213C] text-white border-[#05213C] hover:bg-white hover:text-[#05213C]'
+        }`}
       >
         Previous
       </button>
@@ -36,19 +43,25 @@ export default function Pagination({ pagination, onPageChange }) {
           key={index}
           onClick={() => typeof page === 'number' && onPageChange(page)}
           disabled={page === '...'}
-          className={`px-3 py-2 border border-gray-300 rounded-md ${
-            page === pagination.currentPage
-              ? 'bg-[#05213C] text-white'
-              : 'hover:bg-gray-50 bg-[#05213C] text-white'
-          } ${page === '...' ? 'cursor-default bg-gray-100' : ''}`}
+          className={`px-3 py-2 border rounded-md transition-colors ${
+            page === '...'
+              ? 'cursor-default bg-gray-100 text-gray-500 border-gray-300'
+              : page === pagination.currentPage
+              ? 'bg-white text-[#05213C] border-[#05213C]'
+              : 'bg-[#05213C] text-white border-[#05213C] hover:bg-white hover:text-[#05213C]'
+          }`}
         >
           {page}
         </button>
       ))}
       <button
         onClick={() => onPageChange(pagination.currentPage + 1)}
-        disabled={pagination.currentPage === pagination.totalPages}
-        className="px-4 py-2 border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 bg-[#05213C] text-white"
+        disabled={isNextDisabled}
+        className={`px-4 py-2 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${
+          isNextDisabled
+            ? 'bg-gray-200 text-gray-500 border-gray-300'
+            : 'bg-[#05213C] text-white border-[#05213C] hover:bg-white hover:text-[#05213C]'
+        }`}
       >
         Next
       </button>

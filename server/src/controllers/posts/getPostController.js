@@ -1,6 +1,7 @@
 const Post = require('../../models/Post.js');
+const jwt = require('jsonwebtoken');
 
-// Get single post by ID (public, only published)
+// Get single post by ID (public for published, auth+owner/admin for others)
 const getPostById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -10,14 +11,49 @@ const getPostById = async (req, res) => {
       return res.status(400).json({ message: 'Invalid post ID format' });
     }
 
-    // Fetch post
-    const post = await Post.findOne({ _id: id, status: 'Published' })
-      .select('-userID') // Hide userID for public view
-      .lean();
-
-    if (!post) {
-      return res.status(404).json({ message: 'Post not found or not published' });
+    // Manually decode token if present (for optional auth)
+    let decodedUser = null;
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.substring(7);
+      try {
+        decodedUser = jwt.verify(token, process.env.JWT_SECRET);
+      } catch (err) {
+        console.error('Token verification error:', err);
+        return res.status(401).json({ message: 'Invalid token' });
+      }
     }
+
+    // Fetch full post
+    const fullPost = await Post.findOne({ _id: id });
+    if (!fullPost) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+
+    // If published, anyone can view
+    if (fullPost.status === 'Published') {
+      const post = fullPost.toObject();
+      delete post.userID;
+      return res.status(200).json({
+        message: 'Post retrieved successfully',
+        post,
+      });
+    }
+
+    // For unpublished, require auth and check ownership or admin role
+    if (!decodedUser) {
+      return res.status(401).json({ message: 'Authentication required to view unpublished post' });
+    }
+
+    // Safely check ownership (use 'id' from JWT payload)
+    const userIdStr = fullPost.userID ? fullPost.userID.toString() : null;
+    if (userIdStr !== decodedUser.id.toString() && decodedUser.role !== 'admin') {
+      return res.status(403).json({ message: 'Unauthorized to view this post' });
+    }
+
+    // Authorized, return post without userID
+    const post = fullPost.toObject();
+    delete post.userID;
 
     res.status(200).json({
       message: 'Post retrieved successfully',

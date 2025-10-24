@@ -46,7 +46,7 @@ const adminSlice = createSlice({
         const { post } = action.payload;
         const index = state.posts.findIndex(p => p._id === post._id);
         if (index !== -1) {
-          state.posts[index] = { ...state.posts[index], status: 'Published' };
+          state.posts[index] = post;
         }
       })
       .addCase(approvePost.rejected, (state, action) => {
@@ -62,7 +62,7 @@ const adminSlice = createSlice({
         const { post } = action.payload;
         const index = state.posts.findIndex(p => p._id === post._id);
         if (index !== -1) {
-          state.posts[index] = { ...state.posts[index], status: 'Rejected' };
+          state.posts[index] = post;
         }
       })
       .addCase(rejectPost.rejected, (state, action) => {

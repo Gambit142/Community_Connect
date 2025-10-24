@@ -1,5 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { getNotifications } from './getNotificationsThunk.js';
+import { markAsRead as markAsReadThunk } from './markAsReadThunk.js';
+import { markAllAsRead as markAllAsReadThunk } from './markAllAsReadThunk.js';
 
 const notificationsSlice = createSlice({
   name: 'notifications',
@@ -17,14 +19,6 @@ const notificationsSlice = createSlice({
       state.notifications.unshift(action.payload);
       if (!action.payload.isRead) state.unreadCount += 1;
     },
-    markAsRead: (state, action) => {
-      const { _id } = action.payload;
-      const notification = state.notifications.find(n => n._id === _id);
-      if (notification && !notification.isRead) {
-        notification.isRead = true;
-        state.unreadCount -= 1;
-      }
-    },
   },
   extraReducers: (builder) => {
     builder
@@ -40,12 +34,49 @@ const notificationsSlice = createSlice({
       .addCase(getNotifications.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+      // Mark single as read
+      .addCase(markAsReadThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(markAsReadThunk.fulfilled, (state, action) => {
+        state.loading = false;
+        const updatedNotification = action.payload.notification;
+        const index = state.notifications.findIndex(n => n._id === updatedNotification._id);
+        if (index !== -1) {
+          const wasUnread = !state.notifications[index].isRead;
+          state.notifications[index] = updatedNotification;
+          if (wasUnread) {
+            state.unreadCount -= 1;
+          }
+        }
+      })
+      .addCase(markAsReadThunk.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // Mark all as read
+      .addCase(markAllAsReadThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(markAllAsReadThunk.fulfilled, (state, action) => {
+        state.loading = false;
+        state.notifications = state.notifications.map(n => ({ ...n, isRead: true }));
+        state.unreadCount = 0;
+      })
+      .addCase(markAllAsReadThunk.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
   },
 });
 
-export const { clearError, addNotification, markAsRead } = notificationsSlice.actions;
+export const { clearError, addNotification } = notificationsSlice.actions;
 export default notificationsSlice.reducer;
 
-// Re-export thunk for easy import
+// Re-export thunks for easy import
 export { getNotifications } from './getNotificationsThunk.js';
+export { markAsRead as markAsReadThunk } from './markAsReadThunk.js';
+export { markAllAsRead as markAllAsReadThunk } from './markAllAsReadThunk.js';
