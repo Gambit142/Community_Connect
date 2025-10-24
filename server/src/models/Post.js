@@ -16,10 +16,11 @@ const postSchema = new mongoose.Schema({
   status: { 
     type: String, 
     required: true, 
-    enum: ['Pending Approval', 'Published', 'Rejected'], 
+    enum: ['Pending Approval', 'Published', 'Rejected', 'Archived'], 
     default: 'Pending Approval' 
   },
   rejectionReason: { type: String, default: '', maxlength: 500 },
+  originalPostId: { type: mongoose.Schema.Types.ObjectId, ref: 'Post' },
   type: { 
     type: String, 
     required: true, 
@@ -40,5 +41,6 @@ postSchema.index({ status: 1, createdAt: -1 });
 postSchema.index({ category: 1, status: 1 });
 postSchema.index({ tags: 1 });
 postSchema.index({ userID: 1, status: 1 });
+postSchema.index({ originalPostId: 1 }); // New index for resubmissions
 
 module.exports = mongoose.model('Post', postSchema);
