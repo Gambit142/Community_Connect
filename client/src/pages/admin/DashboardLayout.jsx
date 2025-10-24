@@ -29,7 +29,7 @@ export default function DashboardLayout() {
   // Check if user is admin; redirect if not
   useEffect(() => {
     if (user && user.role !== 'admin') {
-      navigate('/home');
+      navigate('/home', { state: { unauthorized: true } });
     }
   }, [user, navigate]);
 
