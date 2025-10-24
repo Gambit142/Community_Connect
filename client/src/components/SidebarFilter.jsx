@@ -1,6 +1,13 @@
 import React from 'react';
 
-export default function SidebarFilter({ filters, onFilterChange }) {
+export default function SidebarFilter({ 
+  searchValue, 
+  onSearchChange, 
+  tagsValue, 
+  onTagsChange, 
+  category, 
+  onCategoryChange 
+}) {
   const categories = [
     { value: '', label: 'All Categories' },
     { value: 'food', label: 'Food' },
@@ -23,8 +30,8 @@ export default function SidebarFilter({ filters, onFilterChange }) {
         <input
           type="text"
           placeholder="Search by title, description, or location..."
-          value={filters.search}
-          onChange={(e) => onFilterChange('search', e.target.value)}
+          value={searchValue}
+          onChange={onSearchChange}
           className="w-full p-3 border border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 bg-white text-black placeholder-gray-400"
         />
       </div>
@@ -38,8 +45,8 @@ export default function SidebarFilter({ filters, onFilterChange }) {
                 type="radio"
                 name="category"
                 value={cat.value}
-                checked={filters.category === cat.value}
-                onChange={(e) => onFilterChange('category', e.target.value)}
+                checked={category === cat.value}
+                onChange={(e) => onCategoryChange(e.target.value)}
                 className="h-4 w-4 border-gray-300 focus:ring-[#33383e] text-[#33383e] cursor-pointer"
               />
               <span className="text-sm text-[#969ba2]">{cat.label}</span>
@@ -53,8 +60,8 @@ export default function SidebarFilter({ filters, onFilterChange }) {
         <input
           type="text"
           placeholder="e.g., free, urgent"
-          value={filters.tags}
-          onChange={(e) => onFilterChange('tags', e.target.value)}
+          value={tagsValue}
+          onChange={onTagsChange}
           className="w-full p-2 border border-gray-600 rounded-md bg-white text-black placeholder-gray-400 focus:ring-2 focus:ring-blue-500"
         />
       </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { getPosts, clearError } from '../../store/posts/postsSlice.js';
 import { useNavigate } from 'react-router-dom';
@@ -10,16 +10,60 @@ export default function PostsIndex() {
   const navigate = useNavigate();
   const { posts, pagination, loading, error } = useSelector((state) => state.posts);
   const [filters, setFilters] = useState({ search: '', category: '', tags: '', page: 1, limit: 6 });
+  const [searchInput, setSearchInput] = useState('');
+  const [tagsInput, setTagsInput] = useState('');
   const [showFilters, setShowFilters] = useState(false);
+  const debounceRef = useRef(null); // Ref for search debounce timeout
+  const debounceRefTags = useRef(null); // Ref for tags debounce timeout
+
+  // Debounced function for search
+  const debouncedSearch = useCallback((searchValue) => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+    debounceRef.current = setTimeout(() => {
+      setFilters(prev => ({ ...prev, search: searchValue, page: 1 }));
+    }, 600); // 600ms debounce
+  }, []);
+
+  // Debounced function for tags
+  const debouncedTags = useCallback((tagsValue) => {
+    if (debounceRefTags.current) {
+      clearTimeout(debounceRefTags.current);
+    }
+    debounceRefTags.current = setTimeout(() => {
+      setFilters(prev => ({ ...prev, tags: tagsValue, page: 1 }));
+    }, 600); // 600ms debounce
+  }, []);
 
   useEffect(() => {
     dispatch(getPosts(filters));
-    return () => dispatch(clearError());
-  }, [dispatch, filters]);
+    return () => {
+      dispatch(clearError());
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+      if (debounceRefTags.current) {
+        clearTimeout(debounceRefTags.current);
+      }
+    };
+  }, [dispatch, filters.search, filters.category, filters.tags, filters.page]); // Only depend on specific filters
 
-  const handleFilterChange = (key, value) => {
-    setFilters(prev => ({ ...prev, [key]: value, page: 1 })); // Reset page on filter
-  };
+  const handleSearchChange = useCallback((e) => {
+    const value = e.target.value;
+    setSearchInput(value);
+    debouncedSearch(value);
+  }, [debouncedSearch]);
+
+  const handleTagsChange = useCallback((e) => {
+    const value = e.target.value;
+    setTagsInput(value);
+    debouncedTags(value);
+  }, [debouncedTags]);
+
+  const handleCategoryChange = useCallback((value) => {
+    setFilters(prev => ({ ...prev, category: value, page: 1 }));
+  }, []);
 
   const handlePageChange = (newPage) => {
     setFilters(prev => ({ ...prev, page: newPage }));
@@ -28,8 +72,6 @@ export default function PostsIndex() {
   const toggleFilters = () => {
     setShowFilters(prev => !prev);
   };
-
-  if (loading) return <div className="min-h-screen flex items-center justify-center">Loading posts...</div>;
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
@@ -46,7 +88,14 @@ export default function PostsIndex() {
         <div className="grid lg:grid-cols-[280px_1fr] gap-6">
           {/* Sidebar Filters - Desktop */}
           <div className="hidden lg:block h-full">
-            <SidebarFilter filters={filters} onFilterChange={handleFilterChange} />
+            <SidebarFilter 
+              searchValue={searchInput}
+              onSearchChange={handleSearchChange}
+              tagsValue={tagsInput}
+              onTagsChange={handleTagsChange}
+              category={filters.category}
+              onCategoryChange={handleCategoryChange}
+            />
           </div>
 
           {/* Mobile Toggle Button and Filters */}
@@ -59,14 +108,28 @@ export default function PostsIndex() {
             </button>
             {showFilters && (
               <div className="bg-white p-4 rounded-lg shadow-md">
-                <SidebarFilter filters={filters} onFilterChange={handleFilterChange} />
+                <SidebarFilter 
+                  searchValue={searchInput}
+                  onSearchChange={handleSearchChange}
+                  tagsValue={tagsInput}
+                  onTagsChange={handleTagsChange}
+                  category={filters.category}
+                  onCategoryChange={handleCategoryChange}
+                />
               </div>
             )}
           </div>
 
           {/* Posts Grid */}
           <div>
-            {posts.length === 0 ? (
+            {loading ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#05213C] mx-auto mb-4"></div>
+                  <p className="text-gray-500">Loading posts...</p>
+                </div>
+              </div>
+            ) : posts.length === 0 ? (
               <div className="text-center py-12">
                 <p className="text-gray-500 mb-4">No posts found. Try adjusting filters.</p>
                 <button onClick={() => navigate('/posts/create')} className="bg-[#05213C] text-white px-4 py-2 rounded-md hover:bg-gray-800">
@@ -144,8 +207,7 @@ export default function PostsIndex() {
               </div>
             )}
 
-            {/* Pagination */}
-            <Pagination pagination={pagination} onPageChange={handlePageChange} />
+            {!loading && <Pagination pagination={pagination} onPageChange={handlePageChange} />}
           </div>
         </div>
       </div>
