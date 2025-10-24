@@ -13,6 +13,7 @@ import Reset from './pages/auth/Reset';
 import Home from './pages/Home';
 // Post imports
 import CreatePost from './pages/posts/CreatePost';
+import EditPost from './pages/posts/EditPost'; // New import
 import MyPosts from './pages/posts/MyPosts';
 import PostsIndex from './pages/posts/PostsIndex';
 import PostDetails from './pages/posts/PostDetails';
@@ -51,6 +52,7 @@ function App() {
           <Route path="/posts" element={<PostsIndex />} />
           <Route path="/posts/:id" element={<PostDetails />} />
           <Route path="/posts/create" element={<CreatePost />} />
+          <Route path="/posts/edit/:id" element={<EditPost />} /> {/* New route */}
           <Route path="/posts/my-posts" element={<MyPosts />} />
           <Route path="/" element={<Navigate to="/auth/login" replace />} />
         </Routes>
