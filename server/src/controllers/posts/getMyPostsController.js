@@ -1,9 +1,9 @@
 const Joi = require('joi');
 const Post = require('../../models/Post.js');
 
-// Query validation for my-posts (status filter, pagination)
+// Query validation for my posts (status, page, limit)
 const querySchema = Joi.object({
-  status: Joi.string().valid('Pending Approval', 'Published', 'Rejected').allow('').optional(), // Allow empty for no filter
+  status: Joi.string().valid('Pending Approval', 'Published', 'Rejected').allow('').optional(),
   page: Joi.number().integer().min(1).default(1),
   limit: Joi.number().integer().min(1).max(50).default(10),
 });
@@ -15,28 +15,30 @@ const getMyPosts = async (req, res) => {
       return res.status(400).json({ message: error.details[0].message });
     }
 
-    const { status, page = 1, limit = 10 } = req.query;
     const userID = req.user._id;
+    const { status, page = 1, limit = 10 } = req.query;
     const skip = (page - 1) * limit;
 
-    // Build query: always filter by userID, optional status (skip if empty)
-    const query = { userID };
+    // Build query: user's posts only
+    let query = { userID };
+
+    // Status filter
     if (status && status !== '') {
       query.status = status;
     }
 
-    // Fetch posts with pagination, sort by createdAt desc
+    // Fetch posts
     const posts = await Post.find(query)
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(parseInt(limit))
-      .lean(); // Lean for faster queries (plain JS objects)
+      .lean();
 
-    // Total count for pagination
+    // Total count
     const total = await Post.countDocuments(query);
 
     res.status(200).json({
-      message: 'User posts retrieved successfully',
+      message: 'Your posts retrieved successfully',
       posts,
       pagination: {
         currentPage: parseInt(page),
@@ -47,7 +49,7 @@ const getMyPosts = async (req, res) => {
     });
   } catch (error) {
     console.error('Get my posts error:', error);
-    res.status(500).json({ message: 'Server error during fetching posts' });
+    res.status(500).json({ message: 'Server error during fetching your posts' });
   }
 };
 

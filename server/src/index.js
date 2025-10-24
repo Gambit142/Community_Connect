@@ -7,6 +7,7 @@ const http = require('http');
 const authRoutes = require('./routes/auth.js');
 const protectedRoutes = require('./routes/protected.js');
 const postRoutes = require('./routes/posts.js');
+const adminRoutes = require('./routes/admin.js');
 const { initSocket } = require('./config/socket.js'); // Import init
 
 const app = express();
@@ -35,12 +36,13 @@ app.use(limiter);
 app.use('/api/auth', authRoutes);
 app.use('/api', protectedRoutes);
 app.use('/api/posts', postRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Health check route
 app.get('/', (req, res) => res.status(200).send('Server is running'));
 
 // Initialize Socket.io
-initSocket(server);
+const io = initSocket(server); // Get io instance
 
 // HTTPS in production
 if (process.env.NODE_ENV === 'production') {
@@ -61,4 +63,4 @@ if (process.env.NODE_ENV !== 'test') {
   });
 }
 
-module.exports = app; // Export app for tests
+module.exports = { app, server, io }; // Export io for use in routes

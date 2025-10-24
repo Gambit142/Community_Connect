@@ -19,6 +19,7 @@ const postSchema = new mongoose.Schema({
     enum: ['Pending Approval', 'Published', 'Rejected'], 
     default: 'Pending Approval' 
   },
+  rejectionReason: { type: String, default: '', maxlength: 500 },
   type: { 
     type: String, 
     required: true, 
