@@ -1,0 +1,307 @@
+import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { updatePost, clearError, getPostById } from '../../store/posts/postsSlice.js';
+import { useNavigate, useParams } from 'react-router-dom';
+import styles from '../../assets/css/CreatePost.module.css';
+
+export default function EditPost() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { currentPost, loading, error } = useSelector((state) => state.posts);
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    category: 'food',
+    tags: '', // String for input
+    type: 'donation',
+    price: 0,
+    location: '',
+    detailsRaw: '', // Raw string for textarea input
+  });
+  const [images, setImages] = useState([]);
+  const [clientError, setClientError] = useState('');
+
+  useEffect(() => {
+    if (id) {
+      dispatch(getPostById(id));
+    }
+  }, [dispatch, id]);
+
+  useEffect(() => {
+    if (currentPost) {
+      setFormData({
+        title: currentPost.title || '',
+        description: currentPost.description || '',
+        category: currentPost.category || 'food',
+        tags: currentPost.tags ? currentPost.tags.join(', ') : '',
+        type: currentPost.type || 'donation',
+        price: currentPost.price || 0,
+        location: currentPost.location || '',
+        detailsRaw: currentPost.details ? JSON.stringify(currentPost.details, null, 2) : '',
+      });
+      setImages(currentPost.images || []);
+    }
+  }, [currentPost]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setClientError('');
+
+    // Client-side validation for required fields
+    if (!formData.title.trim()) {
+      setClientError('Title is required');
+      return;
+    }
+    if (!formData.description.trim()) {
+      setClientError('Description is required');
+      return;
+    }
+
+    // Client-side check for images count
+    if (images.length > 5) {
+      setClientError('Maximum 5 images allowed');
+      return;
+    }
+
+    // Parse detailsRaw to object for submit
+    let details = {};
+    try {
+      details = formData.detailsRaw ? JSON.parse(formData.detailsRaw) : {};
+    } catch {
+      setClientError('Invalid JSON in details—use valid format like {"quantity": 5}');
+      return;
+    }
+
+    // Convert tags string to array for thunk
+    const submitData = {
+      title: formData.title.trim(),
+      description: formData.description.trim(),
+      category: formData.category,
+      tags: formData.tags.split(',').map(t => t.trim()).filter(Boolean),
+      type: formData.type,
+      price: parseFloat(formData.price) || 0,
+      location: formData.location.trim(),
+      details,
+      images,
+    };
+
+    dispatch(updatePost({ postId: id, postData: submitData })).unwrap().then((result) => {
+      navigate('/posts/my-posts', { 
+        state: { 
+          success: result.message || 'Post updated successfully' 
+        } 
+      });
+    }).catch(() => {
+      // Errors handled via Redux
+    });
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleFileChange = (e) => {
+    const selectedFiles = Array.from(e.target.files);
+    if (selectedFiles.length > 5) {
+      setClientError('Maximum 5 images allowed');
+      e.target.value = '';
+      setImages([]);
+      return;
+    }
+    setClientError('');
+    setImages(selectedFiles);
+  };
+
+  useEffect(() => {
+    if (error) {
+      setClientError('');
+    }
+  }, [error]);
+
+  const displayError = clientError || error;
+
+  if (!currentPost && !loading) {
+    return <div className="min-h-screen flex items-center justify-center">Post not found</div>;
+  }
+
+  return (
+    <div className="min-h-screen bg-[#111111] py-12 px-4 font-sans antialiased">
+      <form onSubmit={handleSubmit} className={`${styles.form} max-w-[48em] mx-auto relative`}>
+        
+        {displayError && (
+          <div className="w-full mb-8 p-4 bg-red-600 text-white rounded text-lg">
+            {displayError}
+          </div>
+        )}
+
+        {/* Title */}
+        <p className={`${styles.field} ${styles.required} mb-8`}>
+          <label className={`${styles.label} ${styles.labelRequired} block text-white font-bold mb-3`} htmlFor="title">
+            Title
+          </label>
+          <input
+            className={styles.textInput}
+            id="title"
+            name="title"
+            required
+            type="text"
+            value={formData.title}
+            onChange={handleChange}
+          />
+        </p>
+
+        {/* Description */}
+        <p className={`${styles.field} ${styles.required} mb-8`}>
+          <label className={`${styles.label} ${styles.labelRequired} block text-white font-bold mb-3`} htmlFor="description">
+            Description
+          </label>
+          <textarea
+            className={styles.textarea}
+            id="description"
+            name="description"
+            required
+            rows="4"
+            value={formData.description}
+            onChange={handleChange}
+          />
+        </p>
+
+        {/* Category & Type */}
+        <p className={`${styles.field} ${styles.fieldHalf} ${styles.required} mb-8`}>
+          <label className={`${styles.label} block text-white font-bold mb-3`} htmlFor="category">
+            Category
+          </label>
+          <select 
+            className={styles.select}
+            id="category"
+            name="category"
+            value={formData.category}
+            onChange={handleChange}
+          >
+            <option value="food">Food</option>
+            <option value="tutoring">Tutoring</option>
+            <option value="ridesharing">Ridesharing</option>
+            <option value="housing">Housing</option>
+            <option value="jobs">Jobs</option>
+            <option value="health">Health</option>
+            <option value="education">Education</option>
+            <option value="goods">Goods</option>
+            <option value="events">Events</option>
+            <option value="transportation">Transportation</option>
+            <option value="financial">Financial</option>
+          </select>
+        </p>
+
+        <p className={`${styles.field} ${styles.fieldHalf} mb-8`}>
+          <label className={`${styles.label} block text-white font-bold mb-3`} htmlFor="type">
+            Type
+          </label>
+          <select 
+            className={styles.select}
+            id="type"
+            name="type"
+            value={formData.type}
+            onChange={handleChange}
+          >
+            <option value="donation">Donation</option>
+            <option value="service">Service</option>
+            <option value="request">Request</option>
+          </select>
+        </p>
+
+        {/* Tags */}
+        <p className={`${styles.field} mb-8`}>
+          <label className={`${styles.label} block text-white font-bold mb-3`} htmlFor="tags">
+            Tags (comma-separated)
+          </label>
+          <input
+            className={styles.textInput}
+            id="tags"
+            name="tags"
+            type="text"
+            placeholder="free, urgent"
+            value={formData.tags}
+            onChange={handleChange}
+          />
+        </p>
+
+        {/* Price & Location */}
+        <p className={`${styles.field} ${styles.fieldHalf} mb-8`}>
+          <label className={`${styles.label} block text-white font-bold mb-3`} htmlFor="price">
+            Price (0 for free)
+          </label>
+          <input
+            className={styles.textInput}
+            id="price"
+            name="price"
+            type="number"
+            min="0"
+            value={formData.price}
+            onChange={handleChange}
+          />
+        </p>
+
+        <p className={`${styles.field} ${styles.fieldHalf} mb-8`}>
+          <label className={`${styles.label} block text-white font-bold mb-3`} htmlFor="location">
+            Location
+          </label>
+          <input
+            className={styles.textInput}
+            id="location"
+            name="location"
+            type="text"
+            value={formData.location}
+            onChange={handleChange}
+          />
+        </p>
+
+        {/* Images */}
+        <p className={`${styles.field} mb-8`}>
+          <label className={`${styles.label} block text-white font-bold mb-3`} htmlFor="images">
+            Images (up to 5, current: {images.length})
+          </label>
+          <input
+            className={styles.textInput}
+            id="images"
+            name="images"
+            type="file"
+            multiple
+            accept="image/*"
+            onChange={handleFileChange}
+          />
+          {images.length > 0 && !clientError && (
+            <p className="text-base text-gray-400 mt-3">{images.length} files selected</p>
+          )}
+        </p>
+
+        {/* Details JSON */}
+        <p className={`${styles.field} mb-8`}>
+          <label className={`${styles.label} block text-white font-bold mb-3`} htmlFor="detailsRaw">
+            Details (JSON, optional)
+          </label>
+          <textarea
+            className={styles.textarea}
+            id="detailsRaw"
+            name="detailsRaw"
+            placeholder='{"quantity": 5, "expiry": "2025-10-20"}'
+            rows="3"
+            value={formData.detailsRaw}
+            onChange={(e) => setFormData(prev => ({ ...prev, detailsRaw: e.target.value }))}
+          />
+        </p>
+
+        {/* Submit Button */}
+        <p className={`${styles.field} ${styles.fieldHalf} mb-8`}>
+          <input
+            className={`${styles.button} w-full ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+            type="submit"
+            value={loading ? 'Updating...' : 'Update Post'}
+            disabled={loading}
+          />
+        </p>
+      </form>
+    </div>
+  );
+}
