@@ -43,6 +43,7 @@ app.get('/', (req, res) => res.status(200).send('Server is running'));
 
 // Initialize Socket.io
 const io = initSocket(server); // Get io instance
+global.io = io; // Export globally to avoid circular dependency issues
 
 // HTTPS in production
 if (process.env.NODE_ENV === 'production') {

@@ -1,8 +1,10 @@
 const Post = require('../../models/Post.js');
 const Notification = require('../../models/Notification.js');
-const { io } = require('../../index.js'); // Import io (handles circular via caching)
 const nodemailer = require('nodemailer');
 const User = require('../../models/User.js');
+
+// Use global io to avoid circular dependency
+const io = global.io;
 
 // Nodemailer transporter
 const transporter = nodemailer.createTransport({
