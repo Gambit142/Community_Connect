@@ -88,6 +88,8 @@ export default function Posts() {
         return <span className={`${baseClasses} bg-yellow-100 text-yellow-800`}>{status}</span>;
       case 'Rejected':
         return <span className={`${baseClasses} bg-red-100 text-red-800`}>{status}</span>;
+      case 'Archived':
+        return <span className={`${baseClasses} bg-gray-100 text-gray-800`}>{status}</span>;
       default:
         return <span className={`${baseClasses} bg-gray-100 text-gray-800`}>{status}</span>;
     }
@@ -230,7 +232,7 @@ export default function Posts() {
                         <StatusBadge status={post.status} />
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-500">0</div> {/* Placeholder; add views field to Post model if needed */}
+                        <div className="text-sm text-gray-500">0</div> {/* Placeholder */}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <ActionDropdown postId={post._id} status={post.status} />
@@ -336,6 +338,7 @@ export default function Posts() {
                 <div><strong>Type:</strong> {selectedPost.type}</div>
                 {selectedPost.price > 0 && <div><strong>Price:</strong> ${selectedPost.price}</div>}
                 {selectedPost.location && <div><strong>Location:</strong> {selectedPost.location}</div>}
+                {selectedPost.originalPostId && <div><strong>Original Post ID:</strong> {selectedPost.originalPostId}</div>}
               </div>
               {selectedPost.images && selectedPost.images.length > 0 && (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">

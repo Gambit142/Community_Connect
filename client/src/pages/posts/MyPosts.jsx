@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { getMyPosts, clearError } from '../../store/posts/postsSlice.js';
+import { getMyPosts, clearError, deletePost } from '../../store/posts/postsSlice.js';
 import { useNavigate, useLocation } from 'react-router-dom';
 import PostDetailsModal from '../../components/PostDetailsModal.jsx';
 
@@ -8,11 +8,12 @@ export default function MyPosts() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
-  const { posts, pagination, loading, error } = useSelector((state) => state.posts);
-  const [filters, setFilters] = useState({ status: undefined, page: 1, limit: 10 }); // status undefined for all
-  const [successMessage, setSuccessMessage] = useState(location.state?.success || null); // From nav state
+  const { posts, pagination, loading, error, successMessage } = useSelector((state) => state.posts);
+  const [filters, setFilters] = useState({ status: undefined, page: 1, limit: 10 });
   const [selectedPost, setSelectedPost] = useState(null);
   const [showPostModal, setShowPostModal] = useState(false);
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     dispatch(getMyPosts(filters));
@@ -22,17 +23,17 @@ export default function MyPosts() {
   // Auto-hide success message after 5s
   useEffect(() => {
     if (successMessage) {
-      const timer = setTimeout(() => setSuccessMessage(null), 5000);
+      const timer = setTimeout(() => dispatch(clearError()), 5000);
       return () => clearTimeout(timer);
     }
-  }, [successMessage]);
+  }, [successMessage, dispatch]);
 
   const handlePageChange = (newPage) => {
     setFilters(prev => ({ ...prev, page: newPage }));
   };
 
   const handleStatusFilter = (status) => {
-    setFilters(prev => ({ ...prev, status: status || undefined, page: 1 })); // undefined for all
+    setFilters(prev => ({ ...prev, status: status || undefined, page: 1 }));
   };
 
   const handlePostClick = (post) => {
@@ -44,6 +45,27 @@ export default function MyPosts() {
     }
   };
 
+  const handleEdit = (post) => {
+    navigate(`/posts/edit/${post._id}`);
+  };
+
+  const handleDelete = (postId) => {
+    setDeleteConfirmId(postId);
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = () => {
+    if (deleteConfirmId) {
+      dispatch(deletePost(deleteConfirmId)).unwrap().then(() => {
+        dispatch(getMyPosts(filters)); // Refetch to update list
+      }).catch(() => {
+        // Error handled in slice
+      });
+      setShowDeleteConfirm(false);
+      setDeleteConfirmId(null);
+    }
+  };
+
   const handleCloseModal = () => {
     setShowPostModal(false);
     setSelectedPost(null);
@@ -51,7 +73,9 @@ export default function MyPosts() {
 
   const handleEditClick = () => {
     handleCloseModal();
-    navigate('/posts/create');
+    if (selectedPost) {
+      navigate(`/posts/edit/${selectedPost._id}`);
+    }
   };
 
   if (loading) return <div className="min-h-screen flex items-center justify-center">Loading posts...</div>;
@@ -62,7 +86,6 @@ export default function MyPosts() {
         <div className="max-w-6xl mx-auto">
           <h1 className="text-2xl font-bold mb-6">My Posts</h1>
           
-          {/* Success Message from Nav State */}
           {successMessage && (
             <div className="w-full mb-4 p-4 bg-green-600 text-white rounded text-lg">
               {successMessage}
@@ -94,14 +117,16 @@ export default function MyPosts() {
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {posts.map((post) => (
-                      <tr key={post._id} className="hover:bg-gray-50 cursor-pointer" onClick={() => handlePostClick(post)}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{post.title}</td>
+                      <tr key={post._id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 cursor-pointer" onClick={(e) => { e.stopPropagation(); handlePostClick(post); }}>{post.title}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{post.category}</td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className={`px-2 py-1 rounded text-xs font-medium ${
                             post.status === 'Published' ? 'bg-green-100 text-green-800' :
                             post.status === 'Pending Approval' ? 'bg-yellow-100 text-yellow-800' :
-                            'bg-red-100 text-red-800'
+                            post.status === 'Rejected' ? 'bg-red-100 text-red-800' :
+                            post.status === 'Archived' ? 'bg-gray-100 text-gray-800' :
+                            'bg-gray-100 text-gray-800'
                           }`}>
                             {post.status}
                           </span>
@@ -115,12 +140,13 @@ export default function MyPosts() {
                           )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          {post.status === 'Published' ? (
-                            <button onClick={(e) => { e.stopPropagation(); navigate(`/posts/${post._id}`); }} className="text-blue-600 hover:underline">
-                              View
+                          <button onClick={(e) => { e.stopPropagation(); handleEdit(post); }} className="text-blue-600 hover:underline mr-2">
+                            Edit
+                          </button>
+                          {post.status !== 'Archived' && (
+                            <button onClick={(e) => { e.stopPropagation(); handleDelete(post._id); }} className="text-red-600 hover:underline">
+                              Delete
                             </button>
-                          ) : (
-                            <span className="text-gray-400">View in modal</span>
                           )}
                         </td>
                       </tr>
@@ -156,6 +182,30 @@ export default function MyPosts() {
         showEditButton={selectedPost?.status === 'Rejected'}
         onEditClick={handleEditClick}
       />
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full p-6">
+            <h2 className="text-xl font-bold mb-4">Confirm Delete</h2>
+            <p className="text-gray-600 mb-4">Are you sure you want to delete this post? This action cannot be undone.</p>
+            <div className="flex justify-end space-x-2">
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
