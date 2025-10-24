@@ -1,7 +1,6 @@
 const http = require('http'); // Only if not in index
 const { Server } = require('socket.io');
 const { setupSocketAuth } = require('../middleware/socketAuth.js');
-const app = require('../index.js'); // Wait, circular—use passed app/server
 
 let io; // Singleton
 

@@ -18,6 +18,7 @@ const setupSocketAuth = (io) => {
   // Join user to role-based room on connect
   io.on('connection', (socket) => {
     console.log(`User ${socket.userID} connected`);
+    socket.join(`user-${socket.userID}`); // Personal room for notifications
     socket.join(`role-${socket.role}`); // e.g., 'role-admin' room for admins
 
     socket.on('disconnect', () => {
