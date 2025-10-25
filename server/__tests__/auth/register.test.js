@@ -6,7 +6,7 @@ const PendingUser = require('../../src/models/PendingUser.js');
 const nodemailer = require('nodemailer');
 const mongoose = require('mongoose');
 const request = require('supertest');
-const app = require('../../src/index.js');
+const { app } = require('../../src/index.js'); // Destructure app from exports
 
 // Mock nodemailer
 jest.mock('nodemailer', () => {

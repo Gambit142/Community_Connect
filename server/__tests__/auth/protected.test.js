@@ -1,6 +1,6 @@
 const request = require('supertest');
+const { app } = require('../../src/index.js');
 const jwt = require('jsonwebtoken');
-const app = require('../../src/index.js');
 const User = require('../../src/models/User.js');
 
 jest.mock('../../src/models/User.js');
