@@ -3,13 +3,15 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import store from './store/store.js';
 import './styles/auth.css';
-// Auth imports
+
+// LAYOUTS
 import AuthLayout from './components/AuthLayout';
 import UserLayout from './components/UserLayout';
 import Login from './pages/auth/Login';
 import Signup from './pages/auth/Signup';
 import Forgot from './pages/auth/Forgot';
 import Reset from './pages/auth/Reset';
+
 // Home import
 import Home from './pages/Home';
 // NEW STATIC & EVENT PAGES
@@ -25,9 +27,11 @@ import ProfilePage from './pages/profile/ProfilePage';
 import EditProfile from './pages/profile/EditProfile';
 // Post imports
 import CreatePost from './pages/posts/CreatePost';
+import EditPost from './pages/posts/EditPost'; // New import
 import MyPosts from './pages/posts/MyPosts';
 import PostsIndex from './pages/posts/PostsIndex';
 import PostDetails from './pages/posts/PostDetails';
+
 // Admin imports
 import DashboardLayout from './pages/admin/DashboardLayout';
 import DashboardOverview from './pages/admin/DashboardOverview';
@@ -43,6 +47,7 @@ function App() {
     <Provider store={store}>
       <BrowserRouter>
         <Routes>
+          {/* Authentication routes with their own layout */}
           <Route path="/auth" element={<AuthLayout />}>
             <Route index element={<Navigate to="login" replace />} />
             <Route path="login" element={<Login />} />

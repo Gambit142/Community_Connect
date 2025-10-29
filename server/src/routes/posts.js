@@ -3,6 +3,8 @@ const router = express.Router();
 const { authenticateToken } = require('../middleware/auth.js');
 const { uploadMiddleware } = require('../middleware/multerConfig.js'); // Import from middleware
 const { createPost } = require('../controllers/posts/createPostController.js');
+const { updatePost } = require('../controllers/posts/updatePostController.js');
+const { deletePost } = require('../controllers/posts/deletePostController.js');
 const { getMyPosts } = require('../controllers/posts/getMyPostsController.js');
 const { getPosts } = require('../controllers/posts/postsController.js');
 const { getPostById, getSimilarPosts } = require('../controllers/posts/getPostController.js'); // New import
@@ -26,6 +28,12 @@ router.post('/', authenticateToken, uploadMiddleware, createPost);
 // Response Structure:
 // - Success (201): { "message": "string", "post": { ...post with images array of URLs } }
 // - Errors: 400 { "message": "validation/file error" }, 401 { "message": "unauthorized" }, 500 { "message": "server error" }
+
+// Update post (member only, ownership check)
+router.put('/:id', authenticateToken, uploadMiddleware, updatePost);
+
+// Delete post (member only, ownership check)
+router.delete('/:id', authenticateToken, deletePost);
 
 router.get('/my-posts', authenticateToken, getMyPosts);
 
