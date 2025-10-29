@@ -68,6 +68,7 @@ export default function EventDetails() {
       setEvent(mockEvent); // Using mock data for now
       setLoading(false);
     }, 500);
+
   }, [id]);
 
   useEffect(() => {
@@ -76,6 +77,7 @@ export default function EventDetails() {
       setEvent(mockEvent);
       setComments(mockComments); // Load mock comments
       setLoading(false);
+
     }, 500);
   }, [id]);
 
@@ -84,6 +86,7 @@ export default function EventDetails() {
     if (!newComment.trim()) return;
 
     setIsSubmitting(true);
+    
     // Simulate API call
     setTimeout(() => {
       const submittedComment = {
