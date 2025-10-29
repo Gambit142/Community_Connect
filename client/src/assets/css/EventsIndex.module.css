@@ -1,0 +1,103 @@
+/* src/assets/css/EventsIndex.module.css */
+
+.pageContainer {
+  @apply min-h-screen bg-gray-50 py-8 px-4;
+}
+
+.contentWrapper {
+  @apply max-w-7xl mx-auto;
+}
+
+.header {
+  @apply flex flex-col sm:flex-row justify-between sm:items-center mb-6 gap-4;
+}
+
+.title {
+  @apply text-3xl font-bold text-gray-900;
+}
+
+.createButton {
+  @apply bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800 transition-colors w-full sm:w-auto;
+}
+
+.mainGrid {
+  @apply grid lg:grid-cols-[280px_1fr] gap-8;
+}
+
+/* Sidebar & Filter Styles */
+.sidebarDesktop {
+  @apply hidden lg:block;
+}
+
+.sidebarMobileContainer {
+  @apply lg:hidden mb-4;
+}
+
+.filterToggleButton {
+  @apply text-black font-semibold mb-2 bg-white px-4 py-2 rounded-md shadow-sm w-full text-left flex justify-between items-center;
+}
+
+.filterContainer {
+  @apply bg-white p-4 rounded-lg shadow-md;
+}
+
+/* Event Grid and Card Styles */
+.eventsGrid {
+  @apply grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-6;
+}
+
+.eventCard {
+  @apply bg-white shadow-md rounded-lg overflow-hidden flex flex-col transition-all duration-300 hover:shadow-xl hover:-translate-y-1;
+}
+
+.cardImageContainer {
+  @apply h-48 w-full overflow-hidden bg-gray-200 relative;
+}
+
+.cardImage {
+  @apply w-full h-full object-cover;
+}
+
+.cardDateBadge {
+  @apply absolute top-3 left-3 bg-white bg-opacity-90 rounded-md p-2 text-center leading-none;
+}
+
+.dateMonth {
+  @apply block font-bold text-sm text-red-600 uppercase;
+}
+
+.dateDay {
+  @apply block font-extrabold text-2xl text-gray-900;
+}
+
+.cardContent {
+  @apply p-4 flex flex-col flex-grow;
+}
+
+.cardCategory {
+  @apply text-xs font-semibold uppercase text-blue-600 tracking-wider;
+}
+
+.cardTitle {
+  @apply text-lg font-bold text-gray-900 mt-1 mb-2 line-clamp-2;
+}
+
+.cardLocation {
+  @apply flex items-center text-sm text-gray-600 mb-4;
+}
+
+.cardLocationIcon {
+  @apply h-4 w-4 mr-1.5 text-gray-400;
+}
+
+.cardButton {
+  @apply mt-auto w-full bg-black text-white py-2 rounded-md hover:bg-gray-800 transition-colors text-center;
+}
+
+.noEventsContainer {
+  @apply text-center py-16 bg-white rounded-lg shadow-md;
+}
+
+.noEventsText {
+  @apply text-gray-500 mb-4;
+}

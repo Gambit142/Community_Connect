@@ -1,0 +1,93 @@
+/* src/assets/css/EventDetails.module.css */
+
+.pageWrapper {
+  @apply bg-white;
+}
+
+/* Hero Section */
+.heroContainer {
+  @apply h-[50vh] max-h-[500px] bg-gray-800 relative text-white flex items-end;
+}
+
+.heroImage {
+  @apply absolute inset-0 w-full h-full object-cover;
+}
+
+.heroOverlay {
+  @apply absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent;
+}
+
+.heroContent {
+  @apply relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8;
+}
+
+.heroCategory {
+  @apply text-sm font-bold uppercase tracking-widest text-gray-300;
+}
+
+.heroTitle {
+  @apply mt-2 text-4xl sm:text-5xl font-extrabold tracking-tight;
+}
+
+/* Main Content Section */
+.mainContainer {
+  @apply max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8;
+}
+
+.mainGrid {
+  @apply grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12;
+}
+
+.contentColumn {
+  @apply lg:col-span-2;
+}
+
+.descriptionTitle {
+  @apply text-2xl font-bold text-gray-900 border-b pb-2 mb-4;
+}
+
+.descriptionBody {
+  @apply prose prose-lg max-w-none text-gray-600;
+  /* Using @tailwindcss/typography plugin for nice text formatting */
+}
+
+/* Sidebar Section */
+.sidebarColumn {
+  @apply lg:col-span-1;
+}
+
+.stickySidebar {
+  @apply sticky top-24; /* top-24 to account for sticky header height */
+}
+
+.detailsCard {
+  @apply bg-gray-50 rounded-lg shadow-md p-6;
+}
+
+.registerButton {
+  @apply w-full mt-6 bg-black text-white px-6 py-3 rounded-md text-lg font-semibold hover:bg-gray-800 transition-colors transform hover:scale-105;
+}
+
+.detailsList {
+  @apply space-y-4;
+}
+
+.detailItem {
+  @apply flex items-start;
+}
+
+.detailIcon {
+  @apply flex-shrink-0 h-6 w-6 text-gray-500 mr-3 mt-1;
+}
+
+.detailTitle {
+  @apply font-semibold text-gray-900;
+}
+
+.detailText {
+  @apply text-gray-600;
+}
+
+.mapContainer {
+  @apply mt-6 h-48 bg-gray-200 rounded-lg flex items-center justify-center text-gray-500;
+}

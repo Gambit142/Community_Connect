@@ -1,0 +1,62 @@
+/* src/assets/css/Contact.module.css */
+
+.contactPage {
+  @apply bg-white py-16 sm:py-20 px-4 sm:px-6 lg:px-8;
+}
+
+.gridContainer {
+  @apply max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 lg:gap-16;
+}
+
+.infoContainer {
+  @apply relative;
+}
+
+.sectionTitle {
+  @apply text-3xl font-extrabold text-gray-900 tracking-tight;
+}
+
+.sectionSubtitle {
+  @apply mt-3 text-lg text-gray-600;
+}
+
+.contactList {
+  @apply mt-8 space-y-4;
+}
+
+.contactItem {
+  @apply flex items-start;
+}
+
+.contactIcon {
+  @apply flex-shrink-0 h-6 w-6 text-gray-500;
+}
+
+.contactText {
+  @apply ml-3 text-base text-gray-600;
+}
+
+/* Form Styles */
+.formContainer {
+  @apply bg-gray-50 p-8 rounded-lg shadow-lg;
+}
+
+.form {
+  @apply grid grid-cols-1 gap-y-6;
+}
+
+.formLabel {
+  @apply block text-sm font-medium text-gray-700;
+}
+
+.formInput {
+  @apply mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black sm:text-sm p-3;
+}
+
+.formTextarea {
+  @apply mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black sm:text-sm p-3;
+}
+
+.submitButton {
+  @apply w-full inline-flex items-center justify-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black transition-colors;
+}
