@@ -79,6 +79,7 @@ function App() {
             <Route path="/posts/:id" element={<PostDetails />} />
             <Route path="/posts/create" element={<CreatePost />} />
             <Route path="/posts/my-posts" element={<MyPosts />} />
+            <Route path="/posts/edit/:id" element={<EditPost />} />
             
             {/* Event Routes */}
             <Route path="/events" element={<EventsIndex />} />
