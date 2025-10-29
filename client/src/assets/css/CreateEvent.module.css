@@ -1,56 +1,157 @@
-/* src/assets/css/CreateEvent.module.css */
-
-.pageContainer {
-  @apply min-h-screen bg-[#111111] py-12 px-4 font-sans antialiased;
-}
-
 .form {
-  @apply max-w-3xl mx-auto bg-gray-900 p-8 rounded-lg shadow-2xl;
-}
-
-.formTitle {
-  @apply text-3xl font-bold text-white mb-2;
-}
-
-.formSubtitle {
-  @apply text-gray-400 mb-8;
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: space-between;
+  align-items: flex-end;
 }
 
 .field {
-  @apply mb-6;
+  width: 100%;
+  margin: 0 0 2em 0;
 }
 
-.fieldHalf {
-    @apply sm:inline-block sm:w-[calc(50%-0.5rem)] sm:mr-4;
+@media screen and (min-width: 40em) {
+  .fieldHalf {
+    width: calc(50% - 1px);
+  }
 }
-.fieldHalf:last-of-type {
-    @apply sm:mr-0;
-}
-
 
 .label {
-  @apply block text-sm font-semibold text-gray-300 mb-2;
+  padding-top: 0;
+  padding-left: 0;
+  position: relative;
+  z-index: 100;
+  font-size: 1.375em;
+  letter-spacing: 0.025em;
+  line-height: 1.25;
 }
 
-.requiredLabel::after {
-  content: ' *';
-  @apply text-red-500;
+.required .label::after,
+.labelRequired::after {
+  content: " *";
+  color: #E8474C;
+  font-weight: normal;
+  font-size: 0.75em;
+  vertical-align: top;
 }
 
 .textInput,
 .textarea,
 .select {
-  @apply w-full bg-gray-800 border border-gray-700 text-white rounded-md p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors;
+  font: inherit;
+  line-height: normal;
+  width: 100%;
+  box-sizing: border-box;
+  background: #222222;
+  color: white;
+  position: relative;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  outline: none;
+  border-radius: 0;
+  border: none;
+  padding: 1em 1.25em;
+  font-size: 1.125em;
 }
 
-.textarea {
-  @apply resize-y;
+.textInput::placeholder,
+.textarea::placeholder {
+  color: #4E4E4E;
+  font-size: 1.125em;
+}
+
+.textInput:-webkit-autofill,
+.textarea:-webkit-autofill,
+.select:-webkit-autofill {
+  box-shadow: 0 0 0px 1000px #111111 inset;
+  -webkit-text-fill-color: white;
+  border-top-color: #111111;
+  border-left-color: #111111;
+  border-right-color: #111111;
+  font-size: 1.125em;
+}
+
+.textInput:focus,
+.textarea:focus,
+.select:focus {
+  background: #4E4E4E;
+}
+
+.select {
+  text-indent: 0.01px;
+  text-overflow: "";
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 8 8'%3E%3Cpath fill='white' d='M0 2l4 4 4-4z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1.25em center;
+  background-size: 0.75em;
+  font-size: 1.125em;
+}
+
+.select::-ms-expand {
+  display: none;
 }
 
 .button {
-  @apply w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-md hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed;
+  font: inherit;
+  line-height: normal;
+  cursor: pointer;
+  background: #F2B821;
+  color: white;
+  font-weight: bold;
+  width: auto;
+  margin-left: auto;
+  padding: 1em 2.5em;
+  border: none;
+  outline: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  font-size: 1.25em;
+  transition: all 0.3s ease;
+  border: 2px solid #F2B821;
+}
+
+.button:hover,
+.button:focus {
+  background: #05213C;
+  border-color: #05213C;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(5, 33, 60, 0.3);
+}
+
+.button:active {
+  position: relative;
+  top: 1px;
+  left: 1px;
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(5, 33, 60, 0.3);
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.button:disabled:hover {
+  background: #F2B821;
+  border-color: #F2B821;
+}
+
+.error {
+  background-size: 8px 8px;
+  background-image: linear-gradient(135deg, rgba(232, 71, 76, 0.5), rgba(232, 71, 76, 0.5) 25%, transparent 25%, transparent 50%, rgba(232, 71, 76, 0.5) 50%, rgba(232, 71, 76, 0.5) 75%, transparent 75%, transparent);
+  background-repeat: repeat;
 }
 
 .errorMessage {
-    @apply w-full mb-6 p-4 bg-red-500/20 text-red-400 border border-red-500 rounded-md text-sm;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  z-index: 100;
+  font-size: 0.75em;
+  color: white;
 }
