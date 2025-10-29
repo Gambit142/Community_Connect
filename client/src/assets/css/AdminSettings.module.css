@@ -1,0 +1,100 @@
+/* src/assets/css/AdminSettings.module.css */
+
+.card {
+  @apply bg-white rounded-lg shadow-sm border border-gray-200;
+}
+
+.gridContainer {
+  @apply grid lg:grid-cols-4;
+}
+
+/* Tabs Navigation */
+.tabsNav {
+  @apply lg:col-span-1 p-4 border-r border-gray-200;
+}
+
+.tabButton {
+  @apply w-full text-left px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center;
+}
+
+.tabButtonActive {
+  @apply bg-gray-100 text-[#05213C] font-semibold;
+}
+
+.tabButtonInactive {
+  @apply text-gray-600 hover:bg-gray-50 hover:text-gray-900;
+}
+
+.tabIcon {
+  @apply mr-3 h-5 w-5;
+}
+
+/* Form Content */
+.contentContainer {
+  @apply lg:col-span-3;
+}
+
+.contentHeader {
+  @apply p-6 border-b border-gray-200;
+}
+
+.title {
+  @apply text-xl font-bold text-gray-900;
+}
+
+.subtitle {
+  @apply mt-1 text-sm text-gray-600;
+}
+
+.formBody {
+  @apply p-6 space-y-6;
+}
+
+.formSection {
+  @apply grid grid-cols-1 md:grid-cols-3 gap-4 items-start;
+}
+
+.formLabelContainer {
+  @apply md:col-span-1;
+}
+
+.formLabel {
+  @apply font-medium text-gray-700;
+}
+
+.formHint {
+  @apply text-xs text-gray-500;
+}
+
+.formInputContainer {
+  @apply md:col-span-2;
+}
+
+.formInput, .formTextarea, .formSelect {
+  @apply w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-black focus:border-black max-w-lg;
+}
+
+.formFooter {
+  @apply p-6 bg-gray-50 border-t border-gray-200 flex justify-end gap-3;
+}
+
+.cancelButton {
+  @apply px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors;
+}
+
+.saveButton {
+  @apply px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors;
+}
+
+/* Toggle Switch */
+.toggleContainer {
+  @apply flex items-center;
+}
+
+.toggleSwitch {
+  @apply relative inline-flex items-center h-6 rounded-full w-11 cursor-pointer transition-colors;
+}
+
+.toggleCircle {
+  @apply inline-block w-4 h-4 transform bg-white rounded-full transition-transform;
+}

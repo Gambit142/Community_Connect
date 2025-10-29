@@ -21,7 +21,7 @@
 }
 
 .logoAccent {
-  @apply text-blue-500;
+  @apply text-gray-500;
 }
 
 .tagline {

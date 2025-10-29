@@ -16,16 +16,20 @@ const mockEvents = [
   { _id: '6', title: 'Holiday Craft Fair', category: 'Fair', location: 'Community Center', date: '2025-12-02T10:00:00Z', image: 'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?q=80&w=2070&auto=format&fit=crop' },
 ];
 
+
+
 const mockPagination = {
   currentPage: 1,
   totalPages: 2,
   totalItems: 12,
+
 };
 
 const LocationIcon = () => (
     <svg className={styles.cardLocationIcon} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0zM15 11a3 3 0 11-6 0 3 3 0 016 0z" />
     </svg>
+
 );
 
 
@@ -46,7 +50,10 @@ export default function EventsIndex() {
       setPagination(mockPagination);
       setLoading(false);
     }, 1000);
+    
   }, [filters]);
+
+
 
   const handleFilterChange = (key, value) => {
     setFilters(prev => ({ ...prev, [key]: value, page: 1 }));

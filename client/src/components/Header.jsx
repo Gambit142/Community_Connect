@@ -19,14 +19,21 @@ const CloseIcon = () => (
   </svg>
 );
 
+// NEW: Bell Icon for notifications
+const BellIcon = () => (
+    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+);
+
 export default function Header() {
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isProfileOpen, setProfileOpen] = useState(false);
+  const [isNotificationOpen, setNotificationOpen] = useState(false); // NEW: State for notifications
   
   const user = useSelector((state) => state.login.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const profileRef = useRef(null); // Ref for detecting outside clicks
+  const notificationRef = useRef(null); // NEW: Ref for notifications dropdown
 
   const handleLogout = () => {
     dispatch(logout());
@@ -40,6 +47,9 @@ export default function Header() {
     const handleClickOutside = (event) => {
       if (profileRef.current && !profileRef.current.contains(event.target)) {
         setProfileOpen(false);
+      }
+      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
+        setNotificationOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -62,7 +72,7 @@ export default function Header() {
           {/* Logo */}
           <div className="flex-shrink-0">
             <Link to="/" className="text-2xl font-bold text-black">
-              Community<span className="text-blue-600">Connect</span>
+              Community<span className="text-gray-700">Connect</span>
             </Link>
           </div>
 
@@ -79,28 +89,48 @@ export default function Header() {
             ))}
           </div>
 
-          {/* Auth buttons & Profile Dropdown */}
-          <div className="hidden md:flex items-center space-x-2">
+          {/* Right side controls for Desktop */}
+          <div className="hidden md:flex items-center space-x-4">
             {user ? (
-              <div className="relative" ref={profileRef}>
-                <button onClick={() => setProfileOpen(!isProfileOpen)} className="flex items-center justify-center w-10 h-10 bg-gray-200 rounded-full text-gray-700 font-bold text-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black">
-                  {user.username?.charAt(0).toUpperCase()}
-                </button>
-                {isProfileOpen && (
-                  <div className={styles.profileDropdown}>
-                    <div className="px-4 py-2 border-b border-gray-200">
-                      <p className="text-sm font-semibold text-gray-900">{user.username}</p>
-                      <p className="text-xs text-gray-500 truncate">{user.email}</p>
+              <>
+                {/* Notification Icon */}
+                <div className="relative" ref={notificationRef}>
+                  <button onClick={() => setNotificationOpen(!isNotificationOpen)} className="relative text-gray-600 hover:text-black focus:outline-none">
+                    <BellIcon />
+                    {/* Notification Badge */}
+                    <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-600 ring-2 ring-white"></span>
+                  </button>
+                  {isNotificationOpen && (
+                    <div className={styles.profileDropdown}> {/* Reusing profile dropdown style */}
+                        <div className="px-4 py-2 border-b border-gray-200">
+                            <p className="text-sm font-semibold text-gray-900">Notifications</p>
+                        </div>
+                        <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Your post was approved.</a>
+                        <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">New comment on your event.</a>
                     </div>
-                    <NavLink to="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setProfileOpen(false)}>My Profile</NavLink>
-                    <NavLink to="/posts/my-posts" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setProfileOpen(false)}>My Posts</NavLink>
-                    <NavLink to="/events/my-events" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setProfileOpen(false)}>My Events</NavLink>
-                    <button onClick={handleLogout} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
-                      Logout
-                    </button>
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
+
+                {/* Profile Dropdown */}
+                <div className="relative" ref={profileRef}>
+                  <button onClick={() => setProfileOpen(!isProfileOpen)} className="flex items-center justify-center w-10 h-10 bg-gray-200 rounded-full text-gray-700 font-bold text-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black">
+                    {user.username?.charAt(0).toUpperCase()}
+                  </button>
+                  {isProfileOpen && (
+                    <div className={styles.profileDropdown}>
+                      {/* ... existing profile dropdown content ... */}
+                      <div className="px-4 py-2 border-b border-gray-200">
+                        <p className="text-sm font-semibold text-gray-900">{user.username}</p>
+                        <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                      </div>
+                      <NavLink to="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setProfileOpen(false)}>My Profile</NavLink>
+                      <NavLink to="/posts/my-posts" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setProfileOpen(false)}>My Posts</NavLink>
+                      <NavLink to="/events/my-events" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setProfileOpen(false)}>My Events</NavLink>
+                      <button onClick={handleLogout} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">Logout</button>
+                    </div>
+                  )}
+                </div>
+              </>
             ) : (
               <div className="space-x-2">
                 <Link to="/auth/login" className={styles.buttonSecondary}>Login</Link>
@@ -109,8 +139,27 @@ export default function Header() {
             )}
           </div>
           
-          {/* Mobile Menu Button */}
-          <div className="md:hidden flex items-center">
+          {/* Right side controls for Mobile */}
+          <div className="md:hidden flex items-center space-x-4">
+            {user && (
+              /* Notification Icon for Mobile */
+              <div className="relative" ref={notificationRef}>
+                <button onClick={() => setNotificationOpen(!isNotificationOpen)} className="relative text-gray-600 hover:text-black focus:outline-none">
+                  <BellIcon />
+                  <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-600 ring-2 ring-white"></span>
+                </button>
+                {isNotificationOpen && (
+                    <div className={styles.profileDropdown}>
+                        <div className="px-4 py-2 border-b border-gray-200">
+                            <p className="text-sm font-semibold text-gray-900">Notifications</p>
+                        </div>
+                        <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Your post was approved.</a>
+                        <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">New comment on your event.</a>
+                    </div>
+                )}
+              </div>
+            )}
+            {/* Mobile Menu (Hamburger) Button */}
             <button onClick={() => setMobileMenuOpen(!isMobileMenuOpen)}>
               {isMobileMenuOpen ? <CloseIcon /> : <MenuIcon />}
             </button>

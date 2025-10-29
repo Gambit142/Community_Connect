@@ -25,6 +25,12 @@ const mockEvent = {
   `
 };
 
+// NEW: Mock data for comments
+const mockComments = [
+  { _id: 'c1', author: 'Jane Doe', avatarInitial: 'J', date: '2025-10-23T10:00:00Z', text: 'This looks amazing! I\'ve been wanting to learn more about composting. Will there be a Q&A session?' },
+  { _id: 'c2', author: 'John Smith', avatarInitial: 'J', date: '2025-10-24T11:30:00Z', text: 'Count me in! Happy to bring some extra gloves for anyone who needs them.' },
+];
+
 // SVG Icons
 const CalendarIcon = () => (
     <svg className={styles.detailIcon} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -49,6 +55,12 @@ export default function EventDetails() {
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // NEW: State for comments
+  const [comments, setComments] = useState([]);
+  const [newComment, setNewComment] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+
   useEffect(() => {
     // Simulate fetching data for the specific event ID
     setLoading(true);
@@ -58,6 +70,42 @@ export default function EventDetails() {
     }, 500);
   }, [id]);
 
+  useEffect(() => {
+    setLoading(true);
+    setTimeout(() => {
+      setEvent(mockEvent);
+      setComments(mockComments); // Load mock comments
+      setLoading(false);
+    }, 500);
+  }, [id]);
+
+  const handleCommentSubmit = (e) => {
+    e.preventDefault();
+    if (!newComment.trim()) return;
+
+    setIsSubmitting(true);
+    // Simulate API call
+    setTimeout(() => {
+      const submittedComment = {
+        _id: `c${Date.now()}`,
+        author: 'You', // In a real app, this would be the logged-in user
+        avatarInitial: 'Y',
+        date: new Date().toISOString(),
+        text: newComment,
+      };
+      setComments(prev => [submittedComment, ...prev]);
+      setNewComment('');
+      setIsSubmitting(false);
+    }, 1000);
+  };
+  
+  const formatCommentDate = (dateString) => {
+    return new Date(dateString).toLocaleString('en-US', {
+      month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit'
+    });
+  }
+  
+
   if (loading) return <div className="min-h-screen flex items-center justify-center">Loading event details...</div>;
   if (!event) return <div className="min-h-screen flex items-center justify-center">Event not found.</div>;
   
@@ -65,6 +113,7 @@ export default function EventDetails() {
   const formattedDate = eventDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
   const formattedTime = eventDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
 
+  
   return (
     <div className={styles.pageWrapper}>
       {/* Hero Section */}
@@ -87,7 +136,45 @@ export default function EventDetails() {
               className={styles.descriptionBody} 
               dangerouslySetInnerHTML={{ __html: event.description }} 
             />
+
+            {/* --- NEW: Comments Section --- */}
+            <section className={styles.commentsSection}>
+              <h2 className={styles.commentsTitle}>Community Discussion ({comments.length})</h2>
+              
+              {/* Comment Form */}
+              <form onSubmit={handleCommentSubmit} className={styles.commentForm}>
+                <textarea
+                  className={styles.commentTextarea}
+                  rows="4"
+                  placeholder="Add a comment..."
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  disabled={isSubmitting}
+                />
+                <button type="submit" className={styles.commentSubmitButton} disabled={isSubmitting || !newComment.trim()}>
+                  {isSubmitting ? 'Posting...' : 'Post Comment'}
+                </button>
+              </form>
+
+              {/* Comment List */}
+              <div className={styles.commentList}>
+                {comments.map((comment) => (
+                  <div key={comment._id} className={styles.commentItem}>
+                    <div className={styles.commentAvatar}>{comment.avatarInitial}</div>
+                    <div className={styles.commentContent}>
+                      <div className={styles.commentHeader}>
+                        <span className={styles.commentAuthor}>{comment.author}</span>
+                        <span className={styles.commentDate}>{formatCommentDate(comment.date)}</span>
+                      </div>
+                      <p className={styles.commentBody}>{comment.text}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
           </div>
+
+          
 
           {/* Right Column: Details & Registration */}
           <aside className={styles.sidebarColumn}>

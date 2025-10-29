@@ -14,7 +14,8 @@
 }
 
 .heroOverlay {
-  @apply absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent;
+  /* This creates a simple, stable gradient from black to transparent */
+  @apply absolute inset-0 bg-gradient-to-t from-black to-transparent;
 }
 
 .heroContent {
@@ -27,6 +28,7 @@
 
 .heroTitle {
   @apply mt-2 text-4xl sm:text-5xl font-extrabold tracking-tight;
+  @apply text-gray-200
 }
 
 /* Main Content Section */
@@ -90,4 +92,59 @@
 
 .mapContainer {
   @apply mt-6 h-48 bg-gray-200 rounded-lg flex items-center justify-center text-gray-500;
+}
+
+/* Comments Section */
+.commentsSection {
+  @apply mt-12 border-t pt-8;
+}
+
+.commentsTitle {
+  @apply text-2xl font-bold text-gray-900 mb-6;
+}
+
+/* Comment Form */
+.commentForm {
+  @apply flex flex-col gap-4 mb-8;
+}
+
+.commentTextarea {
+  @apply w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-black focus:border-black;
+}
+
+.commentSubmitButton {
+  @apply self-end bg-black text-white px-6 py-2 rounded-md font-semibold hover:bg-gray-800 transition-colors disabled:opacity-50;
+}
+
+/* Comment List */
+.commentList {
+  @apply space-y-6;
+}
+
+.commentItem {
+  @apply flex gap-4;
+}
+
+.commentAvatar {
+  @apply w-10 h-10 bg-gray-200 rounded-full flex-shrink-0 flex items-center justify-center font-bold text-gray-600;
+}
+
+.commentContent {
+  @apply flex-1;
+}
+
+.commentHeader {
+  @apply flex items-center gap-2;
+}
+
+.commentAuthor {
+  @apply font-semibold text-gray-900;
+}
+
+.commentDate {
+  @apply text-xs text-gray-500;
+}
+
+.commentBody {
+  @apply mt-1 text-gray-700;
 }

@@ -95,7 +95,7 @@
 
 /* Call to Action Section */
 .ctaSection {
-  @apply bg-blue-600;
+  @apply bg-gray-900;
 }
 
 .ctaContainer {
@@ -107,5 +107,118 @@
 }
 
 .ctaButton {
-  @apply mt-8 w-full inline-flex items-center justify-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-blue-600 bg-white hover:bg-blue-50 sm:w-auto;
+  @apply mt-8 w-full inline-flex items-center justify-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-gray-900 bg-white hover:bg-blue-50 sm:w-auto;
 }
+
+/* Infographic CTA Section */
+.infographicSection {
+  @apply bg-white py-16 sm:py-20;
+}
+
+.infographicGrid {
+  @apply grid lg:grid-cols-2 gap-8 items-center max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+}
+
+.infographicImage {
+  @apply rounded-lg shadow-xl w-full h-full object-cover;
+}
+
+.infographicContent {
+  @apply text-left;
+}
+
+.infographicTitle {
+  @apply text-3xl font-bold text-gray-900;
+}
+
+.infographicText {
+  @apply mt-4 text-lg text-gray-600;
+}
+
+.infographicButton {
+  @apply mt-6 inline-block bg-black text-white px-8 py-3 rounded-md text-base font-semibold hover:bg-gray-800 transition-transform transform hover:scale-105;
+}
+
+/* Recent Events Section */
+.eventsSection {
+  @apply bg-gray-50 py-16 sm:py-20;
+}
+
+/* Event Card styles (reused from EventsIndex for consistency) */
+.eventCard {
+  @apply bg-white shadow-md rounded-lg overflow-hidden flex flex-col m-4; /* Added margin for slider spacing */
+}
+
+.cardImageContainer {
+  @apply h-48 w-full overflow-hidden bg-gray-200 relative;
+}
+
+.cardImage {
+  @apply w-full h-full object-cover;
+}
+
+.cardDateBadge {
+  @apply absolute top-3 left-3 bg-white bg-opacity-90 rounded-md p-2 text-center leading-none;
+}
+
+.dateMonth {
+  @apply block font-bold text-sm text-red-600 uppercase;
+}
+
+.dateDay {
+  @apply block font-extrabold text-2xl text-gray-900;
+}
+
+.cardContent {
+  @apply p-4 flex flex-col flex-grow;
+}
+
+.cardCategory {
+  @apply text-xs font-semibold uppercase text-blue-600 tracking-wider;
+}
+
+.cardTitle {
+  @apply text-lg font-bold text-gray-900 mt-1 mb-2 line-clamp-2 h-14; /* Fixed height for alignment */
+}
+
+.cardLocation {
+  @apply flex items-center text-sm text-gray-600 mb-4;
+}
+
+.cardLocationIcon {
+  @apply h-4 w-4 mr-1.5 text-gray-400;
+}
+
+.cardButton {
+  @apply mt-auto w-full bg-black text-white py-2 rounded-md hover:bg-gray-800 transition-colors text-center block;
+}
+
+/* FAQ Section */
+.faqSection {
+  @apply bg-white py-16 sm:py-20;
+}
+
+.faqContainer {
+  @apply max-w-3xl mx-auto;
+}
+
+.faqItem {
+  @apply border-b border-gray-200 py-4;
+}
+
+.faqQuestion {
+  @apply flex justify-between items-center w-full text-lg font-semibold text-gray-900 cursor-pointer;
+}
+
+.faqIcon {
+  @apply w-5 h-5 transition-transform duration-300;
+}
+
+.faqAnswer {
+  @apply overflow-hidden transition-all duration-500 ease-in-out;
+}
+
+.faqAnswer p {
+  @apply pt-2 text-gray-600;
+}
+
