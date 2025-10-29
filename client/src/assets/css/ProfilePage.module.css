@@ -1,0 +1,89 @@
+/* src/assets/css/ProfilePage.module.css */
+
+.pageContainer {
+  @apply min-h-screen bg-gray-50;
+}
+
+/* Profile Header */
+.profileHeader {
+  @apply bg-white shadow-sm;
+}
+
+.headerContent {
+  @apply max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center gap-6;
+}
+
+.avatar {
+  @apply w-24 h-24 sm:w-32 sm:h-32 bg-gray-800 rounded-full flex items-center justify-center text-white text-4xl sm:text-5xl font-bold flex-shrink-0;
+}
+
+.userInfo {
+  @apply text-center sm:text-left;
+}
+
+.username {
+  @apply text-3xl font-bold text-gray-900;
+}
+
+.userBio {
+  @apply mt-1 text-gray-600 max-w-xl;
+}
+
+.editProfileButton {
+  @apply mt-4 bg-gray-200 text-gray-800 px-4 py-2 rounded-md text-sm font-semibold hover:bg-gray-300 transition-colors;
+}
+
+/* Main Content */
+.mainContent {
+  @apply max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8;
+}
+
+/* Stats Section */
+.statsGrid {
+  @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8;
+}
+
+.statCard {
+  @apply bg-white p-6 rounded-lg shadow-md flex items-center;
+}
+
+.statIcon {
+  @apply h-10 w-10 text-white bg-black rounded-lg p-2 mr-4;
+}
+
+.statValue {
+  @apply text-2xl font-bold text-gray-900;
+}
+
+.statLabel {
+  @apply text-gray-600;
+}
+
+/* Activity Section */
+.activityTitle {
+  @apply text-2xl font-bold text-gray-900 mb-4;
+}
+
+.activityGrid {
+  @apply grid grid-cols-1 md:grid-cols-2 gap-6;
+}
+
+.activityCard {
+  @apply bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow;
+}
+
+.activityCardTitle {
+  @apply font-semibold text-gray-800;
+}
+
+.activityCardDate {
+  @apply text-sm text-gray-500 mt-1;
+}
+
+.emptyState {
+  @apply bg-white p-8 rounded-lg shadow-md text-center text-gray-500;
+}
+
+.link {
+  @apply text-blue-600 hover:underline;
+}

@@ -1,0 +1,111 @@
+/* src/assets/css/Landing.module.css */
+
+/* Hero Section */
+.hero {
+  /* @apply bg-white text-center py-20 px-4 sm:py-24 lg:py-32; */
+  @apply relative text-center py-20 px-4 sm:py-24 lg:py-32 overflow-hidden;
+  background-image: url('https://images.unsplash.com/photo-1543069752-7148d755b347');
+  background-size: cover;
+  background-position: center;  
+}
+
+.heroOverlay {
+  @apply absolute inset-0 bg-black/60;
+}
+
+.heroContent {
+  @apply relative z-10;
+}
+
+.heroTitle {
+  @apply text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight;
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
+}
+
+.heroSubtitle {
+  @apply mt-4 max-w-2xl mx-auto text-lg sm:text-xl text-gray-200;
+  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);
+}
+
+.heroButtons {
+  @apply mt-8 flex justify-center gap-4 flex-wrap;
+}
+
+.buttonSecondaryHero {
+  @apply bg-white text-gray-900 px-4 py-2 rounded-md text-sm font-semibold hover:bg-gray-200 transition-colors;
+}
+
+/* Features Section */
+.featuresSection {
+  @apply py-16 sm:py-20 bg-gray-50;
+}
+
+.sectionTitle {
+  @apply text-3xl font-bold text-center text-gray-900;
+}
+
+.sectionSubtitle {
+  @apply mt-2 text-center text-gray-600;
+}
+
+.featuresGrid {
+  @apply mt-12 grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3;
+}
+
+.featureCard {
+  @apply bg-white p-8 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 transform hover:-translate-y-1;
+}
+
+.featureIcon {
+  @apply h-12 w-12 text-white bg-black rounded-lg p-2;
+}
+
+.featureTitle {
+  @apply mt-5 text-xl font-semibold text-gray-900;
+}
+
+.featureDescription {
+  @apply mt-2 text-base text-gray-600;
+}
+
+/* How It Works Section */
+.howItWorksSection {
+  @apply py-16 sm:py-20 bg-white;
+}
+
+.stepsContainer {
+  @apply mt-12 flex flex-col md:flex-row justify-center gap-8 md:gap-12;
+}
+
+.step {
+  @apply flex items-center flex-col text-center max-w-xs mx-auto;
+}
+
+.stepNumber {
+  @apply flex items-center justify-center h-12 w-12 bg-black text-white font-bold text-xl rounded-full;
+}
+
+.stepTitle {
+  @apply mt-4 text-lg font-semibold text-gray-900;
+}
+
+.stepDescription {
+  @apply mt-1 text-gray-600;
+}
+
+/* Call to Action Section */
+.ctaSection {
+  @apply bg-blue-600;
+}
+
+.ctaContainer {
+  @apply max-w-4xl mx-auto text-center py-16 px-4 sm:py-20 sm:px-6 lg:px-8;
+}
+
+.ctaTitle {
+  @apply text-3xl font-extrabold text-white sm:text-4xl;
+}
+
+.ctaButton {
+  @apply mt-8 w-full inline-flex items-center justify-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-blue-600 bg-white hover:bg-blue-50 sm:w-auto;
+}
