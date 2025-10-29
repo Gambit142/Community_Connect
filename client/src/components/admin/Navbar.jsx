@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { getNotifications, markAsReadThunk } from '../../store/notifications/notificationsSlice.js';
 import { getPostById, clearCurrentPost } from '../../store/posts/postsSlice.js';
@@ -182,10 +183,10 @@ export default function Navbar({ onMenuClick }) {
 
               {showProfile && (
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
-                  <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                  <Link to="/admin/settings" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                     <FontAwesomeIcon icon={faUserCircle} className="mr-2" />
                     My Profile
-                  </a>
+                  </Link>
                   <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                     <FontAwesomeIcon icon={faCog} className="mr-2" />
                     Settings

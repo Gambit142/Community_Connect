@@ -1,0 +1,45 @@
+/* src/assets/css/DashboardOverview.module.css */
+
+.statCard {
+  @apply bg-white p-6 rounded-lg shadow-sm border border-gray-200 flex items-center transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+}
+
+.iconWrapper {
+  @apply h-12 w-12 rounded-full flex items-center justify-center mr-4;
+}
+
+.statValue {
+  @apply text-2xl font-bold text-gray-900;
+}
+
+.statLabel {
+  @apply text-sm text-gray-500;
+}
+
+.chartContainer {
+  @apply bg-white p-6 rounded-lg shadow-sm border border-gray-200;
+}
+
+.chartTitle {
+  @apply text-lg font-semibold text-gray-800 mb-4;
+}
+
+.activityList {
+  @apply space-y-4;
+}
+
+.activityItem {
+  @apply flex items-center p-3 bg-white rounded-lg shadow-sm border border-gray-200;
+}
+
+.activityIcon {
+  @apply h-8 w-8 rounded-full flex items-center justify-center mr-4 text-white text-sm;
+}
+
+.activityText {
+  @apply text-sm text-gray-700;
+}
+
+.activityTime {
+  @apply text-xs text-gray-500 ml-auto;
+}

@@ -1,0 +1,12 @@
+/* src/assets/css/UserLayout.module.css */
+
+.wrapper {
+  @apply min-h-screen flex flex-col bg-gray-50;
+}
+
+.mainContent {
+  @apply flex-grow w-full;
+  /* This 'flex-grow' is crucial. It makes the main section expand
+     to push the footer to the bottom of the page, even if the
+     content is short. */
+}
