@@ -2,47 +2,68 @@ import { createSlice } from '@reduxjs/toolkit';
 import { getPendingPosts } from './getPendingPostsThunk.js';
 import { approvePost } from './approvePostThunk.js';
 import { rejectPost } from './rejectPostThunk.js';
+import { getPendingEvents } from './getPendingEventsThunk.js';
+import { approveEvent } from './approveEventThunk.js';
+import { rejectEvent } from './rejectEventThunk.js';
 
 const adminSlice = createSlice({
   name: 'admin',
   initialState: {
+    // Posts state
     posts: [], // Now array for current page
-    pagination: null,
-    loading: false,
-    error: null,
-    filters: { search: '', page: 1, limit: 10 },
+    postPagination: null,
+    postLoading: false,
+    postError: null,
+    postFilters: { search: '', page: 1, limit: 10 },
+
+    // Events state (new)
+    events: [],
+    eventPagination: null,
+    eventLoading: false,
+    eventError: null,
+    eventFilters: { search: '', page: 1, limit: 10 },
   },
   reducers: {
-    setFilters: (state, action) => {
-      state.filters = { ...state.filters, ...action.payload };
-      state.pagination = null; // Reset pagination
+    // Posts reducers
+    setPostFilters: (state, action) => {
+      state.postFilters = { ...state.postFilters, ...action.payload };
+      state.postPagination = null; // Reset pagination
     },
-    clearError: (state) => {
-      state.error = null;
+    clearPostError: (state) => {
+      state.postError = null;
+    },
+
+    // Events reducers (new)
+    setEventFilters: (state, action) => {
+      state.eventFilters = { ...state.eventFilters, ...action.payload };
+      state.eventPagination = null; // Reset pagination
+    },
+    clearEventError: (state) => {
+      state.eventError = null;
     },
   },
   extraReducers: (builder) => {
     builder
       // Get Pending Posts
       .addCase(getPendingPosts.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+        state.postLoading = true;
+        state.postError = null;
       })
       .addCase(getPendingPosts.fulfilled, (state, action) => {
-        state.loading = false;
+        state.postLoading = false;
         state.posts = action.payload.posts; // Direct array
-        state.pagination = action.payload.pagination;
+        state.postPagination = action.payload.pagination;
       })
       .addCase(getPendingPosts.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
+        state.postLoading = false;
+        state.postError = action.payload;
       })
       // Approve Post
       .addCase(approvePost.pending, (state) => {
-        state.loading = true;
+        state.postLoading = true;
       })
       .addCase(approvePost.fulfilled, (state, action) => {
-        state.loading = false;
+        state.postLoading = false;
         const { post } = action.payload;
         const index = state.posts.findIndex(p => p._id === post._id);
         if (index !== -1) {
@@ -50,15 +71,15 @@ const adminSlice = createSlice({
         }
       })
       .addCase(approvePost.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
+        state.postLoading = false;
+        state.postError = action.payload;
       })
       // Reject Post
       .addCase(rejectPost.pending, (state) => {
-        state.loading = true;
+        state.postLoading = true;
       })
       .addCase(rejectPost.fulfilled, (state, action) => {
-        state.loading = false;
+        state.postLoading = false;
         const { post } = action.payload;
         const index = state.posts.findIndex(p => p._id === post._id);
         if (index !== -1) {
@@ -66,15 +87,69 @@ const adminSlice = createSlice({
         }
       })
       .addCase(rejectPost.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
+        state.postLoading = false;
+        state.postError = action.payload;
+      })
+
+      // Get Pending Events 
+      .addCase(getPendingEvents.pending, (state) => {
+        state.eventLoading = true;
+        state.eventError = null;
+      })
+      .addCase(getPendingEvents.fulfilled, (state, action) => {
+        state.eventLoading = false;
+        state.events = action.payload.events; // Direct array
+        state.eventPagination = action.payload.pagination;
+      })
+      .addCase(getPendingEvents.rejected, (state, action) => {
+        state.eventLoading = false;
+        state.eventError = action.payload;
+      })
+      // Approve Event
+      .addCase(approveEvent.pending, (state) => {
+        state.eventLoading = true;
+      })
+      .addCase(approveEvent.fulfilled, (state, action) => {
+        state.eventLoading = false;
+        const { event } = action.payload;
+        const index = state.events.findIndex(e => e._id === event._id);
+        if (index !== -1) {
+          state.events[index] = event;
+        }
+      })
+      .addCase(approveEvent.rejected, (state, action) => {
+        state.eventLoading = false;
+        state.eventError = action.payload;
+      })
+      // Reject Event
+      .addCase(rejectEvent.pending, (state) => {
+        state.eventLoading = true;
+      })
+      .addCase(rejectEvent.fulfilled, (state, action) => {
+        state.eventLoading = false;
+        const { event } = action.payload;
+        const index = state.events.findIndex(e => e._id === event._id);
+        if (index !== -1) {
+          state.events[index] = event;
+        }
+      })
+      .addCase(rejectEvent.rejected, (state, action) => {
+        state.eventLoading = false;
+        state.eventError = action.payload;
       });
   },
 });
 
-export const { setFilters, clearError } = adminSlice.actions;
-// Re-export thunks for easy import in components
+// Posts exports
+export const { setPostFilters, clearPostError } = adminSlice.actions;
 export { getPendingPosts } from './getPendingPostsThunk.js';
 export { approvePost } from './approvePostThunk.js';
 export { rejectPost } from './rejectPostThunk.js';
+
+// Events exports 
+export const { setEventFilters, clearEventError } = adminSlice.actions;
+export { getPendingEvents } from './getPendingEventsThunk.js';
+export { approveEvent } from './approveEventThunk.js';
+export { rejectEvent } from './rejectEventThunk.js';
+
 export default adminSlice.reducer;
