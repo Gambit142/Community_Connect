@@ -19,7 +19,7 @@ const postSchema = new mongoose.Schema({
     enum: ['Pending Approval', 'Published', 'Rejected', 'Archived'], 
     default: 'Pending Approval' 
   },
-  rejectionReason: { type: String, default: '', maxlength: 500 },
+  rejectionReason: { type: String, default: '', maxlength: 1000 },
   originalPostId: { type: mongoose.Schema.Types.ObjectId, ref: 'Post' },
   type: { 
     type: String, 

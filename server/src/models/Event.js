@@ -18,6 +18,7 @@ const eventSchema = new mongoose.Schema({
     enum: ['Pending Approval', 'Published', 'Rejected'], 
     default: 'Pending Approval' 
   },
+  rejectionReason: { type: String, default: '', maxlength: 1000 },
   price: { type: Number, min: 0, default: 0 }, // 0 for free
   images: [{ type: String }], // URLs from Cloudinary
   attendees: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], // Optional array
