@@ -1,213 +1,268 @@
-// src/pages/admin/Events.jsx
-
-import React, { useState, useEffect } from 'react';
-import styles from '../../assets/css/AdminEvents.module.css';
+// File: pages/admin/Events.jsx
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faEdit, faTrash, faCalendarAlt } from '@fortawesome/free-solid-svg-icons';
-
-// MOCK DATA
-const initialEvents = [
-  { _id: '1', title: 'Community Garden Workshop', category: 'Workshop', dateTime: '2025-11-05T14:00', isFeatured: true, description: 'A hands-on workshop about urban gardening.', image: null },
-  { _id: '2', title: 'Neighborhood Cleanup Day', category: 'Volunteer', dateTime: '2025-11-12T09:00', isFeatured: false, description: 'Join us to clean up our local parks.', image: null },
-  { _id: '3', title: 'Local Farmers Market', category: 'Market', dateTime: '2025-11-15T11:00', isFeatured: true, description: 'Fresh produce from local farmers.', image: null },
-];
-// END MOCK DATA
+import {
+  faSearch,
+  faCog,
+  faCheck,
+  faTimes,
+  faEye
+} from '@fortawesome/free-solid-svg-icons';
+import { getPendingEvents, approveEvent, rejectEvent, setEventFilters, clearEventError } from '../../store/admin/adminSlice.js';
 
 export default function Events() {
-  const [events, setEvents] = useState([]);
-  const [loading, setLoading] = useState(false);
-
-  
-  // Modal State
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingEvent, setEditingEvent] = useState(null);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [eventToDelete, setEventToDelete] = useState(null);
+  const dispatch = useDispatch();
+  const { events, eventPagination, eventLoading, eventError, eventFilters } = useSelector((state) => state.admin);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedEvent, setSelectedEvent] = useState(null); 
+  const [rejectReason, setRejectReason] = useState(''); 
+  const [showRejectModal, setShowRejectModal] = useState(false); 
+  const [rejectEventId, setRejectEventId] = useState(null); 
+  const [searchInput, setSearchInput] = useState('');
+  const searchTimeoutRef = useRef(null);
 
   useEffect(() => {
-    setLoading(true);
-    setTimeout(() => {
-      setEvents(initialEvents);
-      setLoading(false);
-    }, 500);
-  }, []);
-
-  // --- CRUD HANDLERS ---
-  const handleSaveEvent = (eventData) => {
-    setLoading(true);
-    setTimeout(() => {
-      if (editingEvent) {
-        setEvents(events.map(e => e._id === editingEvent._id ? { ...e, ...eventData } : e));
-      } else {
-        setEvents([{ _id: Date.now().toString(), ...eventData }, ...events]);
+    setSearchInput(eventFilters.search || '');
+    dispatch(clearEventError());
+    dispatch(getPendingEvents({ page: 1 })); // Initial load
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
       }
-      setIsModalOpen(false);
-      setLoading(false);
-    }, 500);
-  };
+    };
+  }, [dispatch, eventFilters.search]);
 
-  const confirmDeleteEvent = () => {
-    setLoading(true);
-    setTimeout(() => {
-      setEvents(events.filter(e => e._id !== eventToDelete._id));
-      setIsDeleteModalOpen(false);
-      setLoading(false);
-    }, 500);
-  };
-
-  const formatDate = (dateTime) => new Date(dateTime).toLocaleString();
-
-  return (
-    <>
-      <div className={styles.card}>
-        <div className={styles.header}>
-          <div>
-            <h1 className={styles.title}>Events Management</h1>
-            <p className="mt-1 text-sm text-gray-600">Create, edit, or delete community events.</p>
-          </div>
-          <button onClick={() => { setEditingEvent(null); setIsModalOpen(true); }} className={styles.addButton}>
-            <FontAwesomeIcon icon={faPlus} className="mr-2" />
-            Add Event
-          </button>
-        </div>
-
-        <div className={styles.tableContainer}>
-          <table className={styles.table}>
-            <thead className={styles.tableHead}>
-              <tr>
-                <th className={styles.th}>Event Title</th>
-                <th className={styles.th}>Category</th>
-                <th className={styles.th}>Date & Time</th>
-                <th className={styles.th}>Featured</th>
-                <th className={`${styles.th} text-right`}>Actions</th>
-              </tr>
-            </thead>
-            <tbody className={styles.tableBody}>
-              {events.map((event) => (
-                <tr key={event._id} className={styles.tr}>
-                  <td className={`${styles.td} ${styles.tdTitle}`}>{event.title}</td>
-                  <td className={`${styles.td} ${styles.tdText}`}>{event.category}</td>
-                  <td className={`${styles.td} ${styles.tdText}`}>{formatDate(event.dateTime)}</td>
-                  <td className={`${styles.td} ${styles.tdText}`}>{event.isFeatured ? 'Yes' : 'No'}</td>
-                  <td className={`${styles.td} ${styles.actionsContainer}`}>
-                    <button onClick={() => { setEditingEvent(event); setIsModalOpen(true); }} className={`${styles.actionButton} ${styles.editButton}`} title="Edit">
-                      <FontAwesomeIcon icon={faEdit} />
-                    </button>
-                    <button onClick={() => { setEventToDelete(event); setIsDeleteModalOpen(true); }} className={`${styles.actionButton} ${styles.deleteButton}`} title="Delete">
-                      <FontAwesomeIcon icon={faTrash} />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {isModalOpen && <EventFormModal event={editingEvent} onClose={() => setIsModalOpen(false)} onSave={handleSaveEvent} />}
-      {isDeleteModalOpen && <DeleteConfirmModal event={eventToDelete} onClose={() => setIsDeleteModalOpen(false)} onConfirm={confirmDeleteEvent} />}
-    </>
-  );
-}
-
-// --- MODAL COMPONENTS ---
-
-function EventFormModal({ event, onClose, onSave }) {
-  const [formData, setFormData] = useState({
-    title: event?.title || '',
-    category: event?.category || 'Workshop',
-    dateTime: event?.dateTime || '',
-    isFeatured: event?.isFeatured || false,
-    description: event?.description || '',
-    image: null,
-  });
-
-  const handleChange = (e) => {
-    const { name, value, type, checked, files } = e.target;
-    if (type === 'checkbox') {
-      setFormData(prev => ({ ...prev, [name]: checked }));
-    } else if (type === 'file') {
-      setFormData(prev => ({ ...prev, [name]: files[0] }));
-    } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
+  const handleSearch = useCallback((e) => {
+    const search = e.target.value;
+    setSearchInput(search);
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
     }
+    searchTimeoutRef.current = setTimeout(() => {
+      dispatch(setEventFilters({ search, page: 1 }));
+      dispatch(getPendingEvents({ search, page: 1 }));
+    }, 600); // Debounce 600ms
+  }, [dispatch]);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    dispatch(setEventFilters({ page }));
+    dispatch(getPendingEvents({ ...eventFilters, page })); // Pass current filters + new page
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onSave(formData);
+  const handleApprove = (eventId) => {
+    dispatch(approveEvent(eventId)).then(() => {
+      dispatch(getPendingEvents({ ...eventFilters, page: currentPage })); // Refetch current page
+    });
   };
 
-  return (
-    <div className={styles.modalOverlay}>
-      <div className={styles.modalContent}>
-        <form onSubmit={handleSubmit}>
-          <div className={styles.modalHeader}>
-            <h2 className={styles.modalTitle}>{event ? 'Edit Event' : 'Add New Event'}</h2>
-            <button type="button" onClick={onClose}>&times;</button>
-          </div>
-          <div className={styles.modalBody}>
-            <div>
-              <label className={styles.formLabel}>Event Title</label>
-              <input type="text" name="title" value={formData.title} onChange={handleChange} className={styles.formInput} required />
-            </div>
-            <div>
-              <label className={styles.formLabel}>Description</label>
-              <textarea name="description" value={formData.description} onChange={handleChange} className={styles.formTextarea} rows="3" />
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className={styles.formLabel}>Category</label>
-                <select name="category" value={formData.category} onChange={handleChange} className={styles.formSelect}>
-                  <option>Workshop</option>
-                  <option>Volunteer</option>
-                  <option>Market</option>
-                  <option>Social</option>
-                </select>
-              </div>
-              <div>
-                <label className={styles.formLabel}>Date and Time</label>
-                <input type="datetime-local" name="dateTime" value={formData.dateTime} onChange={handleChange} className={styles.formInput} required />
-              </div>
-            </div>
-            <div>
-              <label className={styles.formLabel}>Event Image</label>
-              <input type="file" name="image" onChange={handleChange} className={styles.formInput} accept="image/*" />
-            </div>
-            <div className={styles.toggleContainer}>
-              <span className={styles.toggleLabel}>Feature this event?</span>
-              <label className={styles.toggleSwitch} style={{ backgroundColor: formData.isFeatured ? '#05213C' : '#ccc' }}>
-                <input type="checkbox" name="isFeatured" checked={formData.isFeatured} onChange={handleChange} className="hidden" />
-                <span className={styles.toggleCircle} style={{ transform: formData.isFeatured ? 'translateX(20px)' : 'translateX(0)' }} />
-              </label>
-            </div>
-          </div>
-          <div className={styles.modalFooter}>
-            <button type="button" onClick={onClose} className={styles.cancelButton}>Cancel</button>
-            <button type="submit" className={styles.saveButton}>Save Event</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
+  const handleReject = (eventId) => {
+    setRejectEventId(eventId);
+    setShowRejectModal(true);
+    setRejectReason('');
+  };
 
-function DeleteConfirmModal({ event, onClose, onConfirm }) {
+  const handleRejectConfirm = () => {
+    if (!rejectReason.trim()) {
+      alert('Please provide a rejection reason.');
+      return;
+    }
+    dispatch(rejectEvent({ eventId: rejectEventId, reason: rejectReason })).then(() => {
+      setShowRejectModal(false);
+      setRejectReason('');
+      dispatch(getPendingEvents({ ...eventFilters, page: currentPage })); // Refetch current page
+    });
+  };
+
+  const handleViewDetails = (event) => {
+    setSelectedEvent(event);
+  };
+
+  if (eventLoading) {
+    return <div className="flex justify-center items-center h-64">Loading events...</div>;
+  }
+
+  if (eventError) {
+    return (
+      <div className="p-6 bg-red-50 border border-red-200 rounded-lg">
+        <p className="text-red-600">Error: {eventError}</p>
+        <button onClick={() => dispatch(clearEventError())} className="mt-2 text-blue-600 underline">
+          Try Again
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <div className={styles.modalOverlay}>
-      <div className={styles.modalContent}>
-        <div className={styles.modalHeader}>
-          <h2 className={styles.modalTitle}>Confirm Deletion</h2>
-          <button type="button" onClick={onClose}>&times;</button>
-        </div>
-        <div className={styles.modalBody}>
-          <p>Are you sure you want to delete the event <strong>{event?.title}</strong>? This action cannot be undone.</p>
-        </div>
-        <div className={styles.modalFooter}>
-          <button type="button" onClick={onClose} className={styles.cancelButton}>Cancel</button>
-          <button type="button" onClick={onConfirm} className={styles.confirmDeleteButton}>Delete</button>
+    <div className="p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold text-gray-800">Pending Events ({eventPagination?.totalEvents || 0})</h1>
+        <div className="relative">
+          <FontAwesomeIcon icon={faSearch} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search events..."
+            value={searchInput}
+            onChange={handleSearch}
+            className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
         </div>
       </div>
-    </div>
-  );
+
+      {events.length === 0 ? (
+        <p className="text-gray-500 text-center py-8">No pending events found.</p>
+      ) : (
+        <>
+          <div className="overflow-x-auto bg-white shadow-md rounded-lg">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date & Time</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Images</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {events.map((event) => (
+                  <tr key={event._id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">{event.title}</div>
+                      <div className="text-sm text-gray-500 truncate max-w-xs">{event.description}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{event.category}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {new Date(event.date).toLocaleDateString()} {event.time}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 truncate max-w-xs">{event.location}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      ${event.price > 0 ? event.price : 'Free'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {event.images?.length || 0}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                      <button
+                        onClick={() => handleViewDetails(event)}
+                        className="text-blue-600 hover:text-blue-900"
+                        title="View Details"
+                      >
+                        <FontAwesomeIcon icon={faEye} />
+                      </button>
+                      <button
+                        onClick={() => handleApprove(event._id)}
+                        className="text-green-600 hover:text-green-900 ml-2"
+                        title="Approve"
+                        disabled={eventLoading}
+                      >
+                        <FontAwesomeIcon icon={faCheck} />
+                      </button>
+                      <button
+                        onClick={() => handleReject(event._id)}
+                        className="text-red-600 hover:text-red-900 ml-2"
+                        title="Reject"
+                        disabled={eventLoading}
+                      >
+                        <FontAwesomeIcon icon={faTimes} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination */}
+          {eventPagination && (
+            <div className="flex justify-center mt-6 space-x-2">
+              {Array.from({ length: eventPagination.totalPages }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => handlePageChange(page)}
+                  className={`px-3 py-1 rounded ${
+                    currentPage === page
+                      ? 'bg-blue-500 text-white'
+                      : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Reject Confirmation Modal */}
+      {showRejectModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full">
+            <div className="p-6">
+              <h2 className="text-xl font-bold mb-4 text-red-600">Reject Event</h2>
+              <p className="mb-4 text-gray-600">Please provide a reason for rejection:</p>
+              <textarea
+                value={rejectReason}
+                onChange={(e) => setRejectReason(e.target.value)}
+                placeholder="Enter rejection reason..."
+                className="w-full p-3 border border-gray-300 rounded-lg resize-none h-24 focus:outline-none focus:ring-2 focus:ring-red-500"
+                maxLength={500}
+              />
+              <div className="flex justify-end space-x-3 mt-4">
+                <button
+                  onClick={() => setShowRejectModal(false)}
+                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleRejectConfirm(rejectEventId)}
+                  className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                >
+                  Confirm Reject
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* View Details Modal */}
+      {selectedEvent && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+            <div className="p-6">
+              <h2 className="text-xl font-bold mb-4">{selectedEvent.title}</h2>
+              <p className="text-gray-600 mb-4">{selectedEvent.description}</p>
+              <div className="grid md:grid-cols-2 gap-4 mb-4">
+                <div><strong>Category:</strong> {selectedEvent.category}</div>
+                <div><strong>Date:</strong> {new Date(selectedEvent.date).toLocaleDateString()}</div>
+                <div><strong>Time:</strong> {selectedEvent.time}</div>
+                {selectedEvent.price > 0 && <div><strong>Price:</strong> ${selectedEvent.price}</div>}
+                <div><strong>Location:</strong> {selectedEvent.location}</div>
+              </div>
+              {selectedEvent.images && selectedEvent.images.length > 0 && (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
+                  {selectedEvent.images.map((img, idx) => (
+                    <img key={idx} src={img} alt="Event" className="w-full h-20 object-cover rounded" />
+                  ))}
+                </div>
+              )}
+              <div className="flex justify-end space-x-2">
+                <button
+                  onClick={() => setSelectedEvent(null)}
+                  className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
