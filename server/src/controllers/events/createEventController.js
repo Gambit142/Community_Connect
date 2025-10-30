@@ -17,7 +17,7 @@ const createEventSchema = Joi.object({
 });
 
 // Nodemailer transporter (same as posts)
-const transporter = nodemailer.createTransporter({
+const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST || 'smtp.mailtrap.io',
   port: process.env.EMAIL_PORT || 2525,
   auth: {
@@ -71,69 +71,59 @@ const createEvent = async (req, res) => {
 
     await newEvent.save();
 
-    // Send confirmation email to user
-    const userMailOptions = {
-      from: process.env.EMAIL_USER,
-      to: req.user.email,
-      subject: 'Event Created - Community Connect',
-      html: `
-        <h1>Your Event Has Been Created!</h1>
-        <p>Dear ${req.user.username},</p>
-        <p>Your event "<strong>${newEvent.title}</strong>" has been created successfully and is pending admin approval.</p>
-        <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/events/my-events" style="background-color: #05213C; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">View My Events</a>
-        <p>Best regards,<br>Community Connect Team</p>
-      `,
-    };
-    await transporter.sendMail(userMailOptions);
-    console.log(`Event confirmation email sent to ${req.user.email}`);
-
-    // Notify admins (in-app notifications and socket)
-    const admins = await User.find({ role: 'admin' }).select('_id');
-    if (admins.length > 0) {
-      const adminNotifications = admins.map(admin => new Notification({
-        userID: admin._id,
-        message: `New event "${newEvent.title}" in ${newEvent.category} category awaiting your review.`,
-        type: 'new_event_review',
-        relatedID: newEvent._id,
-        relatedType: 'event',
-        isRead: false,
-      }));
-
-      await Notification.insertMany(adminNotifications);
-      console.log(`Created ${adminNotifications.length} in-app notifications for admins`);
-
-      // Socket to admins (real-time)
-      global.io.to('role-admin').emit('new-event-pending', {
-        eventID: newEvent._id,
-        title: newEvent.title,
-        category: newEvent.category,
-        user: { username: req.user.username, email: req.user.email },
-        timestamp: new Date().toISOString(),
-      });
-      console.log('Socket.io notification emitted to admins');
-    }
-
-    // Optional: Send email to admins (batch or to first admin)
-    if (admins.length > 0) {
-      const firstAdmin = admins[0]; // Or loop for all
-      const admin = await User.findById(firstAdmin._id).select('email');
-      const adminMailOptions = {
+    // Send confirmation email to user (non-blocking: wrap in try-catch to handle failures gracefully)
+    try {
+      const userMailOptions = {
         from: process.env.EMAIL_USER,
-        to: admin.email,
-        subject: 'New Event Awaiting Review - Community Connect',
+        to: req.user.email,
+        subject: 'Event Created - Community Connect',
         html: `
-          <h1>New Event Submitted!</h1>
-          <p>A new event "<strong>${newEvent.title}</strong>" has been submitted for review.</p>
-          <p>Category: ${newEvent.category}</p>
-          <p>Created by: ${req.user.username}</p>
-          <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/admin/events" style="background-color: #05213C; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Review Events</a>
+          <h1>Your Event Has Been Created!</h1>
+          <p>Dear ${req.user.username},</p>
+          <p>Your event "<strong>${newEvent.title}</strong>" has been created successfully and is pending admin approval.</p>
+          <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/events/my-events" style="background-color: #05213C; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">View My Events</a>
           <p>Best regards,<br>Community Connect Team</p>
         `,
       };
-      await transporter.sendMail(adminMailOptions);
-      console.log(`Admin email notification sent for new event`);
+      await transporter.sendMail(userMailOptions);
+      console.log(`Event confirmation email sent to ${req.user.email}`);
+    } catch (emailError) {
+      console.error('Failed to send user confirmation email:', emailError.message);
+      // Do not throw; continue with success response
     }
 
+    // Notify admins (in-app notifications and socket) - also non-blocking
+    try {
+      const admins = await User.find({ role: 'admin' }).select('_id');
+      if (admins.length > 0) {
+        const adminNotifications = admins.map(admin => new Notification({
+          userID: admin._id,
+          message: `New event "${newEvent.title}" in ${newEvent.category} category awaiting your review.`,
+          type: 'new_event_review',
+          relatedID: newEvent._id,
+          relatedType: 'event',
+          isRead: false,
+        }));
+
+        await Notification.insertMany(adminNotifications);
+        console.log(`Created ${adminNotifications.length} in-app notifications for admins`);
+
+        // Socket to admins (real-time)
+        global.io.to('role-admin').emit('new-event-pending', {
+          eventID: newEvent._id,
+          title: newEvent.title,
+          category: newEvent.category,
+          user: { username: req.user.username, email: req.user.email },
+          timestamp: new Date().toISOString(),
+        });
+        console.log('Socket.io notification emitted to admins');
+      }
+    } catch (notificationError) {
+      console.error('Failed to create admin notifications:', notificationError.message);
+      // Do not throw; continue with success response
+    }
+
+    // Respond with success (event is created regardless of email/notification issues)
     res.status(201).json({
       message: 'Event created successfully and pending approval',
       event: newEvent,
