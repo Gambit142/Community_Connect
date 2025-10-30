@@ -9,7 +9,7 @@ export const getPendingPosts = createAsyncThunk(
       if (!token) {
         return rejectWithValue('No auth token found');
       }
-      const stateFilters = getState().admin?.filters || {}; // Use state filters if no arg
+      const stateFilters = getState().admin?.postFilters || {}; // Use state filters if no arg
       const params = { ...stateFilters, ...filters };
       const apiUrl = process.env.NODE_ENV === 'test' ? import.meta.env.VITE_API_URL_TEST : import.meta.env.VITE_API_URL;
       const response = await axios.get(`${apiUrl}/admin/posts/pending`, { 

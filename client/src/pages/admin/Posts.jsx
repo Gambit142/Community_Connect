@@ -8,11 +8,11 @@ import {
   faTimes,
   faEye
 } from '@fortawesome/free-solid-svg-icons';
-import { getPendingPosts, approvePost, rejectPost, setFilters, clearError } from '../../store/admin/adminSlice.js';
+import { getPendingPosts, approvePost, rejectPost, setPostFilters, clearPostError } from '../../store/admin/adminSlice.js';
 
 export default function Posts() {
   const dispatch = useDispatch();
-  const { posts, pagination, loading, error, filters } = useSelector((state) => state.admin);
+  const { posts, postPagination: pagination, postLoading: loading, postError: error, postFilters: filters } = useSelector((state) => state.admin);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedPost, setSelectedPost] = useState(null); 
   const [rejectReason, setRejectReason] = useState(''); 
@@ -23,7 +23,7 @@ export default function Posts() {
 
   useEffect(() => {
     setSearchInput(filters.search || '');
-    dispatch(clearError());
+    dispatch(clearPostError());
     dispatch(getPendingPosts({ page: 1 })); // Initial load
     return () => {
       if (searchTimeoutRef.current) {
@@ -39,14 +39,14 @@ export default function Posts() {
       clearTimeout(searchTimeoutRef.current);
     }
     searchTimeoutRef.current = setTimeout(() => {
-      dispatch(setFilters({ search, page: 1 }));
+      dispatch(setPostFilters({ search, page: 1 }));
       dispatch(getPendingPosts({ search, page: 1 }));
     }, 600); // Debounce 600ms
   }, [dispatch]);
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
-    dispatch(setFilters({ page }));
+    dispatch(setPostFilters({ page }));
     dispatch(getPendingPosts({ ...filters, page })); // Pass current filters + new page
   };
 
