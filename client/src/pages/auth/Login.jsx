@@ -20,8 +20,8 @@ export default function Login() {
 
   useEffect(() => {
     if (successMessage && user) {
-      // Role-based redirect: Admin to dashboard, regular to home
-      const redirectPath = user.role === 'admin' ? '/admin' : '/home';
+      // Role-based redirect: Admin to dashboard, regular to Landing Page
+      const redirectPath = user.role === 'admin' ? '/admin' : '/';
       setTimeout(() => {
         navigate(redirectPath);
       }, 1500);

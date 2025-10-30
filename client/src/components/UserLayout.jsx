@@ -1,9 +1,7 @@
-// src/components/UserLayout.jsx
-
 import React from 'react';
 import { Outlet } from 'react-router-dom';
-import Header from './Header'; // Assuming Header.jsx is in the same components folder
-import Footer from './Footer'; // Assuming Footer.jsx is in the same components folder
+import Header from './Header'; 
+import Footer from './Footer';
 import styles from '../assets/css/UserLayout.module.css'; // Correct path to CSS
 
 export default function UserLayout() {

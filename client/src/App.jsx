@@ -12,8 +12,6 @@ import Signup from './pages/auth/Signup';
 import Forgot from './pages/auth/Forgot';
 import Reset from './pages/auth/Reset';
 
-// Home import
-import Home from './pages/Home';
 // NEW STATIC & EVENT PAGES
 import Landing from './pages/Landing';
 import About from './pages/About';
@@ -27,7 +25,7 @@ import ProfilePage from './pages/profile/ProfilePage';
 import EditProfile from './pages/profile/EditProfile';
 // Post imports
 import CreatePost from './pages/posts/CreatePost';
-import EditPost from './pages/posts/EditPost'; // New import
+import EditPost from './pages/posts/EditPost';
 import MyPosts from './pages/posts/MyPosts';
 import PostsIndex from './pages/posts/PostsIndex';
 import PostDetails from './pages/posts/PostDetails';
@@ -70,10 +68,8 @@ function App() {
           {/* User-facing routes wrapped in the new UserLayout */}
           <Route element={<UserLayout />}>
             <Route path="/" element={<Landing />} />
-            <Route path="/home" element={<Home />} />
             <Route path="/about" element={<About />} />
-            <Route path="/contact" element={<Contact />} />
-            
+            <Route path="/contact" element={<Contact />} />     
             {/* Post Routes */}
             <Route path="/posts" element={<PostsIndex />} />
             <Route path="/posts/:id" element={<PostDetails />} />
