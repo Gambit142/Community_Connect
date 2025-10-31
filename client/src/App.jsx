@@ -22,6 +22,7 @@ import EventDetails from './pages/events/EventDetails';
 import CreateEvent from './pages/events/CreateEvent';
 import EditEvent from './pages/events/EditEvent';
 import MyEvents from './pages/events/MyEvents';
+import EventsCalendar from './pages/events/EventsCalendar';
 
 // NEW PROFILE PAGES
 import ProfilePage from './pages/profile/ProfilePage';
@@ -90,6 +91,7 @@ function AppContent() {
           
           {/* Public Event Routes */}
           <Route path="/events" element={<EventsIndex />} />
+          <Route path="/events/calendar" element={<EventsCalendar />} />
           <Route path="/events/:id" element={<EventDetails />} />
 
           {/* Protected routes - require auth */}

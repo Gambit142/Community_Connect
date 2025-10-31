@@ -6,7 +6,7 @@ const querySchema = Joi.object({
   search: Joi.string().allow('').optional(), // Search title/description/location
   category: Joi.string().valid('Workshop', 'Volunteer', 'Market', 'Tech', 'Charity', 'Fair', 'Social', 'Other').allow('').optional(),
   page: Joi.number().integer().min(1).default(1),
-  limit: Joi.number().integer().min(1).max(12).default(6), // 6 per page
+  limit: Joi.number().integer().min(1).max(100).default(6), // Increased max to 100 for calendar use case
 });
 
 const getEvents = async (req, res) => {

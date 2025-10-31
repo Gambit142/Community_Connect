@@ -1,4 +1,3 @@
-// New file: controllers/events/getEventController.js
 const Event = require('../../models/Event.js');
 const jwt = require('jsonwebtoken');
 
