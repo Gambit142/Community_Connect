@@ -6,6 +6,7 @@ import { getEventById } from './getEventByIdThunk.js';
 import { getSimilarEvents } from './getSimilarEventsThunk.js';
 import { updateEvent } from './updateEventThunk.js';
 import { deleteEvent } from './deleteEventThunk.js';
+import { registerEvent } from './registerEventThunk.js';
 
 const eventsSlice = createSlice({
   name: 'events',
@@ -132,6 +133,33 @@ const eventsSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
         state.similarEvents = [];
+      })
+      // Register Event (New)
+      .addCase(registerEvent.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(registerEvent.fulfilled, (state, action) => {
+        state.loading = false;
+        if (action.payload.sessionId) {
+          // Paid: Set message for redirect
+          state.successMessage = 'Redirecting to payment...';
+        } else {
+          // Free: Success with event
+          state.successMessage = action.payload.message;
+          // Update events list if present (e.g., increment attendee count)
+          const eventIndex = state.events.findIndex(e => e._id === action.meta.arg);
+          if (eventIndex !== -1) {
+            state.events[eventIndex].attendees = action.payload.event.attendees; // Update count
+          }
+          if (state.currentEvent?._id === action.meta.arg) {
+            state.currentEvent.attendees = action.payload.event.attendees;
+          }
+        }
+      })
+      .addCase(registerEvent.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
   },
 });
@@ -147,3 +175,4 @@ export { getEventById } from './getEventByIdThunk.js';
 export { getSimilarEvents } from './getSimilarEventsThunk.js';
 export { updateEvent } from './updateEventThunk.js';
 export { deleteEvent } from './deleteEventThunk.js';
+export { registerEvent } from './registerEventThunk.js';
