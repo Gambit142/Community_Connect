@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from '../../assets/css/EventsIndex.module.css';
-import SidebarFilter from '../../components/SidebarFilter.jsx'; // Reusing from posts
-import Pagination from '../../components/Pagination.jsx'; // Reusing from posts
+import SidebarFilter from '../../components/SidebarFilter.jsx';
+import Pagination from '../../components/Pagination.jsx'; 
 
 // MOCK DATA - Replace with Redux fetching later
 const mockEvents = [
