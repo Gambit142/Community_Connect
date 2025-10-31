@@ -1,3 +1,4 @@
+// Updated src/App.jsx
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Provider } from 'react-redux';
@@ -20,9 +21,11 @@ import EventsIndex from './pages/events/EventsIndex';
 import EventDetails from './pages/events/EventDetails';
 import CreateEvent from './pages/events/CreateEvent';
 import MyEvents from './pages/events/MyEvents';
+
 // NEW PROFILE PAGES
 import ProfilePage from './pages/profile/ProfilePage';
 import EditProfile from './pages/profile/EditProfile';
+
 // Post imports
 import CreatePost from './pages/posts/CreatePost';
 import EditPost from './pages/posts/EditPost';
@@ -40,6 +43,9 @@ import Events from './pages/admin/Events';
 import Tables from './pages/admin/Tables';
 import Settings from './pages/admin/Settings';
 
+// Protected Route Component
+import ProtectedRoute from './components/ProtectedRoute';
+
 function App() {
   return (
     <Provider store={store}>
@@ -54,7 +60,6 @@ function App() {
             <Route path="reset" element={<Reset />} />
           </Route>
 
-          
           <Route path="/admin" element={<DashboardLayout />}>
             <Route index element={<DashboardOverview />} />
             <Route path="posts" element={<Posts />} />
@@ -65,31 +70,62 @@ function App() {
             <Route path="settings" element={<Settings />} />
           </Route>
 
-          {/* User-facing routes wrapped in the new UserLayout */}
           <Route element={<UserLayout />}>
+            {/* Public routes - no auth required */}
             <Route path="/" element={<Landing />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />     
-            {/* Post Routes */}
+            {/* Public Post Routes */}
             <Route path="/posts" element={<PostsIndex />} />
             <Route path="/posts/:id" element={<PostDetails />} />
-            <Route path="/posts/create" element={<CreatePost />} />
-            <Route path="/posts/my-posts" element={<MyPosts />} />
-            <Route path="/posts/edit/:id" element={<EditPost />} />
             
-            {/* Event Routes */}
+            {/* Public Event Routes */}
             <Route path="/events" element={<EventsIndex />} />
-            <Route path="/events/create" element={<CreateEvent />} />
-            <Route path="/events/my-events" element={<MyEvents />} />
             <Route path="/events/:id" element={<EventDetails />} />
 
-            {/* Profile Routes */}
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/profile/edit" element={<EditProfile />} />
+            {/* Protected routes - require auth */}
+            <Route path="/posts/create" element={
+              <ProtectedRoute>
+                <CreatePost />
+              </ProtectedRoute>
+            } />
+            <Route path="/posts/my-posts" element={
+              <ProtectedRoute>
+                <MyPosts />
+              </ProtectedRoute>
+            } />
+            <Route path="/posts/edit/:id" element={
+              <ProtectedRoute>
+                <EditPost />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/events/create" element={
+              <ProtectedRoute>
+                <CreateEvent />
+              </ProtectedRoute>
+            } />
+            <Route path="/events/my-events" element={
+              <ProtectedRoute>
+                <MyEvents />
+              </ProtectedRoute>
+            } />
+
+            {/* Protected Profile Routes */}
+            <Route path="/profile" element={
+              <ProtectedRoute>
+                <ProfilePage />
+              </ProtectedRoute>
+            } />
+            <Route path="/profile/edit" element={
+              <ProtectedRoute>
+                <EditProfile />
+              </ProtectedRoute>
+            } />
           </Route>
 
-
-          <Route path="/" element={<Navigate to="/auth/login" replace />} />
+          {/* Catch-all redirect to login/signup */}
+          <Route path="*" element={<Navigate to="/auth/signup" replace />} />
         </Routes>
       </BrowserRouter>
     </Provider>
