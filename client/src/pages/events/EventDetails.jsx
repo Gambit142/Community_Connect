@@ -1,22 +1,22 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { getEventById, getSimilarEvents, clearCurrentEvent } from '../../store/events/eventsSlice'; 
+import { getEventById, getSimilarEvents, clearCurrentEvent } from '../../store/events/eventsSlice';
 import styles from '../../assets/css/EventDetails.module.css';
 
 // SVG Icons
 const CalendarIcon = () => (
-    <svg className={styles.detailIcon} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg className="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
     </svg>
 );
 const ClockIcon = () => (
-    <svg className={styles.detailIcon} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg className="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
     </svg>
 );
 const LocationIcon = () => (
-    <svg className={styles.detailIcon} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg className="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0zM15 11a3 3 0 11-6 0 3 3 0 016 0z" />
     </svg>
 );
@@ -32,7 +32,7 @@ export default function EventDetails() {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [thumbWidth, setThumbWidth] = useState(23);
 
-  // Mock comments - keep as is
+  // Comments state
   const [comments, setComments] = useState([
     { _id: 'c1', author: 'Jane Doe', avatarInitial: 'J', date: '2025-10-23T10:00:00Z', text: 'This looks amazing! I\'ve been wanting to learn more about composting. Will there be a Q&A session?' },
     { _id: 'c2', author: 'John Smith', avatarInitial: 'J', date: '2025-10-24T11:30:00Z', text: 'Count me in! Happy to bring some extra gloves for anyone who needs them.' },
@@ -114,21 +114,23 @@ export default function EventDetails() {
 
   const moveGalleryPrev = () => {
     const { leftMin, leftMax } = galleryConfig;
-    const newPosition = Math.min(0, galleryPosition + (thumbWidth * 3));
-    setGalleryPosition(Math.max(leftMin, newPosition));
+    const newPos = galleryPosition + thumbWidth;
+    const clamped = Math.max(leftMin, Math.min(leftMax, newPos));
+    setGalleryPosition(clamped);
   };
 
   const moveGalleryNext = () => {
     const { leftMin, leftMax } = galleryConfig;
-    const newPosition = Math.max(leftMax, galleryPosition - (thumbWidth * 3));
-    setGalleryPosition(Math.min(leftMax, newPosition));
+    const newPos = galleryPosition - thumbWidth;
+    const clamped = Math.max(leftMin, Math.min(leftMax, newPos));
+    setGalleryPosition(clamped);
   };
 
   const handleCommentSubmit = (e) => {
     e.preventDefault();
     if (!newComment.trim()) return;
     setIsSubmitting(true);
-    // Mock submit - in real, dispatch addComment thunk
+    // Mock submit
     setTimeout(() => {
       setComments((prev) => [...prev, {
         _id: Date.now().toString(),
@@ -143,7 +145,9 @@ export default function EventDetails() {
   };
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      weekday: 'long',
       year: 'numeric',
       month: 'long',
       day: 'numeric'
@@ -151,6 +155,7 @@ export default function EventDetails() {
   };
 
   const formatTime = (timeString) => {
+    if (!timeString) return '';
     return new Date(`2000-01-01T${timeString}:00`).toLocaleTimeString('en-US', {
       hour: 'numeric',
       minute: '2-digit',
@@ -159,189 +164,184 @@ export default function EventDetails() {
   };
 
   const formatCommentDate = (dateString) => {
-    const now = new Date();
-    const commentDate = new Date(dateString);
-    const diffInDays = Math.floor((now - commentDate) / (1000 * 60 * 60 * 24));
-    if (diffInDays === 0) return 'Today';
-    if (diffInDays === 1) return 'Yesterday';
-    return commentDate.toLocaleDateString();
+    return new Date(dateString).toLocaleString('en-US', {
+      month: 'short', 
+      day: 'numeric', 
+      year: 'numeric', 
+      hour: '2-digit', 
+      minute: '2-digit'
+    });
   };
 
-  if (loading) return <div className="text-center mt-8">Loading event...</div>;
-  if (error) return <div className="text-red-500 text-center mt-8">Error: {error}</div>;
-  if (!event) return <div className="text-center mt-8">Event not found</div>;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-xl text-gray-600">Loading event...</div>
+      </div>
+    );
+  }
 
-  const formattedDate = formatDate(event.date);
-  const formattedTime = formatTime(event.time);
+  if (error) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-xl text-red-600">Error: {error}</div>
+      </div>
+    );
+  }
+
+  if (!event) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-xl text-gray-600">Event not found</div>
+      </div>
+    );
+  }
+
+  const { leftMin, leftMax, numVisible } = galleryConfig;
+  const showNavButtons = event.images && event.images.length > numVisible;
 
   return (
-    <div className={styles.eventDetailsContainer}>
-      <main className={styles.mainContent}>
-        <div className={styles.contentGrid}>
-          {/* Left Column: Hero Image & Content */}
-          <div className={styles.contentColumn}>
-            <section className={styles.heroSection}>
-              {/* Image Gallery - Mirroring PostDetails */}
-              {event.images && event.images.length > 0 ? (
-                <div className={styles.galleryContainer}>
+    <div className="min-h-screen bg-white py-8">
+      <div className="max-w-6xl mx-auto px-4">
+        {/* Back Button */}
+        <button
+          onClick={() => navigate(-1)}
+          className="mb-6 flex items-center text-[#05213C] hover:text-blue-700 transition-colors"
+        >
+          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          Back to Events
+        </button>
+
+        {/* Image Gallery - Updated to match PostDetails */}
+        <div className={styles.container}>
+          <div
+            className={styles.feature}
+            onMouseEnter={() => setShowGallery(true)}
+            onMouseLeave={() => setShowGallery(false)}
+          >
+            <div
+              className={styles.featuredItem}
+              style={{
+                backgroundImage: `url(${event.images?.[activeImageIndex] || '/placeholder-image.jpg'})`
+              }}
+            />
+
+            {/* Gallery Controls */}
+            <div className={`${styles.controls} ${showGallery ? styles.show : ''}`}>
+              <button
+                className={styles.moveBtn}
+                onClick={handlePrev}
+                aria-label="Previous image"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <button
+                className={styles.moveBtn}
+                onClick={handleNext}
+                aria-label="Next image"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          {/* Thumbnail Gallery */}
+          <div className={`${styles.galleryWrapper} ${showGallery ? styles.show : ''}`}>
+            <div
+              className={styles.gallery}
+              style={{ left: `${galleryPosition}%` }}
+            >
+              {event.images?.map((image, index) => (
+                <div key={index} className={styles.itemWrapper}>
                   <div
-                    className={styles.mainImageContainer}
-                    onClick={() => setShowGallery(true)}
-                  >
-                    <img
-                      src={event.images[activeImageIndex]}
-                      alt={event.title}
-                      className={styles.mainImage}
-                    />
-                    {event.images.length > 1 && (
-                      <div className={styles.galleryControls}>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); handlePrev(); }}
-                          className={styles.prevButton}
-                        >
-                          <svg className={styles.navIcon} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                          </svg>
-                        </button>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); handleNext(); }}
-                          className={styles.nextButton}
-                        >
-                          <svg className={styles.navIcon} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                          </svg>
-                        </button>
-                        <div className={styles.imageCounter}>
-                          {activeImageIndex + 1} / {event.images.length}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Thumbnail Gallery */}
-                  <div className={styles.thumbnailGallery}>
-                    <button
-                      onClick={moveGalleryPrev}
-                      className={`${styles.thumbNav} ${galleryPosition >= 0 ? styles.disabled : ''}`}
-                    >
-                      <svg className={styles.thumbNavIcon} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                      </svg>
-                    </button>
-                    <div
-                      className={styles.thumbnailsContainer}
-                      style={{ left: `${galleryPosition}%` }}
-                    >
-                      {event.images.map((image, index) => (
-                        <img
-                          key={index}
-                          src={image}
-                          alt={`${event.title} ${index + 1}`}
-                          className={`${styles.thumbnail} ${index === activeImageIndex ? styles.active : ''}`}
-                          onClick={() => handleImageClick(index)}
-                        />
-                      ))}
-                    </div>
-                    <button
-                      onClick={moveGalleryNext}
-                      className={`${styles.thumbNav} ${galleryPosition <= galleryConfig.leftMax ? styles.disabled : ''}`}
-                    >
-                      <svg className={styles.thumbNavIcon} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </button>
-                  </div>
+                    className={`${styles.galleryItem} ${index === activeImageIndex ? styles.active : ''}`}
+                    style={{ backgroundImage: `url(${image})` }}
+                    onClick={() => handleImageClick(index)}
+                  />
                 </div>
-              ) : (
-                <div className={styles.placeholderImage}>
-                  <span>No images available</span>
-                </div>
-              )}
+              ))}
+            </div>
+          </div>
+        </div>
 
-              {/* Full Gallery Modal */}
-              {showGallery && (
-                <div className={styles.galleryModal} onClick={() => setShowGallery(false)}>
-                  <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-                    <button
-                      className={styles.closeModal}
-                      onClick={() => setShowGallery(false)}
-                    >
-                      ×
-                    </button>
-                    <div className={styles.modalImageContainer}>
-                      <img
-                        src={event.images[activeImageIndex]}
-                        alt={event.title}
-                        className={styles.modalImage}
-                      />
-                      <button
-                        onClick={handlePrev}
-                        className={styles.modalPrev}
-                      >
-                        <svg className={styles.modalNavIcon} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                        </svg>
-                      </button>
-                      <button
-                        onClick={handleNext}
-                        className={styles.modalNext}
-                      >
-                        <svg className={styles.modalNavIcon} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                      </button>
-                    </div>
-                    <div className={styles.modalThumbnails}>
-                      {event.images.map((image, index) => (
-                        <img
-                          key={index}
-                          src={image}
-                          alt={`${event.title} ${index + 1}`}
-                          className={`${styles.modalThumbnail} ${index === activeImageIndex ? styles.active : ''}`}
-                          onClick={() => handleImageClick(index)}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
+        {/* Main Content Grid */}
+        <div className="grid lg:grid-cols-3 gap-8">
+          {/* Left Column: Description & Comments (2/3 width) */}
+          <div className="lg:col-span-2">
+            {/* Event Header */}
+            <div className="mb-6">
+              <div className="flex flex-wrap gap-2 mb-4">
+                <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                  event.category === 'Workshop' ? 'bg-red-100 text-red-800' :
+                  event.category === 'Volunteer' ? 'bg-blue-100 text-blue-800' :
+                  event.category === 'Market' ? 'bg-green-100 text-green-800' :
+                  'bg-gray-100 text-gray-800'
+                }`}>
+                  {event.category}
+                </span>
+                {event.price > 0 && (
+                  <span className="px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                    ${event.price}
+                  </span>
+                )}
+              </div>
 
-              <h1 className={styles.eventTitle}>{event.title}</h1>
-              <div className={styles.categoryBadge}>{event.category}</div>
-              <div
-                className={styles.eventDescription}
-                dangerouslySetInnerHTML={{ __html: event.description }}
+              <h1 className="text-3xl font-bold text-[#05213C] mb-4">{event.title}</h1>
+            </div>
+
+            {/* Description */}
+            <div className="mb-8">
+              <h2 className="text-xl font-semibold text-[#05213C] mb-4">About this Event</h2>
+              <div 
+                className="prose max-w-none text-gray-700 leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: event.description }} 
               />
-            </section>
+            </div>
 
-            {/* Comments Section - Keep as is */}
-            <section className={styles.commentsSection}>
-              <h2 className={styles.sectionTitle}>Comments ({comments.length})</h2>
-              <form onSubmit={handleCommentSubmit} className={styles.commentForm}>
+            {/* Comments Section */}
+            <section className="mb-8">
+              <h2 className="text-xl font-semibold text-[#05213C] mb-4">Community Discussion ({comments.length})</h2>
+              
+              {/* Comment Form */}
+              <form onSubmit={handleCommentSubmit} className="mb-6">
                 <textarea
-                  className={styles.commentTextarea}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#05213C] focus:border-transparent resize-none"
                   rows="4"
                   placeholder="Add a comment..."
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
                   disabled={isSubmitting}
                 />
-                <button type="submit" className={styles.commentSubmitButton} disabled={isSubmitting || !newComment.trim()}>
+                <button 
+                  type="submit" 
+                  className="bg-[#05213C] text-white px-6 py-2 rounded-lg hover:bg-blue-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-2"
+                  disabled={isSubmitting || !newComment.trim()}
+                >
                   {isSubmitting ? 'Posting...' : 'Post Comment'}
                 </button>
               </form>
 
               {/* Comment List */}
-              <div className={styles.commentList}>
+              <div className="space-y-4">
                 {comments.map((comment) => (
-                  <div key={comment._id} className={styles.commentItem}>
-                    <div className={styles.commentAvatar}>{comment.avatarInitial}</div>
-                    <div className={styles.commentContent}>
-                      <div className={styles.commentHeader}>
-                        <span className={styles.commentAuthor}>{comment.author}</span>
-                        <span className={styles.commentDate}>{formatCommentDate(comment.date)}</span>
+                  <div key={comment._id} className="flex space-x-3">
+                    <div className="flex-shrink-0">
+                      <div className="w-10 h-10 bg-[#05213C] text-white rounded-full flex items-center justify-center font-semibold">
+                        {comment.avatarInitial}
                       </div>
-                      <p className={styles.commentBody}>{comment.text}</p>
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-semibold text-gray-900">{comment.author}</span>
+                        <span className="text-sm text-gray-500">{formatCommentDate(comment.date)}</span>
+                      </div>
+                      <p className="text-gray-700">{comment.text}</p>
                     </div>
                   </div>
                 ))}
@@ -349,98 +349,81 @@ export default function EventDetails() {
             </section>
           </div>
 
-          {/* Right Column: Details & Registration */}
-          <aside className={styles.sidebarColumn}>
-            <div className={styles.stickySidebar}>
-              <div className={styles.detailsCard}>
-                <ul className={styles.detailsList}>
-                  <li className={styles.detailItem}>
-                    <CalendarIcon />
+          {/* Right Column: Details & Registration (1/3 width) */}
+          <div className="lg:col-span-1">
+            <div className="sticky top-8">
+              <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+                <ul className="space-y-4 mb-6">
+                  <li className="flex items-start space-x-3">
+                    <div className="flex-shrink-0 w-5 h-5 text-[#05213C] mt-0.5">
+                      <CalendarIcon />
+                    </div>
                     <div>
-                      <h3 className={styles.detailTitle}>Date</h3>
-                      <p className={styles.detailText}>{formattedDate}</p>
+                      <h3 className="font-semibold text-gray-900">Date</h3>
+                      <p className="text-gray-700">{formatDate(event.date)}</p>
                     </div>
                   </li>
-                  <li className={styles.detailItem}>
-                    <ClockIcon />
+                  <li className="flex items-start space-x-3">
+                    <div className="flex-shrink-0 w-5 h-5 text-[#05213C] mt-0.5">
+                      <ClockIcon />
+                    </div>
                     <div>
-                      <h3 className={styles.detailTitle}>Time</h3>
-                      <p className={styles.detailText}>{formattedTime}</p>
+                      <h3 className="font-semibold text-gray-900">Time</h3>
+                      <p className="text-gray-700">{formatTime(event.time)}</p>
                     </div>
                   </li>
-                  <li className={styles.detailItem}>
-                    <LocationIcon />
+                  <li className="flex items-start space-x-3">
+                    <div className="flex-shrink-0 w-5 h-5 text-[#05213C] mt-0.5">
+                      <LocationIcon />
+                    </div>
                     <div>
-                      <h3 className={styles.detailTitle}>Location</h3>
-                      <p className={styles.detailText}>{event.location}</p>
+                      <h3 className="font-semibold text-gray-900">Location</h3>
+                      <p className="text-gray-700">{event.location}</p>
                     </div>
                   </li>
                 </ul>
-                <button className={styles.registerButton}>Register for Event</button>
-                <div className={styles.mapContainer}>
-                  {/* Placeholder for a future map integration */}
-                  <span>Map Placeholder</span>
+                <button className="w-full bg-[#05213C] text-white py-3 rounded-lg hover:bg-blue-800 transition-colors font-semibold">
+                  Register for Event
+                </button>
+                <div className="mt-4">
+                  <div className="w-full h-48 bg-gray-200 rounded-lg flex items-center justify-center">
+                    <span className="text-gray-500">Map Placeholder</span>
+                  </div>
                 </div>
               </div>
 
-              {/* Similar Events Section - Mirroring Similar Posts */}
+              {/* Similar Events Section */}
               {similarEvents && similarEvents.length > 0 && (
-                <div className={styles.similarEventsSection}>
-                  <h2 className={styles.sectionTitle}>Similar Events</h2>
-                  <div className={styles.similarEventsGrid}>
-                    {similarEvents.slice(0, 4).map((similarEvent) => (
+                <div className="mt-8">
+                  <h2 className="text-xl font-semibold text-[#05213C] mb-4 text-center">Similar Events</h2>
+                  <div className="grid grid-cols-1 gap-4">
+                    {similarEvents.slice(0, 3).map((similarEvent) => (
                       <div
                         key={similarEvent._id}
-                        className={styles.similarEventCard}
+                        className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
                         onClick={() => navigate(`/events/${similarEvent._id}`)}
                       >
-                        {/* Fixed height image container */}
-                        <div className="h-48 w-full overflow-hidden">
-                          {similarEvent.images && similarEvent.images.length > 0 ? (
-                            <img
-                              src={similarEvent.images[0]}
-                              alt={similarEvent.title}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                              <span className="text-gray-500 text-sm">No Image</span>
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="flex flex-col flex-grow p-4">
-                          {/* Fixed height badges section */}
-                          <div className="flex flex-wrap gap-1 mb-3 min-h-[2rem] items-start">
-                            <span className={`px-2 py-1 rounded text-xs font-medium ${
-                              similarEvent.category === 'Workshop' ? 'bg-red-100 text-red-800' :
-                              similarEvent.category === 'Volunteer' ? 'bg-blue-100 text-blue-800' :
-                              similarEvent.category === 'Market' ? 'bg-green-100 text-green-800' :
-                              'bg-gray-100 text-gray-800'
-                            }`}>
-                              {similarEvent.category}
-                            </span>
-                            <span className="px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800">
-                              {similarEvent.price > 0 ? `$${similarEvent.price}` : 'Free'}
-                            </span>
+                        <div className="flex">
+                          <div className="w-20 h-20 flex-shrink-0">
+                            {similarEvent.images && similarEvent.images.length > 0 ? (
+                              <img
+                                src={similarEvent.images[0]}
+                                alt={similarEvent.title}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                                <span className="text-gray-500 text-xs">No Image</span>
+                              </div>
+                            )}
                           </div>
-
-                          {/* Fixed height title */}
-                          <div className="min-h-[3rem] mb-3 flex items-start">
-                            <h3 className={`${styles.similarEventTitle} line-clamp-2 w-full`}>
+                          <div className="p-3 flex-1">
+                            <h3 className="font-semibold text-sm text-[#05213C] line-clamp-2">
                               {similarEvent.title}
                             </h3>
-                          </div>
-
-                          {/* Flexible description */}
-                          <p className={`${styles.similarEventDescription} flex-grow`}>
-                            {similarEvent.description.substring(0, 100)}...
-                          </p>
-
-                          {/* Fixed height metadata at bottom */}
-                          <div className="flex items-center justify-between text-xs text-gray-500 mt-3 pt-3 border-t border-gray-100 min-h-[1.5rem]">
-                            <span>{new Date(similarEvent.date).toLocaleDateString()}</span>
-                            <span>Event</span>
+                            <p className="text-xs text-gray-500 mt-1">
+                              {new Date(similarEvent.date).toLocaleDateString()}
+                            </p>
                           </div>
                         </div>
                       </div>
@@ -449,9 +432,9 @@ export default function EventDetails() {
                 </div>
               )}
             </div>
-          </aside>
+          </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

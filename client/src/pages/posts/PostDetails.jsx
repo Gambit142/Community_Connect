@@ -212,30 +212,6 @@ export default function PostDetails() {
                 </div>
               ))}
             </div>
-
-            {/* Gallery Navigation */}
-            {showNavButtons && (
-              <div className="flex justify-center space-x-4 mt-2">
-                <button
-                  onClick={moveGalleryPrev}
-                  disabled={galleryPosition >= leftMax}
-                  className={`p-2 rounded-full ${galleryPosition >= leftMax ? 'bg-gray-300 cursor-not-allowed' : 'bg-[#05213C] text-white hover:bg-blue-700'}`}
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
-                <button
-                  onClick={moveGalleryNext}
-                  disabled={galleryPosition <= leftMin}
-                  className={`p-2 rounded-full ${galleryPosition <= leftMin ? 'bg-gray-300 cursor-not-allowed' : 'bg-[#05213C] text-white hover:bg-blue-700'}`}
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
-              </div>
-            )}
           </div>
         </div>
 
