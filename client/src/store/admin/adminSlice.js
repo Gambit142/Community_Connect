@@ -5,6 +5,7 @@ import { rejectPost } from './rejectPostThunk.js';
 import { getPendingEvents } from './getPendingEventsThunk.js';
 import { approveEvent } from './approveEventThunk.js';
 import { rejectEvent } from './rejectEventThunk.js';
+import { getOrders } from './getOrdersThunk.js';
 
 const adminSlice = createSlice({
   name: 'admin',
@@ -22,6 +23,13 @@ const adminSlice = createSlice({
     eventLoading: false,
     eventError: null,
     eventFilters: { search: '', page: 1, limit: 10 },
+
+    // Orders state (new)
+    orders: [],
+    orderPagination: null, // If paginated later
+    orderLoading: false,
+    orderError: null,
+    orderFilters: { eventId: '', status: '', page: 1, limit: 20 },
   },
   reducers: {
     // Posts reducers
@@ -40,6 +48,18 @@ const adminSlice = createSlice({
     },
     clearEventError: (state) => {
       state.eventError = null;
+    },
+
+    // Orders reducers (new)
+    setOrderFilters: (state, action) => {
+      state.orderFilters = { ...state.orderFilters, ...action.payload };
+      state.orderPagination = null; // Reset pagination
+    },
+    clearOrderError: (state) => {
+      state.orderError = null;
+    },
+    clearOrders: (state) => {
+      state.orders = [];
     },
   },
   extraReducers: (builder) => {
@@ -136,6 +156,21 @@ const adminSlice = createSlice({
       .addCase(rejectEvent.rejected, (state, action) => {
         state.eventLoading = false;
         state.eventError = action.payload;
+      })
+
+      // Get Orders
+      .addCase(getOrders.pending, (state) => {
+        state.orderLoading = true;
+        state.orderError = null;
+      })
+      .addCase(getOrders.fulfilled, (state, action) => {
+        state.orderLoading = false;
+        state.orders = action.payload.orders;
+        state.orderPagination = action.payload.pagination || null;
+      })
+      .addCase(getOrders.rejected, (state, action) => {
+        state.orderLoading = false;
+        state.orderError = action.payload;
       });
   },
 });
@@ -151,5 +186,9 @@ export const { setEventFilters, clearEventError } = adminSlice.actions;
 export { getPendingEvents } from './getPendingEventsThunk.js';
 export { approveEvent } from './approveEventThunk.js';
 export { rejectEvent } from './rejectEventThunk.js';
+
+// Orders export
+export const { setOrderFilters, clearOrderError, clearOrders } = adminSlice.actions;
+export { getOrders } from './getOrdersThunk.js';
 
 export default adminSlice.reducer;
