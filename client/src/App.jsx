@@ -5,6 +5,9 @@ import store from './store/store.js';
 import './styles/auth.css';
 import { verifyToken } from './store/auth/verifyTokenThunk.js';
 
+// calender
+import 'react-big-calendar/lib/css/react-big-calendar.css';
+
 // LAYOUTS
 import AuthLayout from './components/AuthLayout';
 import UserLayout from './components/UserLayout';
@@ -23,6 +26,8 @@ import CreateEvent from './pages/events/CreateEvent';
 import EditEvent from './pages/events/EditEvent';
 import MyEvents from './pages/events/MyEvents';
 import EventsCalendar from './pages/events/EventsCalendar';
+import EventRegistration from './pages/events/EventRegistration';
+import PaymentConfirmation from './pages/events/PaymentConfirmation';
 
 // NEW PROFILE PAGES
 import ProfilePage from './pages/profile/ProfilePage';
@@ -93,6 +98,8 @@ function AppContent() {
           <Route path="/events" element={<EventsIndex />} />
           <Route path="/events/calendar" element={<EventsCalendar />} />
           <Route path="/events/:id" element={<EventDetails />} />
+          <Route path="/events/register/:id" element={<EventRegistration />} />
+          <Route path="/events/payment-success/:id" element={<PaymentConfirmation />} />
 
           {/* Protected routes - require auth */}
           <Route path="/posts/create" element={
