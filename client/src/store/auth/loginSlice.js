@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
-import { verifyToken } from './verifyTokenThunk.js'; // New import
+import { verifyToken } from './verifyTokenThunk.js';
 
 export const loginUser = createAsyncThunk(
   'login/loginUser',
@@ -54,15 +54,21 @@ const loginSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-      // Handle verifyToken (reuse login fulfilled)
+      // Handle verifyToken
+      .addCase(verifyToken.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
       .addCase(verifyToken.fulfilled, (state, action) => {
         state.loading = false;
         state.user = action.payload.user;
-        state.token = localStorage.getItem('token');
+        state.token = action.payload.token || localStorage.getItem('token');
       })
-      .addCase(verifyToken.rejected, (state) => {
+      .addCase(verifyToken.rejected, (state, action) => {
+        state.loading = false;
         state.user = null;
         state.token = null;
+        state.error = action.payload;
         localStorage.removeItem('token');
       });
   },

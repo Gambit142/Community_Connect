@@ -1,7 +1,8 @@
 // src/pages/Landing.jsx
 
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import styles from '../assets/css/Landing.module.css';
 
 // Import slider components and styles
@@ -44,6 +45,38 @@ const FAQItem = ({ faq, isOpen, onClick }) => (
 
 export default function Landing() {
   const [openFaq, setOpenFaq] = useState(null);
+  const [showUnauthorizedMessage, setShowUnauthorizedMessage] = useState(false);
+  const [unauthorizedType, setUnauthorizedType] = useState(''); // 'not-signed-in' or 'wrong-role'
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { user } = useSelector((state) => state.login);
+
+  // Check for unauthorized state on mount only
+  useEffect(() => {
+    const state = location.state;
+    if (state?.fromAdmin) {
+      if (state.unauthorized) {
+        // Signed in but wrong role
+        setUnauthorizedType('wrong-role');
+      } else {
+        // Not signed in
+        setUnauthorizedType('not-signed-in');
+      }
+      setShowUnauthorizedMessage(true);
+      // Clear the state immediately using navigate replace (won't trigger re-run since empty deps)
+      navigate(location.pathname, { replace: true, state: {} });
+      // Auto-hide after 6 seconds
+      const timer = setTimeout(() => setShowUnauthorizedMessage(false), 6000);
+      return () => clearTimeout(timer);
+    }
+  }, []); // Empty deps: run only on mount
+
+  // Redirect admin to /admin
+  useEffect(() => {
+    if (user && user.role === 'admin') {
+      navigate('/admin', { replace: true });
+    }
+  }, [user, navigate]);
 
   const sliderSettings = {
     dots: true,
@@ -64,8 +97,25 @@ export default function Landing() {
     const day = date.getDate();
     return { month, day };
   };
+
+  const getUnauthorizedMessage = () => {
+    if (unauthorizedType === 'wrong-role') {
+      return 'You are not authorized to access admin pages. Please contact support if you believe this is an error.';
+    } else if (unauthorizedType === 'not-signed-in') {
+      return 'Admin access requires login. Please <a href="/auth/login" className="underline">sign in</a> with an admin account.';
+    }
+    return '';
+  };
+
   return (
     <div>
+      {/* Unauthorized Message Banner */}
+      {showUnauthorizedMessage && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 mx-4 mt-4">
+          <span className="block sm:inline" dangerouslySetInnerHTML={{ __html: getUnauthorizedMessage() }} />
+        </div>
+      )}
+
       {/* Hero Section */}
       <section className={styles.hero}>
         <div className={styles.heroOverlay}></div>

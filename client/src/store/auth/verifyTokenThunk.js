@@ -1,10 +1,9 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
-import { loginUser } from './loginSlice.js'; // Reuse fulfilled logic
 
 export const verifyToken = createAsyncThunk(
   'login/verifyToken',
-  async (_, { rejectWithValue, dispatch }) => {
+  async (_, { rejectWithValue }) => {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
@@ -14,9 +13,8 @@ export const verifyToken = createAsyncThunk(
       const response = await axios.get(`${apiUrl}/profile`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      // Manually set user/token in state (reuse login fulfilled)
-      dispatch({ type: loginUser.fulfilled.type, payload: { user: response.data.user, token } });
-      return response.data;
+      // Returns the data directly for loginSlice to handle it in extraReducers
+      return { user: response.data.user, token };
     } catch (err) {
       localStorage.removeItem('token');
       return rejectWithValue(err.response?.data?.message || 'Token invalid');

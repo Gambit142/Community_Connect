@@ -26,19 +26,25 @@ export default function DashboardLayout() {
     }
   }, [user, authLoading, dispatch]);
 
-  // Check if user is admin; redirect if not
-  useEffect(() => {
-    if (user && user.role !== 'admin') {
-      navigate('/home', { state: { unauthorized: true } });
-    }
-  }, [user, navigate]);
-
   if (authLoading || !loaded) {
     return <Preloader show={true} />; // Show preloader during auth check
   }
 
+  // Immediate check and redirect to prevent flash
   if (!user || user.role !== 'admin') {
-    return <div className="flex items-center justify-center min-h-screen">Redirecting...</div>;
+    const unauthorized = !!user; // true if signed in but wrong role
+    navigate('/', { 
+      replace: true, 
+      state: { fromAdmin: true, unauthorized } 
+    });
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#05213C] mx-auto mb-4"></div>
+          <p className="text-gray-500">Redirecting...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
