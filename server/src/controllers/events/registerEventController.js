@@ -1,9 +1,10 @@
 const Joi = require('joi');
 const Event = require('../../models/Event.js');
+const Order = require('../../models/Order.js'); 
 const Notification = require('../../models/Notification.js');
 const nodemailer = require('nodemailer');
 const User = require('../../models/User.js');
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY); // Stripe init
 
 // Nodemailer transporter (reuse from createEvent)
 const transporter = nodemailer.createTransporter({
@@ -26,17 +27,28 @@ const registerEvent = async (req, res) => {
       return res.status(404).json({ message: 'Event not found or not published' });
     }
 
-    // Check if already registered
+    // Check if already registered (via attendees)
     if (event.attendees.includes(userId)) {
       return res.status(400).json({ message: 'Already registered for this event' });
     }
 
+    // Check for existing completed order
+    const existingOrder = await Order.findOne({ 
+      userID: userId, 
+      eventID: eventId, 
+      status: 'completed' 
+    });
+    if (existingOrder) {
+      return res.status(400).json({ message: 'Already paid and registered for this event' });
+    }
+
     if (event.price === 0) {
-      // Free event: Direct registration
+      // Free event: Direct registration (no Order)
       await handleFreeRegistration(event, req.user, res);
     } else {
-      // Paid event: Create Stripe session
-      const session = await createStripeSession(event, req.user);
+      // Paid event: Create pending Order, then Stripe session
+      const order = await createPendingOrder(event, req.user);
+      const session = await createStripeSession(event, req.user, order._id);
       res.status(200).json({
         message: 'Redirect to checkout',
         sessionId: session.id,
@@ -49,7 +61,21 @@ const registerEvent = async (req, res) => {
   }
 };
 
-// Helper: Handle free registration (also used by webhook for paid)
+// NEW: Helper to create pending Order for paid events
+const createPendingOrder = async (event, user) => {
+  const order = new Order({
+    userID: user._id,
+    eventID: event._id,
+    amount: event.price,
+    currency: 'usd',
+    status: 'pending',
+    stripeSessionId: '', // To be updated after session creation
+  });
+  await order.save();
+  return order;
+};
+
+// Helper: Handle free registration (also used by webhook for paid fulfillment)
 const handleFreeRegistration = async (event, user, res) => {
   // Add to attendees
   event.attendees.push(user._id);
@@ -127,19 +153,19 @@ const handleFreeRegistration = async (event, user, res) => {
   if (res && res.status && res.json) {
     res.status(201).json({
       message: 'Registration successful',
-      event: { ...event.toObject(), attendees: event.attendees.length }, // Return attendee count, not full list
+      event: { ...event.toObject(), attendees: event.attendees.length }, // Return attendee count
     });
   }
 };
 
-// Helper: Create Stripe checkout session
-const createStripeSession = async (event, user) => {
+// Updated: Create Stripe checkout session (include order ID in metadata)
+const createStripeSession = async (event, user, orderId) => {
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ['card'],
     line_items: [
       {
         price_data: {
-          currency: 'cad',
+          currency: 'usd',
           product_data: {
             name: `${event.title} - ${new Date(event.date).toLocaleDateString()}`,
             description: event.description.substring(0, 100) + '...',
@@ -155,10 +181,14 @@ const createStripeSession = async (event, user) => {
     metadata: {
       userId: user._id.toString(),
       eventId: event._id.toString(),
+      orderId: orderId.toString(), // NEW: Track order
     },
   });
+
+  // Update order with session ID
+  await Order.findByIdAndUpdate(orderId, { stripeSessionId: session.id });
 
   return session;
 };
 
-module.exports = { registerEvent, handleFreeRegistration }; 
+module.exports = { registerEvent, handleFreeRegistration }; // Export for webhook
