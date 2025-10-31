@@ -25,6 +25,7 @@ const loginSlice = createSlice({
     loading: false,
     error: null,
     successMessage: null,
+    isInitialized: false,
   },
   reducers: {
     clearError: (state) => {
@@ -63,11 +64,13 @@ const loginSlice = createSlice({
         state.loading = false;
         state.user = action.payload.user;
         state.token = action.payload.token || localStorage.getItem('token');
+        state.isInitialized = true;
       })
       .addCase(verifyToken.rejected, (state, action) => {
         state.loading = false;
         state.user = null;
         state.token = null;
+        state.isInitialized = true;
         state.error = action.payload;
         localStorage.removeItem('token');
       });
