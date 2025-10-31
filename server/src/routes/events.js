@@ -2,12 +2,14 @@ const express = require('express');
 const router = express.Router();
 const { authenticateToken } = require('../middleware/auth.js');
 const { uploadMiddleware } = require('../middleware/multerConfig.js');
+const { stripeWebhook } = require('../middleware/stripeWebhook.js');
 const { createEvent } = require('../controllers/events/createEventController.js');
 const { getMyEvents } = require('../controllers/events/getMyEventsController.js');
 const { getEvents } = require('../controllers/events/eventsController.js');
 const { getEventById, getSimilarEvents } = require('../controllers/events/getEventController.js');
 const { updateEvent } = require('../controllers/events/updateEventController.js');
 const { deleteEvent } = require('../controllers/events/deleteEventController.js');
+const { registerEvent } = require('../controllers/events/registerEventController.js');
 
 // Create event (member only, pending approval) with image upload (up to 5 images)
 router.post('/', authenticateToken, uploadMiddleware, createEvent);
@@ -98,5 +100,11 @@ router.delete('/:id', authenticateToken, deleteEvent);
 // Response Structure:
 // - Success (200): { "message": "string" }
 // - Errors: 401 { "message": "unauthorized" }, 404 { "message": "not found" }, 500 { "message": "server error" }
+
+// Register for event (authenticated users only)
+router.post('/:id/register', authenticateToken, registerEvent);
+
+// Stripe webhook for paid event fulfillment (public, no auth - signature verified in middleware)
+router.post('/webhook', express.raw({type: 'application/json'}), stripeWebhook);
 
 module.exports = router;
