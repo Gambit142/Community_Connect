@@ -1,12 +1,16 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { createEvent } from './createEventThunk.js';
 import { getMyEvents } from './getMyEventsThunk.js';
+import { getEvents } from './getEventsThunk.js';
+import { getEventById } from './getEventByIdThunk.js';
+import { getSimilarEvents } from './getSimilarEventsThunk.js';
 
 const eventsSlice = createSlice({
   name: 'events',
   initialState: {
     events: [],
     currentEvent: null,
+    similarEvents: [],
     pagination: null,
     loading: false,
     error: null,
@@ -17,8 +21,10 @@ const eventsSlice = createSlice({
       state.error = null;
       state.successMessage = null;
     },
+    // Clear current event (e.g., on unmount)
     clearCurrentEvent: (state) => {
       state.currentEvent = null;
+      state.similarEvents = [];
     },
   },
   extraReducers: (builder) => {
@@ -51,6 +57,48 @@ const eventsSlice = createSlice({
       .addCase(getMyEvents.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+      // Get Events (Public)
+      .addCase(getEvents.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getEvents.fulfilled, (state, action) => {
+        state.loading = false;
+        state.events = action.payload.events;
+        state.pagination = action.payload.pagination;
+      })
+      .addCase(getEvents.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // Get Event by ID
+      .addCase(getEventById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getEventById.fulfilled, (state, action) => {
+        state.loading = false;
+        state.currentEvent = action.payload.event;
+      })
+      .addCase(getEventById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        state.currentEvent = null;
+      })
+      // Get Similar Events
+      .addCase(getSimilarEvents.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getSimilarEvents.fulfilled, (state, action) => {
+        state.loading = false;
+        state.similarEvents = action.payload.similarEvents;
+      })
+      .addCase(getSimilarEvents.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        state.similarEvents = [];
       });
   },
 });
@@ -60,4 +108,7 @@ export default eventsSlice.reducer;
 
 // Re-export thunks for easy import in components
 export { createEvent } from './createEventThunk.js';
-export { getMyEvents } from './getMyEventsThunk.js'; 
+export { getMyEvents } from './getMyEventsThunk.js';
+export { getEvents } from './getEventsThunk.js';
+export { getEventById } from './getEventByIdThunk.js';
+export { getSimilarEvents } from './getSimilarEventsThunk.js';
