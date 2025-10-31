@@ -1,9 +1,12 @@
+// Edited file: routes/events.js
 const express = require('express');
 const router = express.Router();
 const { authenticateToken } = require('../middleware/auth.js');
 const { uploadMiddleware } = require('../middleware/multerConfig.js');
 const { createEvent } = require('../controllers/events/createEventController.js');
 const { getMyEvents } = require('../controllers/events/getMyEventsController.js');
+const { getEvents } = require('../controllers/events/eventsController.js');
+const { getEventById, getSimilarEvents } = require('../controllers/events/getEventController.js');
 
 // Create event (member only, pending approval) with image upload (up to 5 images)
 router.post('/', authenticateToken, uploadMiddleware, createEvent);
@@ -37,5 +40,40 @@ router.get('/my-events', authenticateToken, getMyEvents);
 // Response Structure:
 // - Success (200): { "message": "string", "events": [event objects], "pagination": { currentPage, totalPages, totalEvents, hasNext } }
 // - Errors: 400 { "message": "validation error" }, 401 { "message": "unauthorized" }, 500 { "message": "server error" }
+
+// Get all published events (public, with filters/search/pagination)
+router.get('/', getEvents);
+
+// Request Structure for Get All Events:
+// - Method: GET /api/events
+// - Query Params: 
+//   ?search=query (title/description/location, optional)
+//   ?category=Workshop (filter, optional)
+//   ?tags=free,urgent (comma-separated, optional - if implemented)
+//   ?page=1 (optional, default 1)
+//   ?limit=6 (optional, default 6, max 12)
+// Response Structure:
+// - Success (200): { "message": "string", "events": [event objects], "pagination": { currentPage, totalPages, totalEvents, hasNext } }
+// - Errors: 400 { "message": "validation error" }, 500 { "message": "server error" }
+
+// Get single event by ID (public, only published events)
+router.get('/:id', getEventById);
+
+// Request Structure for Get Event by ID:
+// - Method: GET /api/events/:id
+// - No body/headers required
+// Response Structure:
+// - Success (200): { "message": "string", "event": { ...event object } }
+// - Errors: 404 { "message": "Event not found" }, 500 { "message": "server error" }
+
+// Get similar events (public, based on category, exclude current event)
+router.get('/:id/similar', getSimilarEvents);
+
+// Request Structure for Get Similar Events:
+// - Method: GET /api/events/:id/similar
+// - No body/headers required
+// Response Structure:
+// - Success (200): { "message": "string", "similarEvents": [event objects, max 5] }
+// - Errors: 404 { "message": "Event not found" }, 500 { "message": "server error" }
 
 module.exports = router;
