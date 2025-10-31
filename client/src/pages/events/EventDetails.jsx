@@ -382,8 +382,11 @@ export default function EventDetails() {
                     </div>
                   </li>
                 </ul>
-                <button className="w-full bg-[#05213C] text-white py-3 rounded-lg hover:bg-blue-800 transition-colors font-semibold">
-                  Register for Event
+                <button
+                    onClick={() => navigate(`/events/register/${event._id}`)}
+                    className="w-full bg-[#05213C] text-white py-3 rounded-lg hover:bg-blue-800 transition-colors font-semibold"
+                  >
+                    Register for Event
                 </button>
                 <div className="mt-4">
                   <div className="w-full h-48 bg-gray-200 rounded-lg flex items-center justify-center">

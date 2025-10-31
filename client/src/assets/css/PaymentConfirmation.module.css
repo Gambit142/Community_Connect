@@ -1,0 +1,209 @@
+/* src/assets/css/PaymentConfirmation.module.css */
+
+.pageContainer {
+  @apply min-h-screen bg-gray-50 py-10 px-4;
+}
+
+.contentWrapper {
+  @apply max-w-7xl mx-auto;
+}
+
+/* Success Header */
+.successHeader {
+  @apply text-center mb-10;
+}
+
+.successIcon {
+  @apply flex items-center justify-center mb-4;
+}
+
+.checkIcon {
+  @apply h-16 w-16 text-green-500;
+}
+
+.successTitle {
+  @apply text-3xl font-bold text-gray-900;
+}
+
+.successSubtitle {
+  @apply text-gray-600 mt-2 max-w-2xl mx-auto;
+}
+
+/* Main Grid */
+.mainGrid {
+  @apply grid grid-cols-1 lg:grid-cols-3 gap-10;
+}
+
+/* Left Column */
+.detailsColumn {
+  @apply lg:col-span-2;
+}
+
+.detailsCard {
+  @apply bg-white rounded-lg shadow-md p-6 mb-8;
+}
+
+.cardHeader {
+  @apply flex flex-col sm:flex-row justify-between sm:items-center mb-4;
+}
+
+.cardTitle {
+  @apply text-xl font-bold text-gray-900;
+}
+
+.confirmationBadge {
+  @apply bg-green-100 text-green-700 text-xs font-semibold px-3 py-1 rounded-md mt-2 sm:mt-0;
+}
+
+.eventImage {
+  @apply rounded-md overflow-hidden mb-4;
+}
+
+.eventImage img {
+  @apply w-full h-56 object-cover;
+}
+
+.eventInfo {
+  @apply mb-6;
+}
+
+.eventTitle {
+  @apply text-lg font-semibold text-gray-900 mb-3;
+}
+
+.infoGrid {
+  @apply space-y-3;
+}
+
+.infoItem {
+  @apply flex items-start gap-3;
+}
+
+.infoIcon {
+  @apply h-5 w-5 text-gray-500 mt-1;
+}
+
+.infoLabel {
+  @apply text-sm font-semibold text-gray-700;
+}
+
+.infoValue {
+  @apply text-sm text-gray-600;
+}
+
+/* Action Buttons */
+.actionButtons {
+  @apply flex flex-col sm:flex-row gap-3 mt-4;
+}
+
+.primaryButton {
+  @apply flex items-center justify-center gap-2 bg-black text-white py-2 px-4 rounded-md hover:bg-gray-800 transition-colors;
+}
+
+.secondaryButton {
+  @apply flex items-center justify-center gap-2 bg-white border border-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-50 transition-colors;
+}
+
+/* What's Next */
+.whatsNextCard {
+  @apply bg-white rounded-lg shadow-md p-6;
+}
+
+.whatsNextTitle {
+  @apply text-xl font-bold text-gray-900 mb-4;
+}
+
+.stepsList {
+  @apply space-y-5;
+}
+
+.step {
+  @apply flex items-start gap-4;
+}
+
+.stepNumber {
+  @apply flex-shrink-0 w-8 h-8 rounded-full bg-gray-800 text-white flex items-center justify-center font-bold;
+}
+
+.stepContent {
+  @apply flex-1;
+}
+
+.stepTitle {
+  @apply font-semibold text-gray-900;
+}
+
+.stepDescription {
+  @apply text-sm text-gray-600;
+}
+
+/* Right Column - Summary & Contact */
+.summaryColumn {
+  @apply lg:col-span-1;
+}
+
+.summaryCard {
+  @apply bg-white rounded-lg shadow-md p-6 mb-6;
+}
+
+.summaryTitle {
+  @apply text-xl font-bold text-gray-900 mb-4;
+}
+
+.summaryGrid {
+  @apply space-y-3;
+}
+
+.summaryItem {
+  @apply flex justify-between text-sm;
+}
+
+.summaryLabel {
+  @apply font-semibold text-gray-700;
+}
+
+.summaryValue {
+  @apply text-gray-600;
+}
+
+.priceDivider {
+  @apply border-t border-gray-200 my-3;
+}
+
+.totalPaid {
+  @apply flex justify-between font-semibold text-gray-900 mt-2;
+}
+
+/* Contact Card */
+.contactCard {
+  @apply bg-white rounded-lg shadow-md p-6 mb-6;
+}
+
+.contactTitle {
+  @apply text-xl font-bold text-gray-900 mb-2;
+}
+
+.contactDescription {
+  @apply text-sm text-gray-600 mb-4;
+}
+
+.contactMethods {
+  @apply space-y-2;
+}
+
+.contactMethod {
+  @apply flex items-center gap-2 text-sm text-gray-700 hover:text-black transition-colors;
+}
+
+.contactIcon {
+  @apply h-4 w-4 text-gray-500;
+}
+
+/* Navigation Links */
+.navLinks {
+  @apply flex flex-col gap-3;
+}
+
+.navLink {
+  @apply flex items-center justify-between bg-white border border-gray-300 text-gray-700 py-3 px-4 rounded-md hover:bg-gray-50 transition-colors;
+}
