@@ -124,6 +124,7 @@ export default function Header() {
                       <NavLink to="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setProfileOpen(false)}>My Profile</NavLink>
                       <NavLink to="/posts/my-posts" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setProfileOpen(false)}>My Posts</NavLink>
                       <NavLink to="/events/my-events" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setProfileOpen(false)}>My Events</NavLink>
+                      <NavLink to="/events/calendar" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setProfileOpen(false)}>Events Calendar</NavLink>
                       <button onClick={handleLogout} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">Logout</button>
                     </div>
                   )}
@@ -185,6 +186,7 @@ export default function Header() {
                 <NavLink to="/profile" className="block py-2 text-base font-medium text-gray-600 hover:bg-gray-50 rounded-md" onClick={() => setMobileMenuOpen(false)}>My Profile</NavLink>
                 <NavLink to="/posts/my-posts" className="block py-2 text-base font-medium text-gray-600 hover:bg-gray-50 rounded-md" onClick={() => setMobileMenuOpen(false)}>My Posts</NavLink>
                 <NavLink to="/events/my-events" className="block py-2 text-base font-medium text-gray-600 hover:bg-gray-50 rounded-md" onClick={() => setMobileMenuOpen(false)}>My Events</NavLink>
+                <NavLink to="/events/calendar" className="block py-2 text-base font-medium text-gray-600 hover:bg-gray-50 rounded-md" onClick={() => setMobileMenuOpen(false)}>Events Calendar</NavLink>
                 <button onClick={handleLogout} className="w-full text-left py-2 text-base font-medium text-red-600 hover:bg-gray-50 rounded-md">
                   Logout
                 </button>
