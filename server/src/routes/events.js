@@ -107,4 +107,18 @@ router.post('/:id/register', authenticateToken, registerEvent);
 // Stripe webhook for paid event fulfillment (public, no auth - signature verified in middleware)
 router.post('/webhook', express.raw({type: 'application/json'}), stripeWebhook);
 
+// routes/events.js (Add at bottom for testing)
+router.post('/test-email', async (req, res) => {
+  const { email, subject } = req.body;
+  try {
+    const { sendConfirmationEmail } = require('../utils/events/emailHelpers');
+    // Mock data for test
+    await sendConfirmationEmail({ username: 'Test User', email }, { title: 'Test Event' }, { _id: 'test', tickets: 1 });
+    res.json({ message: 'Test email sent' });
+  } catch (err) {
+    console.error('Test email failed:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

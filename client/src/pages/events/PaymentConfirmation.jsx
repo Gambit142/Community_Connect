@@ -1,22 +1,79 @@
-import React, { useEffect } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { CheckCircle, Calendar, MapPin, Mail, Phone, Download, ArrowRight } from 'lucide-react';
+// pages/events/PaymentConfirmation.jsx (Fixed: Use unwrap() for event data, handle payload structure)
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { getEventById } from '../../store/events/eventsSlice';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faCircleCheck,
+  faCalendar,
+  faLocationDot,
+  faEnvelope,
+  faPhone,
+  faDownload,
+  faArrowRight,
+  faClock
+} from '@fortawesome/free-solid-svg-icons';
 import styles from '../../assets/css/PaymentConfirmation.module.css';
-
 export default function PaymentConfirmation() {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  
-  const { registrationData, event, totalPaid, isFree } = location.state || {};
-
+  const [searchParams] = useSearchParams();
+  const dispatch = useDispatch();
+ 
+  const sessionId = searchParams.get('session_id');
+ 
+  const { currentEvent: eventFromStore } = useSelector((state) => state.events);
+  const [regData, setRegData] = useState(null);
+  const [eventData, setEventData] = useState(null);
+  const [totalPaid, setTotalPaid] = useState(0);
+  const [isFree, setIsFree] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const { registrationData, event: eventFromState, totalPaid: totalFromState, isFree: isFreeFromState } = location.state || {};
   useEffect(() => {
-    // Redirect if no data
-    if (!registrationData || !event) {
+    const initializeData = async () => {
+      if (registrationData && eventFromState) {
+        // From free registration navigate
+        setRegData(registrationData);
+        setEventData(eventFromState);
+        setTotalPaid(totalFromState || 0);
+        setIsFree(isFreeFromState || false);
+        setLoading(false);
+      } else if (sessionId) {
+        // From Stripe redirect (paid)
+        const stored = localStorage.getItem(`reg_${sessionId}`);
+        if (stored) {
+          const parsedRegData = JSON.parse(stored);
+          setRegData(parsedRegData);
+          localStorage.removeItem(`reg_${sessionId}`);
+          // Fetch event with unwrap()
+          try {
+            const result = await dispatch(getEventById(id)).unwrap(); // Fixed: Use unwrap() to get direct payload
+            setEventData(result.event); // Fixed: Access .event from { message, event }
+            setTotalPaid(result.event.price * parsedRegData.attendees);
+            setIsFree(false);
+          } catch (err) {
+            console.error('Failed to fetch event:', err);
+          }
+          setLoading(false);
+        } else {
+          // Fallback: redirect back
+          navigate(`/events/${id}`);
+        }
+      } else {
+        // No data
+        navigate('/events');
+      }
+    };
+    initializeData();
+  }, [dispatch, id, sessionId, registrationData, eventFromState, totalFromState, isFreeFromState, navigate]);
+  useEffect(() => {
+    // Redirect if no data after init
+    if (!loading && !regData) {
       navigate('/events');
     }
-  }, [registrationData, event, navigate]);
-
+  }, [loading, regData, navigate]);
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       weekday: 'long',
@@ -25,7 +82,6 @@ export default function PaymentConfirmation() {
       day: 'numeric'
     });
   };
-
   const formatTime = (timeString) => {
     if (!timeString) return '';
     return new Date(`2000-01-01T${timeString}:00`).toLocaleTimeString('en-US', {
@@ -34,45 +90,46 @@ export default function PaymentConfirmation() {
       hour12: true
     });
   };
-
   const generateConfirmationNumber = () => {
     return `CC-${Date.now().toString().slice(-8)}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
   };
-
   const confirmationNumber = generateConfirmationNumber();
-
   const handleDownloadTicket = () => {
     // TODO: Implement PDF ticket download
     console.log('Downloading ticket...');
     alert('Ticket download feature coming soon!');
   };
-
   const handleAddToCalendar = () => {
     // TODO: Implement calendar integration
     console.log('Adding to calendar...');
     alert('Calendar integration coming soon!');
   };
-
-  if (!registrationData || !event) {
+  if (loading) {
+    return (
+      <div className={styles.loadingContainer}>
+        <div className={styles.spinner}></div>
+        <p className={styles.loadingText}>Preparing your confirmation...</p>
+      </div>
+    );
+  }
+  if (!regData || !eventData) {
     return null;
   }
-
   return (
     <div className={styles.pageContainer}>
       <div className={styles.contentWrapper}>
         {/* Success Header */}
         <div className={styles.successHeader}>
           <div className={styles.successIcon}>
-            <CheckCircle className={styles.checkIcon} />
+            <FontAwesomeIcon icon={faCircleCheck} className={styles.checkIcon} />
           </div>
           <h1 className={styles.successTitle}>
             {isFree ? 'Registration Confirmed!' : 'Payment Successful!'}
           </h1>
           <p className={styles.successSubtitle}>
-            Your event registration has been confirmed. A confirmation email has been sent to {registrationData.email}
+            Your event registration has been confirmed. A confirmation email has been sent to {regData.email}
           </p>
         </div>
-
         {/* Confirmation Details */}
         <div className={styles.mainGrid}>
           {/* Left Column - Event Details */}
@@ -84,52 +141,47 @@ export default function PaymentConfirmation() {
                   Confirmation #{confirmationNumber}
                 </span>
               </div>
-
               {/* Event Image */}
-              {event.images && event.images.length > 0 && (
+              {eventData.images && eventData.images.length > 0 && (
                 <div className={styles.eventImage}>
-                  <img src={event.images[0]} alt={event.title} />
+                  <img src={eventData.images[0]} alt={eventData.title} />
                 </div>
               )}
-
               {/* Event Info */}
               <div className={styles.eventInfo}>
-                <h3 className={styles.eventTitle}>{event.title}</h3>
-                
+                <h3 className={styles.eventTitle}>{eventData.title}</h3>
+               
                 <div className={styles.infoGrid}>
                   <div className={styles.infoItem}>
-                    <Calendar className={styles.infoIcon} />
+                    <FontAwesomeIcon icon={faCalendar} className={styles.infoIcon} />
                     <div>
                       <p className={styles.infoLabel}>Date & Time</p>
                       <p className={styles.infoValue}>
-                        {formatDate(event.date)} at {formatTime(event.time)}
+                        {formatDate(eventData.date)} at {formatTime(eventData.time)}
                       </p>
                     </div>
                   </div>
-
                   <div className={styles.infoItem}>
-                    <MapPin className={styles.infoIcon} />
+                    <FontAwesomeIcon icon={faLocationDot} className={styles.infoIcon} />
                     <div>
                       <p className={styles.infoLabel}>Location</p>
-                      <p className={styles.infoValue}>{event.location}</p>
+                      <p className={styles.infoValue}>{eventData.location}</p>
                     </div>
                   </div>
                 </div>
               </div>
-
               {/* Action Buttons */}
               <div className={styles.actionButtons}>
                 <button onClick={handleDownloadTicket} className={styles.primaryButton}>
-                  <Download className="w-5 h-5" />
+                  <FontAwesomeIcon icon={faDownload} className="w-5 h-5" />
                   Download Ticket
                 </button>
                 <button onClick={handleAddToCalendar} className={styles.secondaryButton}>
-                  <Calendar className="w-5 h-5" />
+                  <FontAwesomeIcon icon={faCalendar} className="w-5 h-5" />
                   Add to Calendar
                 </button>
               </div>
             </div>
-
             {/* What's Next Section */}
             <div className={styles.whatsNextCard}>
               <h3 className={styles.whatsNextTitle}>What's Next?</h3>
@@ -139,7 +191,7 @@ export default function PaymentConfirmation() {
                   <div className={styles.stepContent}>
                     <h4 className={styles.stepTitle}>Check Your Email</h4>
                     <p className={styles.stepDescription}>
-                      We've sent a confirmation email with your ticket and event details to {registrationData.email}
+                      We've sent a confirmation email with your ticket and event details to {regData.email}
                     </p>
                   </div>
                 </div>
@@ -164,38 +216,36 @@ export default function PaymentConfirmation() {
               </div>
             </div>
           </div>
-
           {/* Right Column - Summary & Contact */}
           <div className={styles.summaryColumn}>
             {/* Registration Summary */}
             <div className={styles.summaryCard}>
               <h3 className={styles.summaryTitle}>Registration Summary</h3>
-              
+             
               <div className={styles.summaryGrid}>
                 <div className={styles.summaryItem}>
                   <span className={styles.summaryLabel}>Attendee Name</span>
-                  <span className={styles.summaryValue}>{registrationData.fullName}</span>
+                  <span className={styles.summaryValue}>{regData.fullName}</span>
                 </div>
                 <div className={styles.summaryItem}>
                   <span className={styles.summaryLabel}>Email</span>
-                  <span className={styles.summaryValue}>{registrationData.email}</span>
+                  <span className={styles.summaryValue}>{regData.email}</span>
                 </div>
                 <div className={styles.summaryItem}>
                   <span className={styles.summaryLabel}>Phone</span>
-                  <span className={styles.summaryValue}>{registrationData.phone}</span>
+                  <span className={styles.summaryValue}>{regData.phone}</span>
                 </div>
                 <div className={styles.summaryItem}>
                   <span className={styles.summaryLabel}>Number of Tickets</span>
-                  <span className={styles.summaryValue}>{registrationData.attendees}</span>
+                  <span className={styles.summaryValue}>{regData.attendees}</span>
                 </div>
-                {registrationData.specialRequests && (
+                {regData.specialRequests && (
                   <div className={styles.summaryItem}>
                     <span className={styles.summaryLabel}>Special Requests</span>
-                    <span className={styles.summaryValue}>{registrationData.specialRequests}</span>
+                    <span className={styles.summaryValue}>{regData.specialRequests}</span>
                   </div>
                 )}
               </div>
-
               {!isFree && totalPaid && (
                 <>
                   <div className={styles.priceDivider}></div>
@@ -206,7 +256,6 @@ export default function PaymentConfirmation() {
                 </>
               )}
             </div>
-
             {/* Contact Card */}
             <div className={styles.contactCard}>
               <h3 className={styles.contactTitle}>Need Help?</h3>
@@ -215,25 +264,24 @@ export default function PaymentConfirmation() {
               </p>
               <div className={styles.contactMethods}>
                 <a href={`mailto:support@communityconnect.com`} className={styles.contactMethod}>
-                  <Mail className={styles.contactIcon} />
+                  <FontAwesomeIcon icon={faEnvelope} className={styles.contactIcon} />
                   <span>support@communityconnect.com</span>
                 </a>
                 <a href="tel:+15551234567" className={styles.contactMethod}>
-                  <Phone className={styles.contactIcon} />
+                  <FontAwesomeIcon icon={faPhone} className={styles.contactIcon} />
                   <span>(555) 123-4567</span>
                 </a>
               </div>
             </div>
-
             {/* Navigation Links */}
             <div className={styles.navLinks}>
               <button onClick={() => navigate('/events/my-events')} className={styles.navLink}>
                 View My Events
-                <ArrowRight className="w-4 h-4" />
+                <FontAwesomeIcon icon={faArrowRight} className="w-4 h-4" />
               </button>
               <button onClick={() => navigate('/events')} className={styles.navLink}>
                 Browse More Events
-                <ArrowRight className="w-4 h-4" />
+                <FontAwesomeIcon icon={faArrowRight} className="w-4 h-4" />
               </button>
             </div>
           </div>

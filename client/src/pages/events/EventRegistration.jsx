@@ -1,17 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { getEventById } from '../../store/events/eventsSlice';
-import { Calendar, Clock, MapPin, DollarSign, Users, Info } from 'lucide-react';
+import { getEventById, registerEvent } from '../../store/events/eventsSlice';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faCalendar,
+  faClock,
+  faLocationDot,
+  faDollarSign,
+  faUsers,
+  faCircleInfo,
+  faArrowLeft
+} from '@fortawesome/free-solid-svg-icons';
 import styles from '../../assets/css/EventRegistration.module.css';
-
 export default function EventRegistration() {
   const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { currentEvent: event, loading, error } = useSelector((state) => state.events);
-  const { user } = useSelector((state) => state.auth);
-
+  const authState = useSelector((state) => state.login || {}); // Fixed: Use state.login with fallback to avoid undefined
+  const { user } = authState;
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -19,16 +27,14 @@ export default function EventRegistration() {
     attendees: 1,
     specialRequests: '',
   });
-
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [formErrors, setFormErrors] = useState({});
-
+  const [submitLoading, setSubmitLoading] = useState(false);
   useEffect(() => {
     if (id) {
       dispatch(getEventById(id));
     }
   }, [dispatch, id]);
-
   // Pre-fill user data if logged in
   useEffect(() => {
     if (user) {
@@ -36,10 +42,10 @@ export default function EventRegistration() {
         ...prev,
         fullName: user.name || '',
         email: user.email || '',
+        phone: user.phone || '',
       }));
     }
   }, [user]);
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -48,7 +54,6 @@ export default function EventRegistration() {
       setFormErrors(prev => ({ ...prev, [name]: '' }));
     }
   };
-
   const validateForm = () => {
     const errors = {};
     if (!formData.fullName.trim()) errors.fullName = 'Full name is required';
@@ -57,37 +62,44 @@ export default function EventRegistration() {
     if (!formData.phone.trim()) errors.phone = 'Phone number is required';
     if (formData.attendees < 1) errors.attendees = 'At least 1 attendee required';
     if (!agreedToTerms) errors.terms = 'You must agree to the terms';
-    
+   
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
+   
     if (!validateForm()) return;
-
-    // If event is paid, navigate to checkout
-    if (event.price > 0) {
-      navigate(`/events/checkout/${id}`, { 
-        state: { 
-          registrationData: formData,
-          event 
-        } 
-      });
-    } else {
-      // For free events, process registration directly
-      // TODO: Dispatch registration action
-      console.log('Free event registration:', formData);
-      navigate(`/events/payment-success/${id}`, { 
-        state: { 
-          registrationData: formData,
-          isFree: true 
-        } 
-      });
+    setSubmitLoading(true);
+    try {
+      const regData = {
+        attendees: parseInt(formData.attendees),
+        specialRequests: formData.specialRequests.trim(),
+      };
+      const result = await dispatch(registerEvent({ eventId: id, ...regData })).unwrap();
+      if (result.sessionId) {
+        // Paid: Store formData for later retrieval in confirmation
+        localStorage.setItem(`reg_${result.sessionId}`, JSON.stringify(formData));
+        // Redirect to Stripe
+        window.location.href = result.url;
+      } else {
+        // Free: Navigate to confirmation
+        navigate(`/events/payment-success/${id}`, {
+          state: {
+            registrationData: formData,
+            event,
+            totalPaid: 0,
+            isFree: true
+          }
+        });
+      }
+    } catch (err) {
+      console.error('Registration error:', err);
+      // Handle error (e.g., set error state)
+    } finally {
+      setSubmitLoading(false);
     }
   };
-
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       weekday: 'long',
@@ -96,7 +108,6 @@ export default function EventRegistration() {
       day: 'numeric'
     });
   };
-
   const formatTime = (timeString) => {
     if (!timeString) return '';
     return new Date(`2000-01-01T${timeString}:00`).toLocaleTimeString('en-US', {
@@ -105,11 +116,9 @@ export default function EventRegistration() {
       hour12: true
     });
   };
-
   const calculateTotal = () => {
     return (event?.price || 0) * formData.attendees;
   };
-
   if (loading) {
     return (
       <div className={styles.loadingContainer}>
@@ -118,7 +127,6 @@ export default function EventRegistration() {
       </div>
     );
   }
-
   if (error || !event) {
     return (
       <div className={styles.errorContainer}>
@@ -132,28 +140,23 @@ export default function EventRegistration() {
       </div>
     );
   }
-
   return (
     <div className={styles.pageContainer}>
       <div className={styles.contentWrapper}>
         <button onClick={() => navigate(-1)} className={styles.backButton}>
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
+          <FontAwesomeIcon icon={faArrowLeft} className="w-5 h-5" />
           Back
         </button>
-
         <div className={styles.pageTitle}>
           <h1 className={styles.title}>Event Registration</h1>
           <p className={styles.subtitle}>Complete your registration for this event</p>
         </div>
-
         <div className={styles.mainGrid}>
           {/* Left Column - Registration Form */}
           <div className={styles.formColumn}>
             <div className={styles.formCard}>
               <h2 className={styles.formTitle}>Registration Details</h2>
-              
+             
               <form onSubmit={handleSubmit} className={styles.form}>
                 {/* Full Name */}
                 <div className={styles.formGroup}>
@@ -171,7 +174,6 @@ export default function EventRegistration() {
                   />
                   {formErrors.fullName && <p className={styles.errorMessage}>{formErrors.fullName}</p>}
                 </div>
-
                 {/* Email */}
                 <div className={styles.formGroup}>
                   <label htmlFor="email" className={styles.label}>
@@ -188,7 +190,6 @@ export default function EventRegistration() {
                   />
                   {formErrors.email && <p className={styles.errorMessage}>{formErrors.email}</p>}
                 </div>
-
                 {/* Phone */}
                 <div className={styles.formGroup}>
                   <label htmlFor="phone" className={styles.label}>
@@ -205,7 +206,6 @@ export default function EventRegistration() {
                   />
                   {formErrors.phone && <p className={styles.errorMessage}>{formErrors.phone}</p>}
                 </div>
-
                 {/* Number of Attendees */}
                 <div className={styles.formGroup}>
                   <label htmlFor="attendees" className={styles.label}>
@@ -223,7 +223,6 @@ export default function EventRegistration() {
                   />
                   {formErrors.attendees && <p className={styles.errorMessage}>{formErrors.attendees}</p>}
                 </div>
-
                 {/* Special Requests */}
                 <div className={styles.formGroup}>
                   <label htmlFor="specialRequests" className={styles.label}>
@@ -239,7 +238,6 @@ export default function EventRegistration() {
                     placeholder="Any special accommodations needed..."
                   />
                 </div>
-
                 {/* Terms and Conditions */}
                 <div className={styles.checkboxGroup}>
                   <input
@@ -254,65 +252,66 @@ export default function EventRegistration() {
                   </label>
                 </div>
                 {formErrors.terms && <p className={styles.errorMessage}>{formErrors.terms}</p>}
-
                 {/* Submit Button */}
-                <button type="submit" className={styles.submitButton}>
-                  {event.price > 0 ? 'Proceed to Payment' : 'Complete Registration'}
+                <button
+                  type="submit"
+                  disabled={submitLoading || !agreedToTerms}
+                  className={`${styles.submitButton} ${submitLoading ? styles.loadingButton : ''}`}
+                >
+                  {submitLoading
+                    ? 'Processing...'
+                    : event.price > 0
+                      ? `Proceed to Payment - $${calculateTotal().toFixed(2)}`
+                      : 'Complete Registration'
+                  }
                 </button>
               </form>
             </div>
           </div>
-
           {/* Right Column - Event Summary */}
           <div className={styles.summaryColumn}>
             <div className={styles.summaryCard}>
               <h2 className={styles.summaryTitle}>Event Summary</h2>
-              
+             
               {/* Event Image */}
               {event.images && event.images.length > 0 && (
                 <div className={styles.eventImage}>
                   <img src={event.images[0]} alt={event.title} />
                 </div>
               )}
-
               {/* Event Title */}
               <h3 className={styles.eventTitle}>{event.title}</h3>
-
               {/* Event Details */}
               <div className={styles.eventDetails}>
                 <div className={styles.detailItem}>
-                  <Calendar className={styles.detailIcon} />
+                  <FontAwesomeIcon icon={faCalendar} className={styles.detailIcon} />
                   <div>
                     <p className={styles.detailLabel}>Date</p>
                     <p className={styles.detailValue}>{formatDate(event.date)}</p>
                   </div>
                 </div>
-
                 <div className={styles.detailItem}>
-                  <Clock className={styles.detailIcon} />
+                  <FontAwesomeIcon icon={faClock} className={styles.detailIcon} />
                   <div>
                     <p className={styles.detailLabel}>Time</p>
                     <p className={styles.detailValue}>{formatTime(event.time)}</p>
                   </div>
                 </div>
-
                 <div className={styles.detailItem}>
-                  <MapPin className={styles.detailIcon} />
+                  <FontAwesomeIcon icon={faLocationDot} className={styles.detailIcon} />
                   <div>
                     <p className={styles.detailLabel}>Location</p>
                     <p className={styles.detailValue}>{event.location}</p>
                   </div>
                 </div>
-
                 <div className={styles.detailItem}>
-                  <Users className={styles.detailIcon} />
+                  <FontAwesomeIcon icon={faUsers} className={styles.detailIcon} />
                   <div>
                     <p className={styles.detailLabel}>Attendees</p>
                     <p className={styles.detailValue}>{formData.attendees}</p>
                   </div>
                 </div>
               </div>
-
               {/* Price Breakdown */}
               <div className={styles.priceBreakdown}>
                 <div className={styles.priceRow}>
@@ -329,12 +328,11 @@ export default function EventRegistration() {
                   <span>${calculateTotal().toFixed(2)}</span>
                 </div>
               </div>
-
               {/* Info Box */}
               <div className={styles.infoBox}>
-                <Info className={styles.infoIcon} />
+                <FontAwesomeIcon icon={faCircleInfo} className={styles.infoIcon} />
                 <p className={styles.infoText}>
-                  {event.price > 0 
+                  {event.price > 0
                     ? 'You will be redirected to checkout to complete your payment.'
                     : 'This is a free event. Click to complete your registration.'}
                 </p>

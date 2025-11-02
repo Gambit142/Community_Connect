@@ -6,9 +6,16 @@ const notificationSchema = new mongoose.Schema({
   type: {
     type: String,
     required: true,
-    enum: ['post_status', 'event_status', 'new_post_review', 'new_event_review']
+    enum: [
+      'post_status', 
+      'event_status', 
+      'new_post_review', 
+      'new_event_review',
+      'event_registration', 
+      'new_event_registration'
+    ]
   },
-  relatedID: { type: mongoose.Schema.Types.ObjectId, ref: 'Post' }, // e.g., PostID
+  relatedID: { type: mongoose.Schema.Types.ObjectId, ref: 'Post' }, // e.g., PostID or EventID
   relatedType: { type: String, enum: ['post', 'event'], required: true },
   isRead: { type: Boolean, default: false },
 }, {

@@ -3,11 +3,11 @@ import axios from 'axios';
 
 export const registerEvent = createAsyncThunk(
   'events/registerEvent',
-  async (eventId, { rejectWithValue }) => {
+  async ({ eventId, attendees, specialRequests }, { rejectWithValue }) => {
     try {
       const token = localStorage.getItem('token');
       const apiUrl = process.env.NODE_ENV === 'test' ? import.meta.env.VITE_API_URL_TEST : import.meta.env.VITE_API_URL;
-      const response = await axios.post(`${apiUrl}/events/${eventId}/register`, {}, {
+      const response = await axios.post(`${apiUrl}/events/${eventId}/register`, { attendees, specialRequests }, {
         headers: { Authorization: `Bearer ${token}` },
       });
       return response.data;
