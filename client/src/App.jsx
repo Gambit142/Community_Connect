@@ -98,8 +98,6 @@ function AppContent() {
           <Route path="/events" element={<EventsIndex />} />
           <Route path="/events/calendar" element={<EventsCalendar />} />
           <Route path="/events/:id" element={<EventDetails />} />
-          <Route path="/events/register/:id" element={<EventRegistration />} />
-          <Route path="/events/payment-success/:id" element={<PaymentConfirmation />} />
 
           {/* Protected routes - require auth */}
           <Route path="/posts/create" element={
@@ -143,6 +141,16 @@ function AppContent() {
           <Route path="/profile/edit" element={
             <ProtectedRoute>
               <EditProfile />
+            </ProtectedRoute>
+          } />
+          <Route path="/events/register/:id" element={
+            <ProtectedRoute>
+              <EventRegistration />
+            </ProtectedRoute>
+          } />
+          <Route path="/events/payment-success/:id" element={
+            <ProtectedRoute>
+              <PaymentConfirmation />
             </ProtectedRoute>
           } />
         </Route>

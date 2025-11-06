@@ -361,15 +361,6 @@ export default function PostsIndex() {
                           <FontAwesomeIcon icon={faTag} className="text-gray-400 text-4xl" />
                         </div>
                       )}
-                      {/* Date Badge */}
-                      <div className="absolute top-4 left-4 bg-white rounded-lg shadow-lg text-center w-14 py-2">
-                        <div className="text-[#05213C] font-bold text-xs uppercase tracking-wide">
-                          {new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short' })}
-                        </div>
-                        <div className="text-gray-800 font-bold text-xl">
-                          {new Date(post.createdAt).getDate()}
-                        </div>
-                      </div>
                     </div>
                     
                     <div className="p-6 flex flex-col flex-grow">
