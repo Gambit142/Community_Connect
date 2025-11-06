@@ -10,6 +10,7 @@ const { getEventById, getSimilarEvents } = require('../controllers/events/getEve
 const { updateEvent } = require('../controllers/events/updateEventController.js');
 const { deleteEvent } = require('../controllers/events/deleteEventController.js');
 const { registerEvent } = require('../controllers/events/registerEventController.js');
+const { getRegisteredEvents } = require('../controllers/events/getRegisteredEventsController.js');
 
 // Create event (member only, pending approval) with image upload (up to 5 images)
 router.post('/', authenticateToken, uploadMiddleware, createEvent);
@@ -43,6 +44,20 @@ router.get('/my-events', authenticateToken, getMyEvents);
 // Response Structure:
 // - Success (200): { "message": "string", "events": [event objects], "pagination": { currentPage, totalPages, totalEvents, hasNext } }
 // - Errors: 400 { "message": "validation error" }, 401 { "message": "unauthorized" }, 500 { "message": "server error" }
+
+// Get registered events (authenticated user only, with filters/pagination)
+router.get('/registered', authenticateToken, getRegisteredEvents);
+
+// Request Structure for Get Registered Events:
+// - Method: GET /api/events/registered
+// - Headers: Authorization: Bearer <jwt_token> (required)
+// - Query Params: 
+//   ?status=Published (optional filter, default all published)
+//   ?page=1 (optional, default 1)
+//   ?limit=10 (optional, default 10, max 50)
+// Response Structure:
+// - Success (200): { "message": "string", "events": [event objects with populated creator], "pagination": { currentPage, totalPages, totalEvents, hasNext } }
+// - Errors: 401 { "message": "unauthorized" }, 500 { "message": "server error" }
 
 // Get all published events (public, with filters/search/pagination)
 router.get('/', getEvents);
@@ -106,19 +121,5 @@ router.post('/:id/register', authenticateToken, registerEvent);
 
 // Stripe webhook for paid event fulfillment (public, no auth - signature verified in middleware)
 router.post('/webhook', express.raw({type: 'application/json'}), stripeWebhook);
-
-// routes/events.js (Add at bottom for testing)
-router.post('/test-email', async (req, res) => {
-  const { email, subject } = req.body;
-  try {
-    const { sendConfirmationEmail } = require('../utils/events/emailHelpers');
-    // Mock data for test
-    await sendConfirmationEmail({ username: 'Test User', email }, { title: 'Test Event' }, { _id: 'test', tickets: 1 });
-    res.json({ message: 'Test email sent' });
-  } catch (err) {
-    console.error('Test email failed:', err);
-    res.status(500).json({ error: err.message });
-  }
-});
 
 module.exports = router;

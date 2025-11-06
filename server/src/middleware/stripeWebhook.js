@@ -11,7 +11,7 @@ const stripeWebhook = async (req, res) => {
   try {
     eventStripe = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
   } catch (err) {
-    console.error('Webhook signature verification failed:', err);
+    console.error('Webhook signature verification failed:', err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
@@ -21,53 +21,69 @@ const stripeWebhook = async (req, res) => {
     const userId = session.metadata.userId;
     const eventId = session.metadata.eventId;
     const orderId = session.metadata.orderId;
-
-    console.log(`Webhook received for session ${session.id}: Processing payment for user ${userId}, event ${eventId}, order ${orderId}`);
-
     // Find event, user, and order
-    const event = await Event.findById(eventId).populate('userID');
-    const user = await User.findById(userId);
-    const order = await Order.findById(orderId).populate('userID eventID');
-    if (event && user && order && !event.attendees.includes(userId)) {
-      // Update order to completed
-      let paymentMethod = null;
-      if (session.payment_intent) {
-        try {
-          const paymentIntent = await stripe.paymentIntents.retrieve(session.payment_intent);
-          paymentMethod = `Card ending in ${paymentIntent.card?.last4 || '****'}`;
-        } catch (piErr) {
-          console.error('Failed to retrieve payment intent:', piErr);
-          paymentMethod = 'Stripe Payment';
+    let event, user, order;
+    try {
+      event = await Event.findById(eventId).populate('userID');
+      user = await User.findById(userId);
+      order = await Order.findById(orderId).populate('userID eventID');
+      console.log(`Found resources: event=${!!event}, user=${!!user}, order=${!!order}`); // Added: Confirm fetches
+    } catch (fetchErr) {
+      console.error('Failed to fetch event/user/order:', fetchErr.message);
+      return res.status(500).json({ error: 'Internal fetch error' });
+    }
+
+    if (event && user && order) {
+      // Fixed: Proper string comparison for attendee check (ObjectId vs string)
+      const alreadyAttending = event.attendees.some(att => att.toString() === userId);
+      console.log(`Already attending check: ${alreadyAttending}`); // Added: Log check result
+      if (!alreadyAttending) {
+        console.log('Proceeding with fulfillment (not already attending)'); // Added: Confirm branch
+
+        // Update order to completed
+        let paymentMethod = 'Stripe Payment'; // Default
+        if (session.payment_intent) {
+          try {
+            const paymentIntent = await stripe.paymentIntents.retrieve(session.payment_intent);
+            paymentMethod = `Card ending in ${paymentIntent.card?.last4 || '****'}`;
+            console.log('Payment method retrieved successfully'); // Sanitized: No details
+          } catch (piErr) {
+            console.error('Failed to retrieve payment intent:', piErr.message);
+          }
         }
-      }
-      await Order.findByIdAndUpdate(orderId, { 
-        status: 'completed',
-        paymentMethod,
-      });
+        await Order.findByIdAndUpdate(orderId, { 
+          status: 'completed',
+          paymentMethod,
+        });
 
-      // Update order ref
-      order.status = 'completed';
-      order.paymentMethod = paymentMethod;
+        // Update order ref
+        order.status = 'completed';
+        order.paymentMethod = paymentMethod;
 
-      // Fulfill registration (add attendee, notifications, send receipt) - Await to ensure completion
-      try {
-        await fulfillRegistration(event, user, order, true);
-        console.log(`Paid registration fulfilled successfully for user ${userId} on event ${eventId} (Order: ${orderId})`);
-      } catch (fulfillErr) {
-        console.error('Fulfillment failed after payment:', fulfillErr);
-        // Don't fail webhook; payment succeeded, but log for manual retry
+        // Fulfill registration (add attendee, notifications, send receipt) - Await to ensure completion
+        try {
+          await fulfillRegistration(event, user, order, true);
+          console.log('Paid registration fulfilled successfully'); // Confirm success
+        } catch (fulfillErr) {
+          console.error('Fulfillment failed after payment:', fulfillErr.message); // Enhanced: Include message
+          // Don't fail webhook; payment succeeded, but log for manual retry
+        }
+      } else {
+        console.log('Registration skipped: Already attending'); // Sanitized: No user ID
       }
     } else {
-      console.log(`Registration skipped: Invalid event/user/order or already registered`);
+      console.log('Webhook skipped: Missing event/user/order'); // Sanitized: No session ID
     }
   } else if (eventStripe.type === 'checkout.session.expired') {
     // Optional: Handle expired sessions
     const session = eventStripe.data.object;
     const orderId = session.metadata.orderId;
+    console.log('Handling expired session, marking order as failed'); // Sanitized: No IDs
     if (orderId) {
       await Order.findByIdAndUpdate(orderId, { status: 'failed' });
-      console.log(`Order ${orderId} marked as failed (session expired)`);
     }
+  } else {
+    console.log(`Unhandled webhook event type: ${eventStripe.type}`); // Added: Catch unknowns
   }
 
   res.json({ received: true });

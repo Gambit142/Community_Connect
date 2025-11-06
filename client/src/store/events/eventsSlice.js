@@ -7,6 +7,7 @@ import { getSimilarEvents } from './getSimilarEventsThunk.js';
 import { updateEvent } from './updateEventThunk.js';
 import { deleteEvent } from './deleteEventThunk.js';
 import { registerEvent } from './registerEventThunk.js';
+import { getRegisteredEvents } from './getRegisteredEventsThunk.js';
 
 const eventsSlice = createSlice({
   name: 'events',
@@ -14,20 +15,30 @@ const eventsSlice = createSlice({
     events: [],
     currentEvent: null,
     similarEvents: [],
+    registeredEvents: [], // For registered events list
     pagination: null,
+    paginationRegistered: null, // For registered pagination
     loading: false,
+    loadingRegistered: false, // Separate loading for registered
     error: null,
+    errorRegistered: null, // Separate error for registered
     successMessage: null,
   },
   reducers: {
     clearError: (state) => {
       state.error = null;
       state.successMessage = null;
+      state.errorRegistered = null; // Clear registered error too
     },
     // Clear current event (e.g., on unmount)
     clearCurrentEvent: (state) => {
       state.currentEvent = null;
       state.similarEvents = [];
+    },
+    // Clear registered events (optional, for unmount)
+    clearRegisteredEvents: (state) => {
+      state.registeredEvents = [];
+      state.paginationRegistered = null;
     },
   },
   extraReducers: (builder) => {
@@ -160,11 +171,26 @@ const eventsSlice = createSlice({
       .addCase(registerEvent.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+      // Get Registered Events
+      .addCase(getRegisteredEvents.pending, (state) => {
+        state.loadingRegistered = true;
+        state.errorRegistered = null;
+      })
+      .addCase(getRegisteredEvents.fulfilled, (state, action) => {
+        state.loadingRegistered = false;
+        state.registeredEvents = action.payload.events;
+        state.paginationRegistered = action.payload.pagination;
+      })
+      .addCase(getRegisteredEvents.rejected, (state, action) => {
+        state.loadingRegistered = false;
+        state.errorRegistered = action.payload;
+        state.registeredEvents = [];
       });
   },
 });
 
-export const { clearError, clearCurrentEvent } = eventsSlice.actions;  
+export const { clearError, clearCurrentEvent, clearRegisteredEvents } = eventsSlice.actions;  
 export default eventsSlice.reducer;
 
 // Re-export thunks for easy import in components
@@ -176,3 +202,4 @@ export { getSimilarEvents } from './getSimilarEventsThunk.js';
 export { updateEvent } from './updateEventThunk.js';
 export { deleteEvent } from './deleteEventThunk.js';
 export { registerEvent } from './registerEventThunk.js';
+export { getRegisteredEvents } from './getRegisteredEventsThunk.js';

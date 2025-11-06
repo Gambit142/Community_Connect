@@ -14,7 +14,11 @@ const userSchema = new mongoose.Schema({
     resetTokenExpiry: { type: Date, required: false },
     organizationDetails: { type: Object, required: false },
     verificationToken: { type: String, required: false },
-    isVerified: { type: Boolean, default: false, required: true }
+    isVerified: { type: Boolean, default: false, required: true },
+    attendedEvents: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Event' }]
 }, { timestamps: true });
+
+// Index for efficient queries
+userSchema.index({ attendedEvents: 1 });
 
 module.exports = mongoose.model('User', userSchema);
