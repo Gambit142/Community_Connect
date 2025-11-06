@@ -6,9 +6,12 @@ export default function SidebarFilter({
   tagsValue, 
   onTagsChange, 
   category, 
-  onCategoryChange 
+  onCategoryChange,
+  showTags = true,
+  type = 'posts' // 'posts' or 'events'
 }) {
-  const categories = [
+  // Categories for Posts
+  const postCategories = [
     { value: '', label: 'All Categories' },
     { value: 'food', label: 'Food' },
     { value: 'tutoring', label: 'Tutoring' },
@@ -22,6 +25,22 @@ export default function SidebarFilter({
     { value: 'transportation', label: 'Transportation' },
     { value: 'financial', label: 'Financial' },
   ];
+
+  // Categories for Events
+  const eventCategories = [
+    { value: '', label: 'All Categories' },
+    { value: 'Workshop', label: 'Workshop' },
+    { value: 'Volunteer', label: 'Volunteer' },
+    { value: 'Market', label: 'Market' },
+    { value: 'Tech', label: 'Tech' },
+    { value: 'Charity', label: 'Charity' },
+    { value: 'Fair', label: 'Fair' },
+    { value: 'Social', label: 'Social' },
+    { value: 'Other', label: 'Other' },
+  ];
+
+  // Select categories based on type
+  const categories = type === 'events' ? eventCategories : postCategories;
 
   return (
     <div className="bg-[#33383e] shadow-lg rounded-lg p-6 text-white h-full">
@@ -55,16 +74,18 @@ export default function SidebarFilter({
         </div>
       </div>
 
-      <div>
-        <h4 className="text-md font-medium mb-3 text-white">Tags (comma-separated)</h4>
-        <input
-          type="text"
-          placeholder="e.g., free, urgent"
-          value={tagsValue}
-          onChange={onTagsChange}
-          className="w-full p-2 border border-gray-600 rounded-md bg-white text-black placeholder-gray-400 focus:ring-2 focus:ring-blue-500"
-        />
-      </div>
+      {showTags && (
+        <div>
+          <h4 className="text-md font-medium mb-3 text-white">Tags (comma-separated)</h4>
+          <input
+            type="text"
+            placeholder="e.g., free, urgent"
+            value={tagsValue}
+            onChange={onTagsChange}
+            className="w-full p-2 border border-gray-600 rounded-md bg-white text-black placeholder-gray-400 focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+      )}
     </div>
   );
 }

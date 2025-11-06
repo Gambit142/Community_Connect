@@ -95,6 +95,8 @@ export default function PostsIndex() {
               onTagsChange={handleTagsChange}
               category={filters.category}
               onCategoryChange={handleCategoryChange}
+              showTags={true}
+              type="posts"
             />
           </div>
 
@@ -115,6 +117,8 @@ export default function PostsIndex() {
                   onTagsChange={handleTagsChange}
                   category={filters.category}
                   onCategoryChange={handleCategoryChange}
+                  showTags={true}
+                  type="posts"
                 />
               </div>
             )}
