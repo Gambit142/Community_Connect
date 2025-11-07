@@ -8,6 +8,13 @@ import { updateEvent } from './updateEventThunk.js';
 import { deleteEvent } from './deleteEventThunk.js';
 import { registerEvent } from './registerEventThunk.js';
 import { getRegisteredEvents } from './getRegisteredEventsThunk.js';
+import { getEventComments } from './getEventCommentsThunk.js';
+import { createEventComment } from './createEventCommentThunk.js';
+import { updateEventComment } from './updateEventCommentThunk.js';
+import { deleteEventComment } from './deleteEventCommentThunk.js';
+import { toggleEventCommentLike } from './toggleEventCommentLikeThunk.js';
+import { flagEventComment } from './flagEventCommentThunk.js';
+import { likeEvent } from './likeEventThunk.js';
 
 const eventsSlice = createSlice({
   name: 'events',
@@ -18,10 +25,14 @@ const eventsSlice = createSlice({
     registeredEvents: [], // For registered events list
     pagination: null,
     paginationRegistered: null, // For registered pagination
+    comments: [], // For current event comments tree
+    commentsPagination: null,
     loading: false,
     loadingRegistered: false, // Separate loading for registered
+    commentsLoading: false, // Separate for comments
     error: null,
     errorRegistered: null, // Separate error for registered
+    commentsError: null, // Separate for comments
     successMessage: null,
   },
   reducers: {
@@ -29,16 +40,24 @@ const eventsSlice = createSlice({
       state.error = null;
       state.successMessage = null;
       state.errorRegistered = null; // Clear registered error too
+      state.commentsError = null;
     },
     // Clear current event (e.g., on unmount)
     clearCurrentEvent: (state) => {
       state.currentEvent = null;
       state.similarEvents = [];
+      state.comments = [];
+      state.commentsPagination = null;
     },
     // Clear registered events (optional, for unmount)
     clearRegisteredEvents: (state) => {
       state.registeredEvents = [];
       state.paginationRegistered = null;
+    },
+    // Clear comments (e.g., when switching events)
+    clearComments: (state) => {
+      state.comments = [];
+      state.commentsPagination = null;
     },
   },
   extraReducers: (builder) => {
@@ -70,6 +89,9 @@ const eventsSlice = createSlice({
         if (index !== -1) {
           state.events[index] = action.payload.event;
         }
+        if (state.currentEvent?._id === action.payload.event._id) {
+          state.currentEvent = action.payload.event;
+        }
       })
       .addCase(updateEvent.rejected, (state, action) => {
         state.loading = false;
@@ -84,6 +106,9 @@ const eventsSlice = createSlice({
         state.loading = false;
         state.successMessage = action.payload.message;
         state.events = state.events.filter(e => e._id !== action.meta.arg);
+        if (state.currentEvent?._id === action.meta.arg) {
+          state.currentEvent = null;
+        }
       })
       .addCase(deleteEvent.rejected, (state, action) => {
         state.loading = false;
@@ -145,6 +170,31 @@ const eventsSlice = createSlice({
         state.error = action.payload;
         state.similarEvents = [];
       })
+      // Like Event
+      .addCase(likeEvent.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(likeEvent.fulfilled, (state, action) => {
+        state.loading = false;
+        const { liked, likeCount } = action.payload;
+        const eventId = action.meta.arg;
+        // Update in events list
+        const eventIndex = state.events.findIndex(e => e._id === eventId);
+        if (eventIndex !== -1) {
+          state.events[eventIndex].likeCount = likeCount;
+          state.events[eventIndex].isLiked = liked;
+        }
+        // Update current event
+        if (state.currentEvent?._id === eventId) {
+          state.currentEvent.likeCount = likeCount;
+          state.currentEvent.isLiked = liked;
+        }
+      })
+      .addCase(likeEvent.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
       // Register Event (New)
       .addCase(registerEvent.pending, (state) => {
         state.loading = true;
@@ -186,11 +236,146 @@ const eventsSlice = createSlice({
         state.loadingRegistered = false;
         state.errorRegistered = action.payload;
         state.registeredEvents = [];
+      })
+      // Get Event Comments
+      .addCase(getEventComments.pending, (state) => {
+        state.commentsLoading = true;
+        state.commentsError = null;
+      })
+      .addCase(getEventComments.fulfilled, (state, action) => {
+        state.commentsLoading = false;
+        state.comments = action.payload.comments;
+        state.commentsPagination = action.payload.pagination;
+      })
+      .addCase(getEventComments.rejected, (state, action) => {
+        state.commentsLoading = false;
+        state.commentsError = action.payload;
+        state.comments = [];
+      })
+      // Create Event Comment
+      .addCase(createEventComment.pending, (state) => {
+        state.commentsLoading = true;
+        state.commentsError = null;
+      })
+      .addCase(createEventComment.fulfilled, (state, action) => {
+        state.commentsLoading = false;
+        // Add to top-level comments (assuming tree structure; adjust if needed)
+        if (action.payload.comment.parentComment) {
+          // Reply: Find parent and add to children (simplified; use recursive update in real app)
+          const parentIndex = state.comments.findIndex(c => c._id === action.payload.comment.parentComment);
+          if (parentIndex !== -1 && state.comments[parentIndex].children) {
+            state.comments[parentIndex].children.unshift(action.payload.comment);
+          }
+        } else {
+          state.comments.unshift(action.payload.comment);
+        }
+        // Increment commentCount if current event
+        if (state.currentEvent) {
+          state.currentEvent.commentCount += 1;
+        }
+      })
+      .addCase(createEventComment.rejected, (state, action) => {
+        state.commentsLoading = false;
+        state.commentsError = action.payload;
+      })
+      // Update Event Comment
+      .addCase(updateEventComment.pending, (state) => {
+        state.commentsLoading = true;
+        state.commentsError = null;
+      })
+      .addCase(updateEventComment.fulfilled, (state, action) => {
+        state.commentsLoading = false;
+        const updatedComment = action.payload.comment;
+        // Update in tree (simplified; find and replace recursively)
+        const updateInTree = (comments) => {
+          for (let i = 0; i < comments.length; i++) {
+            if (comments[i]._id === updatedComment._id) {
+              comments[i] = updatedComment;
+              return true;
+            }
+            if (comments[i].children && updateInTree(comments[i].children)) return true;
+          }
+          return false;
+        };
+        updateInTree(state.comments);
+      })
+      .addCase(updateEventComment.rejected, (state, action) => {
+        state.commentsLoading = false;
+        state.commentsError = action.payload;
+      })
+      // Delete Event Comment
+      .addCase(deleteEventComment.pending, (state) => {
+        state.commentsLoading = true;
+        state.commentsError = null;
+      })
+      .addCase(deleteEventComment.fulfilled, (state, action) => {
+        state.commentsLoading = false;
+        const commentId = action.meta.arg.commentId;
+        // Remove from tree (simplified; find and remove recursively)
+        const removeFromTree = (comments) => {
+          for (let i = 0; i < comments.length; i++) {
+            if (comments[i]._id === commentId) {
+              comments.splice(i, 1);
+              return true;
+            }
+            if (comments[i].children && removeFromTree(comments[i].children)) return true;
+          }
+          return false;
+        };
+        removeFromTree(state.comments);
+        // Decrement commentCount if current event
+        if (state.currentEvent) {
+          state.currentEvent.commentCount -= 1;
+        }
+      })
+      .addCase(deleteEventComment.rejected, (state, action) => {
+        state.commentsLoading = false;
+        state.commentsError = action.payload;
+      })
+      // Toggle Event Comment Like
+      .addCase(toggleEventCommentLike.pending, (state) => {
+        state.commentsLoading = true;
+        state.commentsError = null;
+      })
+      .addCase(toggleEventCommentLike.fulfilled, (state, action) => {
+        state.commentsLoading = false;
+        const { liked, likeCount } = action.payload;
+        const commentId = action.meta.arg.commentId;
+        // Update in tree
+        const updateLikeInTree = (comments) => {
+          for (let i = 0; i < comments.length; i++) {
+            if (comments[i]._id === commentId) {
+              comments[i].likeCount = likeCount;
+              comments[i].isLiked = liked;
+              return true;
+            }
+            if (comments[i].children && updateLikeInTree(comments[i].children)) return true;
+          }
+          return false;
+        };
+        updateLikeInTree(state.comments);
+      })
+      .addCase(toggleEventCommentLike.rejected, (state, action) => {
+        state.commentsLoading = false;
+        state.commentsError = action.payload;
+      })
+      // Flag Event Comment
+      .addCase(flagEventComment.pending, (state) => {
+        state.commentsLoading = true;
+        state.commentsError = null;
+      })
+      .addCase(flagEventComment.fulfilled, (state, action) => {
+        state.commentsLoading = false;
+        // Optionally update flagged state if backend returns it
+      })
+      .addCase(flagEventComment.rejected, (state, action) => {
+        state.commentsLoading = false;
+        state.commentsError = action.payload;
       });
   },
 });
 
-export const { clearError, clearCurrentEvent, clearRegisteredEvents } = eventsSlice.actions;  
+export const { clearError, clearCurrentEvent, clearRegisteredEvents, clearComments } = eventsSlice.actions;  
 export default eventsSlice.reducer;
 
 // Re-export thunks for easy import in components
@@ -203,3 +388,10 @@ export { updateEvent } from './updateEventThunk.js';
 export { deleteEvent } from './deleteEventThunk.js';
 export { registerEvent } from './registerEventThunk.js';
 export { getRegisteredEvents } from './getRegisteredEventsThunk.js';
+export { getEventComments } from './getEventCommentsThunk.js';
+export { createEventComment } from './createEventCommentThunk.js';
+export { updateEventComment } from './updateEventCommentThunk.js';
+export { deleteEventComment } from './deleteEventCommentThunk.js';
+export { toggleEventCommentLike } from './toggleEventCommentLikeThunk.js';
+export { flagEventComment } from './flagEventCommentThunk.js';
+export { likeEvent } from './likeEventThunk.js';
