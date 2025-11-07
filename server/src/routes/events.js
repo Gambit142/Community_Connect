@@ -11,6 +11,15 @@ const { updateEvent } = require('../controllers/events/updateEventController.js'
 const { deleteEvent } = require('../controllers/events/deleteEventController.js');
 const { registerEvent } = require('../controllers/events/registerEventController.js');
 const { getRegisteredEvents } = require('../controllers/events/getRegisteredEventsController.js');
+const {
+  createCommentGeneric,
+  getCommentsGeneric,
+  updateCommentGeneric,
+  deleteCommentGeneric,
+  toggleCommentLikeGeneric,
+  flagCommentGeneric,
+  toggleResourceLikeGeneric,
+} = require('../controllers/commentsController.js');
 
 // Create event (member only, pending approval) with image upload (up to 5 images)
 router.post('/', authenticateToken, uploadMiddleware, createEvent);
@@ -118,6 +127,17 @@ router.delete('/:id', authenticateToken, deleteEvent);
 
 // Register for event (authenticated users only)
 router.post('/:id/register', authenticateToken, registerEvent);
+
+// Like event (toggle)
+router.post('/:id/like', authenticateToken, (req, res) => toggleResourceLikeGeneric(req, res, 'event', req.params.id));
+
+// Comments routes (nested)
+router.post('/:id/comments', authenticateToken, (req, res) => createCommentGeneric(req, res, 'event', req.params.id));
+router.get('/:id/comments', (req, res) => getCommentsGeneric(req, res, 'event', req.params.id));
+router.put('/:id/comments/:commentId', authenticateToken, (req, res) => updateCommentGeneric(req, res, req.params.commentId));
+router.delete('/:id/comments/:commentId', authenticateToken, (req, res) => deleteCommentGeneric(req, res, req.params.commentId));
+router.post('/:id/comments/:commentId/like', authenticateToken, (req, res) => toggleCommentLikeGeneric(req, res, req.params.commentId));
+router.post('/:id/comments/:commentId/flag', authenticateToken, (req, res) => flagCommentGeneric(req, res, 'event', req.params.id, req.params.commentId));
 
 // Stripe webhook for paid event fulfillment (public, no auth - signature verified in middleware)
 router.post('/webhook', express.raw({type: 'application/json'}), stripeWebhook);

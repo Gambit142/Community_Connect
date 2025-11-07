@@ -1,3 +1,4 @@
+// models/Notification.js (Unchanged from previous)
 const mongoose = require('mongoose');
 
 const notificationSchema = new mongoose.Schema({
@@ -12,11 +13,16 @@ const notificationSchema = new mongoose.Schema({
       'new_post_review', 
       'new_event_review',
       'event_registration', 
-      'new_event_registration'
+      'new_event_registration',
+      'comment_on_post',
+      'comment_on_event',
+      'reply_to_comment',
+      'tag_in_comment',
+      'comment_flagged'
     ]
   },
-  relatedID: { type: mongoose.Schema.Types.ObjectId, ref: 'Post' }, // e.g., PostID or EventID
-  relatedType: { type: String, enum: ['post', 'event'], required: true },
+  relatedID: { type: mongoose.Schema.Types.ObjectId, ref: 'Post' }, // e.g., PostID or EventID or CommentID
+  relatedType: { type: String, enum: ['post', 'event', 'comment'], required: true },
   isRead: { type: Boolean, default: false },
 }, {
   timestamps: true, // Auto CreatedAt/UpdatedAt

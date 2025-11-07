@@ -30,6 +30,8 @@ const postSchema = new mongoose.Schema({
   location: { type: String, trim: true, maxlength: 200 },
   details: { type: mongoose.Schema.Types.Mixed }, // Flexible for category-specific (e.g., { quantity: 5, expiry: Date })
   images: [{ type: String }], // URLs from Cloudinary
+  likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  commentCount: { type: Number, default: 0 },
 }, { 
   timestamps: true, // Auto CreatedAt/UpdatedAt
   toJSON: { virtuals: true, transform: (doc, ret) => { delete ret.__v; } },

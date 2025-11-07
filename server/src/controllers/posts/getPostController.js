@@ -33,6 +33,8 @@ const getPostById = async (req, res) => {
     // If published, anyone can view
     if (fullPost.status === 'Published') {
       const post = fullPost.toObject();
+      post.likeCount = fullPost.likes.length || 0;
+      post.commentCount = fullPost.commentCount || 0;
       delete post.userID;
       return res.status(200).json({
         message: 'Post retrieved successfully',
@@ -53,6 +55,8 @@ const getPostById = async (req, res) => {
 
     // Authorized, return post without userID
     const post = fullPost.toObject();
+    post.likeCount = fullPost.likes.length || 0;
+    post.commentCount = fullPost.commentCount || 0;
     delete post.userID;
 
     res.status(200).json({
@@ -91,6 +95,12 @@ const getSimilarPosts = async (req, res) => {
       .limit(5) // Max 5
       .select('-userID') // Hide userID
       .lean();
+
+    // Add counts for similar
+    for (let post of similarPosts) {
+      post.likeCount = post.likes ? post.likes.length : 0;
+      post.commentCount = post.commentCount || 0;
+    }
 
     res.status(200).json({
       message: 'Similar posts retrieved successfully',

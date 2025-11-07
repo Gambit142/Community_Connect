@@ -33,6 +33,8 @@ const getEventById = async (req, res) => {
     // If published, anyone can view
     if (fullEvent.status === 'Published') {
       const eventData = fullEvent.toObject();
+      eventData.likeCount = fullEvent.likes.length || 0;
+      eventData.commentCount = fullEvent.commentCount || 0;
       delete eventData.userID;
       return res.status(200).json({
         message: 'Event retrieved successfully',
@@ -53,6 +55,8 @@ const getEventById = async (req, res) => {
 
     // Authorized, return event without userID
     const eventData = fullEvent.toObject();
+    eventData.likeCount = fullEvent.likes.length || 0;
+    eventData.commentCount = fullEvent.commentCount || 0;
     delete eventData.userID;
 
     res.status(200).json({
@@ -92,6 +96,12 @@ const getSimilarEvents = async (req, res) => {
       .limit(5) // Max 5
       .select('-userID') // Hide userID
       .lean();
+
+    // Add counts for similar
+    for (let event of similarEvents) {
+      event.likeCount = event.likes ? event.likes.length : 0;
+      event.commentCount = event.commentCount || 0;
+    }
 
     res.status(200).json({
       message: 'Similar events retrieved successfully',
