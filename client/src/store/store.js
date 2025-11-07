@@ -6,6 +6,7 @@ import postsReducer from './posts/postsSlice.js';
 import eventsReducer from './events/eventsSlice.js';
 import adminReducer from './admin/adminSlice.js';
 import notificationsReducer from './notifications/notificationsSlice.js';
+import commentsReducer from './comments/commentsSlice.js';
 
 const store = configureStore({
   reducer: {
@@ -15,7 +16,8 @@ const store = configureStore({
     posts: postsReducer,
     events: eventsReducer,
     admin: adminReducer,
-    notifications: notificationsReducer, 
+    notifications: notificationsReducer,
+    comments: commentsReducer,
   },
 });
 
