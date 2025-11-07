@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { createComment, updateComment } from '../store/comments/commentThunks.js';
+import { createComment, updateComment } from '../../store/comments/commentThunks.js';
 
 const CommentForm = ({ 
   resourceType, 
@@ -13,7 +13,7 @@ const CommentForm = ({
   autoFocus = false 
 }) => {
   const dispatch = useDispatch();
-  const { user } = useSelector((state) => state.auth);
+  const { user } = useSelector((state) => state.login);
   const { loading } = useSelector((state) => state.comments);
   
   const [content, setContent] = useState(editComment?.content || '');

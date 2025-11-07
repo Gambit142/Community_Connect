@@ -2,6 +2,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { getEventById, getSimilarEvents, clearCurrentEvent } from '../../store/events/eventsSlice';
+import CommentSection from '../../components/comments/CommentSection.jsx';
+import SimilarItems from '../../components/SimilarItems.jsx';
 import styles from '../../assets/css/EventDetails.module.css';
 
 // SVG Icons
@@ -31,14 +33,6 @@ export default function EventDetails() {
   const [galleryPosition, setGalleryPosition] = useState(0);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [thumbWidth, setThumbWidth] = useState(23);
-
-  // Comments state
-  const [comments, setComments] = useState([
-    { _id: 'c1', author: 'Jane Doe', avatarInitial: 'J', date: '2025-10-23T10:00:00Z', text: 'This looks amazing! I\'ve been wanting to learn more about composting. Will there be a Q&A session?' },
-    { _id: 'c2', author: 'John Smith', avatarInitial: 'J', date: '2025-10-24T11:30:00Z', text: 'Count me in! Happy to bring some extra gloves for anyone who needs them.' },
-  ]);
-  const [newComment, setNewComment] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -112,38 +106,6 @@ export default function EventDetails() {
     }
   };
 
-  const moveGalleryPrev = () => {
-    const { leftMin, leftMax } = galleryConfig;
-    const newPos = galleryPosition + thumbWidth;
-    const clamped = Math.max(leftMin, Math.min(leftMax, newPos));
-    setGalleryPosition(clamped);
-  };
-
-  const moveGalleryNext = () => {
-    const { leftMin, leftMax } = galleryConfig;
-    const newPos = galleryPosition - thumbWidth;
-    const clamped = Math.max(leftMin, Math.min(leftMax, newPos));
-    setGalleryPosition(clamped);
-  };
-
-  const handleCommentSubmit = (e) => {
-    e.preventDefault();
-    if (!newComment.trim()) return;
-    setIsSubmitting(true);
-    // Mock submit
-    setTimeout(() => {
-      setComments((prev) => [...prev, {
-        _id: Date.now().toString(),
-        author: 'You',
-        avatarInitial: 'Y',
-        date: new Date().toISOString(),
-        text: newComment,
-      }]);
-      setNewComment('');
-      setIsSubmitting(false);
-    }, 1000);
-  };
-
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
@@ -160,16 +122,6 @@ export default function EventDetails() {
       hour: 'numeric',
       minute: '2-digit',
       hour12: true
-    });
-  };
-
-  const formatCommentDate = (dateString) => {
-    return new Date(dateString).toLocaleString('en-US', {
-      month: 'short', 
-      day: 'numeric', 
-      year: 'numeric', 
-      hour: '2-digit', 
-      minute: '2-digit'
     });
   };
 
@@ -214,7 +166,7 @@ export default function EventDetails() {
           Back to Events
         </button>
 
-        {/* Image Gallery - Updated to match PostDetails */}
+        {/* Image Gallery */}
         <div className={styles.container}>
           <div
             className={styles.feature}
@@ -305,48 +257,11 @@ export default function EventDetails() {
             </div>
 
             {/* Comments Section */}
-            <section className="mb-8">
-              <h2 className="text-xl font-semibold text-[#05213C] mb-4">Community Discussion ({comments.length})</h2>
-              
-              {/* Comment Form */}
-              <form onSubmit={handleCommentSubmit} className="mb-6">
-                <textarea
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#05213C] focus:border-transparent resize-none"
-                  rows="4"
-                  placeholder="Add a comment..."
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  disabled={isSubmitting}
-                />
-                <button 
-                  type="submit" 
-                  className="bg-[#05213C] text-white px-6 py-2 rounded-lg hover:bg-blue-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-2"
-                  disabled={isSubmitting || !newComment.trim()}
-                >
-                  {isSubmitting ? 'Posting...' : 'Post Comment'}
-                </button>
-              </form>
-
-              {/* Comment List */}
-              <div className="space-y-4">
-                {comments.map((comment) => (
-                  <div key={comment._id} className="flex space-x-3">
-                    <div className="flex-shrink-0">
-                      <div className="w-10 h-10 bg-[#05213C] text-white rounded-full flex items-center justify-center font-semibold">
-                        {comment.avatarInitial}
-                      </div>
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="font-semibold text-gray-900">{comment.author}</span>
-                        <span className="text-sm text-gray-500">{formatCommentDate(comment.date)}</span>
-                      </div>
-                      <p className="text-gray-700">{comment.text}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
+            <CommentSection 
+              resourceType="event" 
+              resourceId={id} 
+              resourceTitle={event.title}
+            />
           </div>
 
           {/* Right Column: Details & Registration (1/3 width) */}
@@ -398,40 +313,11 @@ export default function EventDetails() {
               {/* Similar Events Section */}
               {similarEvents && similarEvents.length > 0 && (
                 <div className="mt-8">
-                  <h2 className="text-xl font-semibold text-[#05213C] mb-4 text-center">Similar Events</h2>
-                  <div className="grid grid-cols-1 gap-4">
-                    {similarEvents.slice(0, 3).map((similarEvent) => (
-                      <div
-                        key={similarEvent._id}
-                        className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
-                        onClick={() => navigate(`/events/${similarEvent._id}`)}
-                      >
-                        <div className="flex">
-                          <div className="w-20 h-20 flex-shrink-0">
-                            {similarEvent.images && similarEvent.images.length > 0 ? (
-                              <img
-                                src={similarEvent.images[0]}
-                                alt={similarEvent.title}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                                <span className="text-gray-500 text-xs">No Image</span>
-                              </div>
-                            )}
-                          </div>
-                          <div className="p-3 flex-1">
-                            <h3 className="font-semibold text-sm text-[#05213C] line-clamp-2">
-                              {similarEvent.title}
-                            </h3>
-                            <p className="text-xs text-gray-500 mt-1">
-                              {new Date(similarEvent.date).toLocaleDateString()}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                  <SimilarItems 
+                    items={similarEvents} 
+                    type="event" 
+                    title="Similar Events" 
+                  />
                 </div>
               )}
             </div>

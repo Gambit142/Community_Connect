@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { toggleCommentLike, flagComment, deleteComment } from '../store/comments/commentThunks.js';
+import { toggleCommentLike, flagComment, deleteComment } from '../../store/comments/commentThunks.js';
 import CommentForm from './CommentForm.jsx';
 import CommentActions from './CommentActions.jsx';
 
@@ -157,6 +157,7 @@ const Comment = ({
             showReplies={hasReplies && showReplies}
             onToggleReplies={() => setShowReplies(!showReplies)}
             replyCount={comment.children?.length || 0}
+            isOwner={isOwner}
           />
         )}
 

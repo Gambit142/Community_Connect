@@ -2,6 +2,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { getPostById, getSimilarPosts, clearCurrentPost } from '../../store/posts/postsSlice.js';
+import CommentSection from '../../components/comments/CommentSection.jsx';
+import SimilarItems from '../../components/SimilarItems.jsx';
 import styles from '../../assets/css/PostDetails.module.css';
 
 export default function PostDetails() {
@@ -85,20 +87,6 @@ export default function PostDetails() {
       const prevIndex = (activeImageIndex - 1 + currentPost.images.length) % currentPost.images.length;
       setActiveImageIndex(prevIndex);
     }
-  };
-
-  const moveGalleryPrev = () => {
-    const { leftMin, leftMax } = galleryConfig;
-    const newPos = galleryPosition + thumbWidth;
-    const clamped = Math.max(leftMin, Math.min(leftMax, newPos));
-    setGalleryPosition(clamped);
-  };
-
-  const moveGalleryNext = () => {
-    const { leftMin, leftMax } = galleryConfig;
-    const newPos = galleryPosition - thumbWidth;
-    const clamped = Math.max(leftMin, Math.min(leftMax, newPos));
-    setGalleryPosition(clamped);
   };
 
   const renderDetailValue = (value) => {
@@ -216,7 +204,7 @@ export default function PostDetails() {
         </div>
 
         {/* Post Content */}
-        <div className="bg-white rounded-lg p-6">
+        <div className="bg-white rounded-lg p-6 mb-8">
           {/* Header */}
           <div className="mb-6">
             <div className="flex flex-wrap gap-2 mb-4">
@@ -299,76 +287,20 @@ export default function PostDetails() {
           )}
         </div>
 
+        {/* Comments Section */}
+        <CommentSection 
+          resourceType="post" 
+          resourceId={id} 
+          resourceTitle={currentPost.title}
+        />
+
         {/* Similar Posts */}
         {similarPosts && similarPosts.length > 0 && (
-          <div className="mt-12">
-            {/* Centered Header */}
-            <div className="text-center mb-6">
-              <h2 className="text-2xl font-bold text-[#05213C] inline-block">Similar Posts</h2>
-            </div>
-
-            {/* Centered and Aligned Cards */}
-            <div className={styles.similarPostsContainer}>
-              <div className={styles.similarPostsGrid}>
-                {similarPosts.slice(0, 4).map((post) => (
-                  <div
-                    key={post._id}
-                    className={styles.similarPostCard}
-                    onClick={() => navigate(`/posts/${post._id}`)}
-                  >
-                    {/* Fixed height image container */}
-                    <div className="h-48 w-full overflow-hidden">
-                      {post.images && post.images.length > 0 ? (
-                        <img
-                          src={post.images[0]}
-                          alt={post.title}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                          <span className="text-gray-500 text-sm">No Image</span>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="flex flex-col flex-grow p-4">
-                      {/* Fixed height badges section */}
-                      <div className="flex flex-wrap gap-1 mb-3 min-h-[2rem] items-start">
-                        <span className={`px-2 py-1 rounded text-xs font-medium ${post.category === 'food' ? 'bg-red-100 text-red-800' :
-                          post.category === 'tutoring' ? 'bg-blue-100 text-blue-800' :
-                            post.category === 'events' ? 'bg-green-100 text-green-800' :
-                              'bg-gray-100 text-gray-800'
-                          }`}>
-                          {post.category}
-                        </span>
-                        <span className="px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800">
-                          {post.price > 0 ? `$${post.price}` : 'Free'}
-                        </span>
-                      </div>
-
-                      {/* Fixed height title - titles will align at bottom */}
-                      <div className="min-h-[3rem] mb-3 flex items-start">
-                        <h3 className={`${styles.similarPostTitle} line-clamp-2 w-full`}>
-                          {post.title}
-                        </h3>
-                      </div>
-
-                      {/* Flexible description - this can vary */}
-                      <p className={`${styles.similarPostDescription} flex-grow`}>
-                        {post.description}
-                      </p>
-
-                      {/* Fixed height metadata at bottom */}
-                      <div className="flex items-center justify-between text-xs text-gray-500 mt-3 pt-3 border-t border-gray-100 min-h-[1.5rem]">
-                        <span>{new Date(post.createdAt).toLocaleDateString()}</span>
-                        <span className="capitalize">{post.type}</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+          <SimilarItems 
+            items={similarPosts} 
+            type="post" 
+            title="Similar Posts" 
+          />
         )}
       </div>
     </div>

@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import Comment from './Comment.jsx';
 import CommentForm from './CommentForm.jsx';
-import { getComments, setCurrentResource } from '../store/comments/commentThunks.js';
-import { clearComments } from '../store/comments/commentsSlice.js';
+import { getComments } from '../../store/comments/commentThunks.js';
+import { clearComments, setCurrentResource } from '../../store/comments/commentsSlice.js';
 
 const CommentSection = ({ resourceType, resourceId, resourceTitle }) => {
   const dispatch = useDispatch();
   const { comments, loading, error } = useSelector((state) => state.comments);
-  const { user } = useSelector((state) => state.auth);
+  const { user } = useSelector((state) => state.login); 
   const [replyingTo, setReplyingTo] = useState(null);
   const [editingComment, setEditingComment] = useState(null);
 
