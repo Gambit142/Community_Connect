@@ -7,7 +7,16 @@ const { updatePost } = require('../controllers/posts/updatePostController.js');
 const { deletePost } = require('../controllers/posts/deletePostController.js');
 const { getMyPosts } = require('../controllers/posts/getMyPostsController.js');
 const { getPosts } = require('../controllers/posts/postsController.js');
-const { getPostById, getSimilarPosts } = require('../controllers/posts/getPostController.js'); // New import
+const { getPostById, getSimilarPosts } = require('../controllers/posts/getPostController.js');
+const {
+  createCommentGeneric,
+  getCommentsGeneric,
+  updateCommentGeneric,
+  deleteCommentGeneric,
+  toggleCommentLikeGeneric,
+  flagCommentGeneric,
+  toggleResourceLikeGeneric,
+} = require('../controllers/commentsController.js');
 
 // Create post (member only, pending approval) with image upload (up to 5 images)
 router.post('/', authenticateToken, uploadMiddleware, createPost);
@@ -82,5 +91,16 @@ router.get('/:id/similar', getSimilarPosts);
 // Response Structure:
 // - Success (200): { "message": "string", "similarPosts": [post objects, max 5] }
 // - Errors: 404 { "message": "Post not found" }, 500 { "message": "server error" }
+
+// Like post (toggle)
+router.post('/:id/like', authenticateToken, (req, res) => toggleResourceLikeGeneric(req, res, 'post', req.params.id));
+
+// Comments routes (nested)
+router.post('/:id/comments', authenticateToken, (req, res) => createCommentGeneric(req, res, 'post', req.params.id));
+router.get('/:id/comments', (req, res) => getCommentsGeneric(req, res, 'post', req.params.id));
+router.put('/:id/comments/:commentId', authenticateToken, (req, res) => updateCommentGeneric(req, res, req.params.commentId));
+router.delete('/:id/comments/:commentId', authenticateToken, (req, res) => deleteCommentGeneric(req, res, req.params.commentId));
+router.post('/:id/comments/:commentId/like', authenticateToken, (req, res) => toggleCommentLikeGeneric(req, res, req.params.commentId));
+router.post('/:id/comments/:commentId/flag', authenticateToken, (req, res) => flagCommentGeneric(req, res, 'post', req.params.id, req.params.commentId));
 
 module.exports = router;

@@ -8,7 +8,8 @@ const authRoutes = require('./routes/auth.js');
 const protectedRoutes = require('./routes/protected.js');
 const postRoutes = require('./routes/posts.js');
 const adminRoutes = require('./routes/admin.js');
-const eventRoutes = require('./routes/events.js'); 
+const eventRoutes = require('./routes/events.js');
+const commentsRoutes = require('./routes/comments.js');
 const { initSocket } = require('./config/socket.js'); // Import init
 
 const app = express();
@@ -39,6 +40,7 @@ app.use('/api', protectedRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/comments', commentsRoutes);
 
 // Health check route
 app.get('/', (req, res) => res.status(200).send('Server is running'));

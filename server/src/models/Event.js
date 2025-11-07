@@ -22,6 +22,8 @@ const eventSchema = new mongoose.Schema({
   price: { type: Number, min: 0, default: 0 }, // 0 for free
   images: [{ type: String }], // URLs from Cloudinary
   attendees: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], // Optional array
+  likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  commentCount: { type: Number, default: 0 },
 }, { 
   timestamps: true, // Auto CreatedAt/UpdatedAt
   toJSON: { virtuals: true, transform: (doc, ret) => { delete ret.__v; } },
