@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart, faComment, faImage, faCalendarAlt, faDollarSign } from '@fortawesome/free-solid-svg-icons';
 import { faHeart as faHeartRegular } from '@fortawesome/free-regular-svg-icons';
 
-const SimilarItems = ({ items, type, title = "Similar Items" }) => {
+const SimilarItems = ({ items, type, title = "Similar Items", layout = 'horizontal', centered = false }) => {
   const navigate = useNavigate();
 
   if (!items || items.length === 0) return null;
@@ -69,6 +69,20 @@ const SimilarItems = ({ items, type, title = "Similar Items" }) => {
     }
   };
 
+  // Calculate the number of items to display
+  const displayItems = items.slice(0, 4);
+  
+  // Calculate grid columns based on item count for centered layout
+  const getGridColumns = () => {
+    if (!centered) return 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4';
+    
+    const itemCount = displayItems.length;
+    if (itemCount === 1) return 'grid-cols-1 max-w-md mx-auto';
+    if (itemCount === 2) return 'grid-cols-1 md:grid-cols-2 max-w-2xl mx-auto';
+    if (itemCount === 3) return 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 max-w-4xl mx-auto';
+    return 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4';
+  };
+
   return (
     <div className="mt-12">
       <div className="text-center mb-8">
@@ -77,105 +91,197 @@ const SimilarItems = ({ items, type, title = "Similar Items" }) => {
         </h2>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {items.slice(0, 4).map((item) => (
-          <div
-            key={item._id}
-            className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer transform hover:-translate-y-1 group"
-            onClick={() => navigate(`/${type}s/${item._id}`)}
-          >
-            {/* Image */}
-            <div className="h-48 w-full overflow-hidden relative">
-              {item.images && item.images.length > 0 ? (
-                <>
-                  <img
-                    src={item.images[0]}
-                    alt={item.title}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300"></div>
-                </>
-              ) : (
-                <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-                  <div className="text-center text-gray-500">
-                    <FontAwesomeIcon icon={faImage} className="text-3xl mb-2 text-gray-400" />
-                    <span className="text-sm block">No Image</span>
+      {/* Horizontal Layout (Default) */}
+      {layout === 'horizontal' && (
+        <div className={`grid ${getGridColumns()} gap-6`}>
+          {displayItems.map((item) => (
+            <div
+              key={item._id}
+              className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer transform hover:-translate-y-1 group"
+              onClick={() => navigate(`/${type}s/${item._id}`)}
+            >
+              {/* Image */}
+              <div className="h-48 w-full overflow-hidden relative">
+                {item.images && item.images.length > 0 ? (
+                  <>
+                    <img
+                      src={item.images[0]}
+                      alt={item.title}
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300"></div>
+                  </>
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                    <div className="text-center text-gray-500">
+                      <FontAwesomeIcon icon={faImage} className="text-3xl mb-2 text-gray-400" />
+                      <span className="text-sm block">No Image</span>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Quick action overlay */}
+                <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <div className="bg-black bg-opacity-50 text-white rounded-full p-2">
+                    <FontAwesomeIcon icon={faCalendarAlt} className="w-4 h-4" />
                   </div>
                 </div>
-              )}
-              
-              {/* Quick action overlay */}
-              <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <div className="bg-black bg-opacity-50 text-white rounded-full p-2">
-                  <FontAwesomeIcon icon={faCalendarAlt} className="w-4 h-4" />
+              </div>
+
+              {/* Content */}
+              <div className="p-4">
+                {/* Badges */}
+                <div className="flex flex-wrap gap-1 mb-3 min-h-[2rem] items-start">
+                  <span className={`px-2 py-1 rounded text-xs font-medium flex items-center gap-1 ${getCategoryColor(item.category, type)}`}>
+                    <span className="text-xs">{getCategoryIcon(item.category, type)}</span>
+                    {item.category}
+                  </span>
+                  <span className="px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800 flex items-center gap-1">
+                    <FontAwesomeIcon icon={faDollarSign} className="w-3 h-3" />
+                    {item.price > 0 ? `${item.price}` : 'Free'}
+                  </span>
+                </div>
+
+                {/* Title */}
+                <h3 className="font-semibold text-[#05213C] line-clamp-2 mb-2 leading-tight min-h-[2.5rem] group-hover:text-blue-700 transition-colors">
+                  {item.title}
+                </h3>
+
+                {/* Description */}
+                <p className="text-gray-600 text-sm line-clamp-2 mb-3 leading-relaxed">
+                  {item.description}
+                </p>
+
+                {/* Metadata */}
+                <div className="flex items-center justify-between text-xs text-gray-500 pt-3 border-t border-gray-100">
+                  <span className="flex items-center gap-1">
+                    <FontAwesomeIcon icon={faCalendarAlt} className="w-3 h-3" />
+                    {type === 'event' 
+                      ? new Date(item.date).toLocaleDateString()
+                      : new Date(item.createdAt).toLocaleDateString()
+                    }
+                  </span>
+                  <div className="flex items-center space-x-3">
+                    {item.likeCount > 0 && (
+                      <span className="flex items-center space-x-1 text-red-500">
+                        <FontAwesomeIcon 
+                          icon={item.isLiked ? faHeart : faHeartRegular} 
+                          className="w-3 h-3" 
+                        />
+                        <span>{item.likeCount}</span>
+                      </span>
+                    )}
+                    {item.commentCount > 0 && (
+                      <span className="flex items-center space-x-1 text-blue-500">
+                        <FontAwesomeIcon icon={faComment} className="w-3 h-3" />
+                        <span>{item.commentCount}</span>
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Hover action indicator */}
+                <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <div className="bg-[#05213C] text-white rounded-full p-1">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                    </svg>
+                  </div>
                 </div>
               </div>
             </div>
+          ))}
+        </div>
+      )}
 
-            {/* Content */}
-            <div className="p-4">
-              {/* Badges */}
-              <div className="flex flex-wrap gap-1 mb-3 min-h-[2rem] items-start">
-                <span className={`px-2 py-1 rounded text-xs font-medium flex items-center gap-1 ${getCategoryColor(item.category, type)}`}>
-                  <span className="text-xs">{getCategoryIcon(item.category, type)}</span>
-                  {item.category}
-                </span>
-                <span className="px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800 flex items-center gap-1">
-                  <FontAwesomeIcon icon={faDollarSign} className="w-3 h-3" />
-                  {item.price > 0 ? `${item.price}` : 'Free'}
-                </span>
+      {/* Vertical Layout */}
+      {layout === 'vertical' && (
+        <div className="space-y-4">
+          {displayItems.map((item) => (
+            <div
+              key={item._id}
+              className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer group flex"
+              onClick={() => navigate(`/${type}s/${item._id}`)}
+            >
+              {/* Image - Smaller for vertical layout */}
+              <div className="w-32 h-32 flex-shrink-0 overflow-hidden relative">
+                {item.images && item.images.length > 0 ? (
+                  <>
+                    <img
+                      src={item.images[0]}
+                      alt={item.title}
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300"></div>
+                  </>
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                    <div className="text-center text-gray-500">
+                      <FontAwesomeIcon icon={faImage} className="text-lg mb-1 text-gray-400" />
+                      <span className="text-xs block">No Image</span>
+                    </div>
+                  </div>
+                )}
               </div>
 
-              {/* Title */}
-              <h3 className="font-semibold text-[#05213C] line-clamp-2 mb-2 leading-tight min-h-[2.5rem] group-hover:text-blue-700 transition-colors">
-                {item.title}
-              </h3>
-
-              {/* Description */}
-              <p className="text-gray-600 text-sm line-clamp-2 mb-3 leading-relaxed">
-                {item.description}
-              </p>
-
-              {/* Metadata */}
-              <div className="flex items-center justify-between text-xs text-gray-500 pt-3 border-t border-gray-100">
-                <span className="flex items-center gap-1">
-                  <FontAwesomeIcon icon={faCalendarAlt} className="w-3 h-3" />
-                  {type === 'event' 
-                    ? new Date(item.date).toLocaleDateString()
-                    : new Date(item.createdAt).toLocaleDateString()
-                  }
-                </span>
-                <div className="flex items-center space-x-3">
-                  {item.likeCount > 0 && (
-                    <span className="flex items-center space-x-1 text-red-500">
-                      <FontAwesomeIcon 
-                        icon={item.isLiked ? faHeart : faHeartRegular} 
-                        className="w-3 h-3" 
-                      />
-                      <span>{item.likeCount}</span>
+              {/* Content */}
+              <div className="p-4 flex-1">
+                <div className="flex flex-col h-full">
+                  {/* Badges */}
+                  <div className="flex flex-wrap gap-1 mb-2">
+                    <span className={`px-2 py-1 rounded text-xs font-medium flex items-center gap-1 ${getCategoryColor(item.category, type)}`}>
+                      <span className="text-xs">{getCategoryIcon(item.category, type)}</span>
+                      {item.category}
                     </span>
-                  )}
-                  {item.commentCount > 0 && (
-                    <span className="flex items-center space-x-1 text-blue-500">
-                      <FontAwesomeIcon icon={faComment} className="w-3 h-3" />
-                      <span>{item.commentCount}</span>
+                    <span className="px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800 flex items-center gap-1">
+                      <FontAwesomeIcon icon={faDollarSign} className="w-3 h-3" />
+                      {item.price > 0 ? `${item.price}` : 'Free'}
                     </span>
-                  )}
-                </div>
-              </div>
+                  </div>
 
-              {/* Hover action indicator */}
-              <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <div className="bg-[#05213C] text-white rounded-full p-1">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                  </svg>
+                  {/* Title */}
+                  <h3 className="font-semibold text-[#05213C] line-clamp-1 mb-1 group-hover:text-blue-700 transition-colors">
+                    {item.title}
+                  </h3>
+
+                  {/* Description */}
+                  <p className="text-gray-600 text-sm line-clamp-2 mb-2 leading-relaxed flex-1">
+                    {item.description}
+                  </p>
+
+                  {/* Metadata */}
+                  <div className="flex items-center justify-between text-xs text-gray-500 pt-2 border-t border-gray-100">
+                    <span className="flex items-center gap-1">
+                      <FontAwesomeIcon icon={faCalendarAlt} className="w-3 h-3" />
+                      {type === 'event' 
+                        ? new Date(item.date).toLocaleDateString()
+                        : new Date(item.createdAt).toLocaleDateString()
+                      }
+                    </span>
+                    <div className="flex items-center space-x-3">
+                      {item.likeCount > 0 && (
+                        <span className="flex items-center space-x-1 text-red-500">
+                          <FontAwesomeIcon 
+                            icon={item.isLiked ? faHeart : faHeartRegular} 
+                            className="w-3 h-3" 
+                          />
+                          <span>{item.likeCount}</span>
+                        </span>
+                      )}
+                      {item.commentCount > 0 && (
+                        <span className="flex items-center space-x-1 text-blue-500">
+                          <FontAwesomeIcon icon={faComment} className="w-3 h-3" />
+                          <span>{item.commentCount}</span>
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       {/* View all link */}
       {items.length > 4 && (

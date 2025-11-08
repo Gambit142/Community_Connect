@@ -16,7 +16,7 @@ const commentsSlice = createSlice({
     error: null,
     successMessage: null,
     pagination: null,
-    currentResource: null // Track which resource we're viewing comments for
+    currentResource: null
   },
   reducers: {
     clearError: (state) => {
@@ -43,8 +43,41 @@ const commentsSlice = createSlice({
       .addCase(createComment.fulfilled, (state, action) => {
         state.loading = false;
         state.successMessage = action.payload.message;
-        // Add new comment to the beginning of the list
-        state.comments.unshift(action.payload.comment);
+        
+        const newComment = action.payload.comment;
+        
+        // If it's a reply (has parentComment), add it to the parent's children array
+        if (newComment.parentComment) {
+          const addToParent = (comments) => {
+            for (let i = 0; i < comments.length; i++) {
+              if (comments[i]._id === newComment.parentComment) {
+                // Initialize children array if it doesn't exist
+                if (!comments[i].children) {
+                  comments[i].children = [];
+                }
+                // Add the reply to parent's children (sorted by date)
+                comments[i].children.push(newComment);
+                comments[i].children.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                return true;
+              }
+              // Recursively search in children
+              if (comments[i].children && addToParent(comments[i].children)) {
+                return true;
+              }
+            }
+            return false;
+          };
+          
+          // Try to find parent and add the reply
+          if (!addToParent(state.comments)) {
+            // If parent not found in current state, add as top-level comment (fallback)
+            // This might happen if parent comment wasn't loaded yet
+            state.comments.unshift(newComment);
+          }
+        } else {
+          // It's a top-level comment, add to beginning
+          state.comments.unshift(newComment);
+        }
       })
       .addCase(createComment.rejected, (state, action) => {
         state.loading = false;
@@ -58,6 +91,7 @@ const commentsSlice = createSlice({
       })
       .addCase(getComments.fulfilled, (state, action) => {
         state.loading = false;
+        // The backend should return properly nested comments with children
         state.comments = action.payload.comments;
         state.pagination = action.payload.pagination;
       })
@@ -75,11 +109,11 @@ const commentsSlice = createSlice({
       .addCase(updateComment.fulfilled, (state, action) => {
         state.loading = false;
         state.successMessage = action.payload.message;
-        // Update comment in the list using recursive search
+        
         const updateInTree = (comments) => {
           for (let i = 0; i < comments.length; i++) {
             if (comments[i]._id === action.payload.comment._id) {
-              comments[i] = action.payload.comment;
+              comments[i] = { ...comments[i], ...action.payload.comment };
               return true;
             }
             if (comments[i].children && updateInTree(comments[i].children)) {
@@ -103,7 +137,7 @@ const commentsSlice = createSlice({
       .addCase(deleteComment.fulfilled, (state, action) => {
         state.loading = false;
         state.successMessage = action.payload.message;
-        // Remove comment from the list using recursive search
+        
         const removeFromTree = (comments) => {
           for (let i = 0; i < comments.length; i++) {
             if (comments[i]._id === action.meta.arg.commentId) {
@@ -133,7 +167,6 @@ const commentsSlice = createSlice({
         const { liked, likeCount } = action.payload;
         const commentId = action.meta.arg.commentId;
         
-        // Update like status in the comment tree
         const updateLikeInTree = (comments) => {
           for (let i = 0; i < comments.length; i++) {
             if (comments[i]._id === commentId) {

@@ -1,0 +1,231 @@
+.commentThread {
+  position: relative;
+}
+
+.nestedComment {
+  margin-left: 24px;
+}
+
+.threadLine {
+  position: absolute;
+  left: -20px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background-color: #e2e8f0;
+  border-radius: 1px;
+  transition: background-color 0.2s ease;
+}
+
+.nestedComment:hover .threadLine {
+  background-color: #3b82f6;
+}
+
+.commentCard {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #f1f5f9;
+  padding: 24px;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+}
+
+.commentCard:hover {
+  border-color: #e2e8f0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.nestedCard {
+  border-left: 4px solid #dbeafe;
+}
+
+.userAvatar {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 14px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.userBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.ownerBadge {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.adminBadge {
+  background-color: #f3e8ff;
+  color: #7c3aed;
+}
+
+.metaInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+.commentContent {
+  color: #374151;
+  line-height: 1.6;
+  font-size: 14px;
+  white-space: pre-wrap;
+}
+
+.mention {
+  color: #2563eb;
+  font-weight: 600;
+  background-color: #dbeafe;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+.actionsContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.actionButtons {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.actionButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.likeButton {
+  background-color: #f8fafc;
+  color: #6b7280;
+}
+
+.likeButton:hover {
+  background-color: #fef2f2;
+  color: #dc2626;
+}
+
+.likeButtonActive {
+  background-color: #fef2f2;
+  color: #dc2626;
+}
+
+.replyButton {
+  background-color: #f8fafc;
+  color: #6b7280;
+}
+
+.replyButton:hover {
+  background-color: #f0f9ff;
+  color: #0369a1;
+}
+
+.repliesButton {
+  background-color: #eff6ff;
+  color: #1d4ed8;
+}
+
+.repliesButton:hover {
+  background-color: #dbeafe;
+}
+
+.menuButtons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.menuButton {
+  padding: 8px;
+  border-radius: 8px;
+  color: #9ca3af;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.editButton:hover {
+  background-color: #dcfce7;
+  color: #16a34a;
+}
+
+.deleteButton:hover {
+  background-color: #fef2f2;
+  color: #dc2626;
+}
+
+.flagButton:hover {
+  background-color: #fffbeb;
+  color: #d97706;
+}
+
+.replyForm {
+  margin-top: 16px;
+  margin-left: 8px;
+}
+
+.loadingSpinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive design */
+@media (max-width: 640px) {
+  .nestedComment {
+    margin-left: 16px;
+  }
+  
+  .commentCard {
+    padding: 16px;
+  }
+  
+  .actionsContainer {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  
+  .actionButtons {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .menuButtons {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}

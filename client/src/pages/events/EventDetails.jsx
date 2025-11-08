@@ -352,7 +352,8 @@ export default function EventDetails() {
                   <SimilarItems 
                     items={similarEvents} 
                     type="event" 
-                    title="Similar Events" 
+                    title="Similar Events"
+                    layout="vertical"
                   />
                 </div>
               )}

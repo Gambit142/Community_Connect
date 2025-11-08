@@ -336,6 +336,7 @@ export default function PostDetails() {
             items={similarPosts} 
             type="post" 
             title="Similar Posts" 
+            centered={true} 
           />
         )}
       </div>

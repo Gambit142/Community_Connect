@@ -1,6 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { createComment, updateComment } from '../../store/comments/commentThunks.js';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPaperPlane, faTimes } from '@fortawesome/free-solid-svg-icons';
+import styles from '../../assets/css/CommentForm.module.css';
 
 const CommentForm = ({ 
   resourceType, 
@@ -23,8 +26,9 @@ const CommentForm = ({
   useEffect(() => {
     if (autoFocus && textareaRef.current) {
       textareaRef.current.focus();
+      textareaRef.current.setSelectionRange(content.length, content.length);
     }
-  }, [autoFocus]);
+  }, [autoFocus, content.length]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -65,62 +69,76 @@ const CommentForm = ({
 
   if (!user) {
     return (
-      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-center">
-        <p className="text-gray-600">Please log in to leave a comment.</p>
+      <div className={styles.authPrompt}>
+        <div className={styles.authIcon}>
+          <FontAwesomeIcon icon={faPaperPlane} className="w-6 h-6 text-blue-600" />
+        </div>
+        <p className="text-gray-700 font-medium mb-2">Join the conversation</p>
+        <p className="text-gray-600 text-sm mb-4">Sign in to share your thoughts and connect with others</p>
+        <button 
+          onClick={() => window.location.href = '/auth/login'}
+          className={styles.authButton}
+        >
+          Sign In to Comment
+        </button>
       </div>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white border border-gray-200 rounded-lg p-4">
-      <div className="flex space-x-3">
-        <div className="flex-shrink-0">
-          <div className="w-8 h-8 bg-[#05213C] text-white rounded-full flex items-center justify-center font-semibold text-sm">
-            {user.username?.charAt(0).toUpperCase() || 'U'}
-          </div>
+    <form onSubmit={handleSubmit} className={styles.form}>
+      <div className="flex space-x-4">
+        <div className={styles.userAvatar}>
+          {user.username?.charAt(0).toUpperCase() || 'U'}
         </div>
         
         <div className="flex-1">
-          <textarea
-            ref={textareaRef}
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder={placeholder}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#05213C] focus:border-transparent resize-none"
-            rows="3"
-            disabled={isSubmitting || loading}
-          />
+          <div className="mb-4">
+            <textarea
+              ref={textareaRef}
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder={placeholder}
+              className={styles.textarea}
+              rows="3"
+              disabled={isSubmitting || loading}
+            />
+          </div>
           
-          <div className="flex items-center justify-between mt-3">
-            <div className="text-sm text-gray-500">
-              <span>Press ⌘+Enter to submit</span>
+          <div className={styles.footer}>
+            <div className={styles.hotkeyHint}>
+              ⌘ + Enter to submit
             </div>
             
-            <div className="flex space-x-2">
+            <div className={styles.buttonGroup}>
               {onCancel && (
                 <button
                   type="button"
                   onClick={onCancel}
-                  className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+                  className={styles.cancelButton}
                   disabled={isSubmitting}
                 >
-                  Cancel
+                  <FontAwesomeIcon icon={faTimes} className="w-4 h-4" />
+                  <span>Cancel</span>
                 </button>
               )}
               
               <button
                 type="submit"
                 disabled={!content.trim() || isSubmitting || loading}
-                className="px-4 py-2 bg-[#05213C] text-white text-sm font-medium rounded-lg hover:bg-blue-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className={styles.submitButton}
               >
                 {isSubmitting ? (
-                  <span className="flex items-center">
-                    <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-2"></div>
-                    {editComment ? 'Updating...' : 'Posting...'}
-                  </span>
+                  <>
+                    <div className={`${styles.submitSpinner} w-4 h-4 border-2 border-white border-t-transparent rounded-full`} />
+                    <span>{editComment ? 'Updating...' : 'Posting...'}</span>
+                  </>
                 ) : (
-                  editComment ? 'Update' : 'Post'
+                  <>
+                    <FontAwesomeIcon icon={faPaperPlane} className="w-4 h-4" />
+                    <span>{editComment ? 'Update' : 'Post Comment'}</span>
+                  </>
                 )}
               </button>
             </div>

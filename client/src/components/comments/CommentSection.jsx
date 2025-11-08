@@ -4,20 +4,22 @@ import Comment from './Comment.jsx';
 import CommentForm from './CommentForm.jsx';
 import { getComments } from '../../store/comments/commentThunks.js';
 import { clearComments, setCurrentResource } from '../../store/comments/commentsSlice.js';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faComments, faSort, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
+import styles from '../../assets/css/CommentSection.module.css';
 
 const CommentSection = ({ resourceType, resourceId, resourceTitle }) => {
   const dispatch = useDispatch();
-  const { comments, loading, error } = useSelector((state) => state.comments);
+  const { comments, loading, error, pagination } = useSelector((state) => state.comments);
   const { user } = useSelector((state) => state.login); 
   const [replyingTo, setReplyingTo] = useState(null);
   const [editingComment, setEditingComment] = useState(null);
+  const [sortBy, setSortBy] = useState('newest');
 
   useEffect(() => {
-    // Set current resource and load comments
     dispatch(setCurrentResource({ resourceType, resourceId }));
     dispatch(getComments({ resourceType, resourceId, page: 1, limit: 50 }));
 
-    // Cleanup on unmount
     return () => {
       dispatch(clearComments());
     };
@@ -38,24 +40,54 @@ const CommentSection = ({ resourceType, resourceId, resourceTitle }) => {
     setEditingComment(null);
   };
 
+  const totalComments = comments.reduce((total, comment) => {
+    return total + 1 + (comment.children ? comment.children.length : 0);
+  }, 0);
+
   if (loading && comments.length === 0) {
     return (
-      <div className="flex justify-center items-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#05213C]"></div>
+      <div className={styles.loadingState}>
+        <div className={styles.loadingSpinner} />
+        <p className="text-gray-600">Loading comments...</p>
       </div>
     );
   }
 
   return (
-    <section className="bg-white rounded-lg border border-gray-200 p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-[#05213C]">
-          Community Discussion ({comments.length})
-        </h2>
+    <section className={styles.section}>
+      {/* Header */}
+      <div className={styles.header}>
+        <div className={styles.headerLeft}>
+          <div className={styles.headerIcon}>
+            <FontAwesomeIcon icon={faComments} className="w-6 h-6 text-white" />
+          </div>
+          <div className={styles.headerText}>
+            <h2>Community Discussion</h2>
+            <p>{totalComments} {totalComments === 1 ? 'comment' : 'comments'}</p>
+          </div>
+        </div>
+
+        {/* Sort Options */}
+        <div className="relative">
+          <select 
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className={styles.sortSelect}
+          >
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+            <option value="most-liked">Most Liked</option>
+          </select>
+          <FontAwesomeIcon 
+            icon={faSort} 
+            className={styles.sortIcon + ' w-3 h-3'}
+          />
+        </div>
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+        <div className={styles.errorMessage}>
+          <FontAwesomeIcon icon={faExclamationTriangle} className="w-4 h-4" />
           {error}
         </div>
       )}
@@ -67,7 +99,7 @@ const CommentSection = ({ resourceType, resourceId, resourceTitle }) => {
           resourceId={resourceId}
           parentCommentId={null}
           onSuccess={handleCancel}
-          placeholder={`Add a comment about this ${resourceType}...`}
+          placeholder={`Share your thoughts about this ${resourceType}...`}
           autoFocus={false}
         />
       </div>
@@ -75,9 +107,12 @@ const CommentSection = ({ resourceType, resourceId, resourceTitle }) => {
       {/* Comments list */}
       <div className="space-y-6">
         {comments.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            <div className="text-4xl mb-3">💬</div>
-            <p>No comments yet. Be the first to share your thoughts!</p>
+          <div className={styles.emptyState}>
+            <div className={styles.emptyIcon}>
+              <FontAwesomeIcon icon={faComments} className="w-8 h-8 text-gray-400" />
+            </div>
+            <h3>No comments yet</h3>
+            <p>Be the first to share your thoughts and start the conversation!</p>
           </div>
         ) : (
           comments.map((comment) => (
@@ -98,6 +133,23 @@ const CommentSection = ({ resourceType, resourceId, resourceTitle }) => {
           ))
         )}
       </div>
+
+      {/* Load More Button */}
+      {pagination?.hasNext && (
+        <div className="flex justify-center">
+          <button
+            onClick={() => dispatch(getComments({ 
+              resourceType, 
+              resourceId, 
+              page: pagination.currentPage + 1, 
+              limit: 50 
+            }))}
+            className={styles.loadMoreButton}
+          >
+            Load More Comments
+          </button>
+        </div>
+      )}
     </section>
   );
 };

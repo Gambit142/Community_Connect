@@ -2,7 +2,10 @@ import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { toggleCommentLike, flagComment, deleteComment } from '../../store/comments/commentThunks.js';
 import CommentForm from './CommentForm.jsx';
-import CommentActions from './CommentActions.jsx';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faReply, faEdit, faTrash, faFlag, faHeart, faCaretDown, faCaretUp } from '@fortawesome/free-solid-svg-icons';
+import { faHeart as faHeartRegular } from '@fortawesome/free-regular-svg-icons';
+import styles from '../../assets/css/Comment.module.css';
 
 const Comment = ({ 
   comment, 
@@ -19,11 +22,15 @@ const Comment = ({
 }) => {
   const dispatch = useDispatch();
   const [showReplies, setShowReplies] = useState(true);
-  const [localLikes, setLocalLikes] = useState({ liked: comment.isLiked, likeCount: comment.likeCount });
+  const [localLikes, setLocalLikes] = useState({ 
+    liked: comment.isLiked, 
+    likeCount: comment.likeCount 
+  });
 
   const isOwner = currentUser && comment.userId._id === currentUser.id;
   const isEditing = editingComment?._id === comment._id;
   const isReplying = replyingTo === comment._id;
+  const hasReplies = comment.children && comment.children.length > 0;
 
   const handleLike = async () => {
     try {
@@ -76,42 +83,46 @@ const Comment = ({
     if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
     if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
     if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`;
-    return `${Math.floor(diffInSeconds / 604800)}w ago`;
+    return date.toLocaleDateString();
   };
 
-  const hasReplies = comment.children && comment.children.length > 0;
-
   return (
-    <div className={`relative ${level > 0 ? 'ml-8' : ''}`}>
+    <div className={`${styles.commentThread} ${level > 0 ? styles.nestedComment : ''}`}>
       {/* Thread line for nested comments */}
       {level > 0 && (
-        <div className="absolute -left-4 top-0 bottom-0 w-0.5 bg-gray-200"></div>
+        <div className={styles.threadLine} />
       )}
       
-      <div className={`bg-white rounded-lg border border-gray-100 p-4 hover:border-gray-200 transition-colors ${
-        level > 0 ? 'border-l-2 border-l-blue-100' : ''
-      }`}>
+      <div className={`${styles.commentCard} ${level > 0 ? styles.nestedCard : ''}`}>
         {/* Comment Header */}
-        <div className="flex items-start justify-between mb-3">
+        <div className="flex items-start justify-between mb-4">
           <div className="flex items-center space-x-3">
-            <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-[#05213C] text-white rounded-full flex items-center justify-center font-semibold text-sm">
-                {comment.userId.username?.charAt(0).toUpperCase() || 'U'}
-              </div>
+            <div className={styles.userAvatar}>
+              {comment.userId.username?.charAt(0).toUpperCase() || 'U'}
             </div>
-            <div>
-              <h4 className="font-semibold text-gray-900 text-sm">
-                {comment.userId.username}
+            <div className="flex-1">
+              <div className="flex items-center space-x-2">
+                <h4 className="font-semibold text-gray-900 text-sm">
+                  {comment.userId.username}
+                </h4>
                 {isOwner && (
-                  <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                  <span className={styles.userBadge + ' ' + styles.ownerBadge}>
                     You
                   </span>
                 )}
-              </h4>
-              <div className="flex items-center space-x-2 text-xs text-gray-500">
+                {comment.userId.role === 'admin' && (
+                  <span className={styles.userBadge + ' ' + styles.adminBadge}>
+                    Admin
+                  </span>
+                )}
+              </div>
+              <div className={styles.metaInfo}>
                 <span>{formatTimeAgo(comment.createdAt)}</span>
                 {comment.editedAt && (
-                  <span className="text-gray-400">• edited</span>
+                  <>
+                    <span>•</span>
+                    <span>edited</span>
+                  </>
                 )}
               </div>
             </div>
@@ -130,12 +141,12 @@ const Comment = ({
             autoFocus={true}
           />
         ) : (
-          <div className="mb-3">
-            <p className="text-gray-700 whitespace-pre-wrap">
+          <div className="mb-4">
+            <p className={styles.commentContent}>
               {comment.content.split(' ').map((word, index) => 
                 word.startsWith('@') ? (
-                  <span key={index} className="text-blue-600 font-medium">
-                    {word}{' '}
+                  <span key={index} className={styles.mention}>
+                    {word}
                   </span>
                 ) : (
                   <span key={index}>{word} </span>
@@ -147,23 +158,84 @@ const Comment = ({
 
         {/* Comment Actions */}
         {!isEditing && (
-          <CommentActions
-            likes={localLikes}
-            onLike={handleLike}
-            onReply={handleReplyClick}
-            onEdit={isOwner ? handleEditClick : null}
-            onDelete={isOwner ? handleDelete : null}
-            onFlag={!isOwner ? handleFlag : null}
-            showReplies={hasReplies && showReplies}
-            onToggleReplies={() => setShowReplies(!showReplies)}
-            replyCount={comment.children?.length || 0}
-            isOwner={isOwner}
-          />
+          <div className={styles.actionsContainer}>
+            <div className={styles.actionButtons}>
+              {/* Like Button */}
+              <button
+                onClick={handleLike}
+                className={`${styles.actionButton} ${styles.likeButton} ${
+                  localLikes.liked ? styles.likeButtonActive : ''
+                }`}
+              >
+                <FontAwesomeIcon 
+                  icon={localLikes.liked ? faHeart : faHeartRegular} 
+                  className="w-4 h-4"
+                />
+                <span>{localLikes.likeCount}</span>
+              </button>
+
+              {/* Reply Button */}
+              <button
+                onClick={handleReplyClick}
+                className={`${styles.actionButton} ${styles.replyButton}`}
+              >
+                <FontAwesomeIcon icon={faReply} className="w-4 h-4" />
+                <span>Reply</span>
+              </button>
+
+              {/* Replies Toggle */}
+              {hasReplies && (
+                <button
+                  onClick={() => setShowReplies(!showReplies)}
+                  className={`${styles.actionButton} ${styles.repliesButton}`}
+                >
+                  <span>
+                    {comment.children.length} {comment.children.length === 1 ? 'reply' : 'replies'}
+                  </span>
+                  <FontAwesomeIcon 
+                    icon={showReplies ? faCaretUp : faCaretDown} 
+                    className="w-4 h-4" 
+                  />
+                </button>
+              )}
+            </div>
+
+            {/* Action Menu */}
+            <div className={styles.menuButtons}>
+              {isOwner && (
+                <>
+                  <button
+                    onClick={handleEditClick}
+                    className={`${styles.menuButton} ${styles.editButton}`}
+                    title="Edit comment"
+                  >
+                    <FontAwesomeIcon icon={faEdit} className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={handleDelete}
+                    className={`${styles.menuButton} ${styles.deleteButton}`}
+                    title="Delete comment"
+                  >
+                    <FontAwesomeIcon icon={faTrash} className="w-4 h-4" />
+                  </button>
+                </>
+              )}
+              {!isOwner && (
+                <button
+                  onClick={handleFlag}
+                  className={`${styles.menuButton} ${styles.flagButton}`}
+                  title="Flag comment"
+                >
+                  <FontAwesomeIcon icon={faFlag} className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+          </div>
         )}
 
         {/* Reply Form */}
         {isReplying && !isEditing && (
-          <div className="mt-4 ml-8">
+          <div className={styles.replyForm}>
             <CommentForm
               resourceType={resourceType}
               resourceId={resourceId}

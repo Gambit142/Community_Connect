@@ -131,7 +131,7 @@ const createComment = async (user, relatedType, relatedId, data) => {
   });
 
   await comment.save();
-  await comment.populate('userId', 'username profilePic');
+  await comment.populate('userId', 'username profilePic role');
   await comment.populate('tags', 'username');
   await updateRelatedCount(relatedType, relatedId, 1);
   await sendCommentNotifications(comment, user, relatedDoc, relatedType);
@@ -143,32 +143,54 @@ const getCommentsTree = async (relatedType, relatedId, { page = 1, limit = 10, u
   await validateAccess(userId, relatedType, relatedId);
   const skip = (page - 1) * limit;
 
-  const comments = await Comment.find({ relatedType, relatedId, deleted: false })
-    .populate('userId', 'username profilePic')
+  // Get ALL comments for this resource (not paginated at DB level for proper tree building)
+  const comments = await Comment.find({ 
+    relatedType, 
+    relatedId, 
+    deleted: false 
+  })
+    .populate('userId', 'username profilePic role')
     .populate('tags', 'username')
     .sort({ createdAt: -1 })
     .lean();
 
+  // Build the comment tree
   const commentMap = {};
   const topLevel = [];
 
-  for (const c of comments) {
-    const commentObj = {
+  // First pass: create all comment objects with empty children
+  comments.forEach(c => {
+    commentMap[c._id] = {
       ...c,
       likeCount: c.likes.length,
       isLiked: userId ? c.likes.some(l => l.toString() === userId) : false,
-      children: [],
+      children: []
     };
-    commentMap[c._id] = commentObj;
-    if (!c.parentComment) {
-      topLevel.push(commentMap[c._id]);
-    } else if (commentMap[c.parentComment]) {
-      commentMap[c.parentComment].children.push(commentMap[c._id]);
+  });
+
+  // Second pass: build the tree structure
+  comments.forEach(c => {
+    const commentObj = commentMap[c._id];
+    if (c.parentComment && commentMap[c.parentComment]) {
+      // This is a reply, add to parent's children
+      commentMap[c.parentComment].children.push(commentObj);
+    } else {
+      // This is a top-level comment
+      topLevel.push(commentObj);
     }
-  }
+  });
 
-  topLevel.forEach(t => t.children.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+  // Sort children by date (newest first) for each parent
+  Object.values(commentMap).forEach(comment => {
+    if (comment.children.length > 0) {
+      comment.children.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    }
+  });
 
+  // Sort top-level comments by date (newest first)
+  topLevel.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+  // Apply pagination to top-level comments only
   const paginated = topLevel.slice(skip, skip + limit);
   const totalTopLevel = topLevel.length;
   const totalPages = Math.ceil(totalTopLevel / limit);
@@ -197,7 +219,7 @@ const updateComment = async (commentId, userId, data) => {
   comment.content = value.content.trim();
   comment.editedAt = new Date();
   await comment.save();
-  await comment.populate('userId', 'username profilePic');
+  await comment.populate('userId', 'username profilePic role');
   await comment.populate('tags', 'username');
 
   return comment;
