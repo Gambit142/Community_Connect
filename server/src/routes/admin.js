@@ -14,6 +14,10 @@ const { getPendingEvents } = require('../controllers/admin/getPendingEventsContr
 const { approveEvent } = require('../controllers/admin/approveEventController.js');
 const { rejectEvent } = require('../controllers/admin/rejectEventController.js');
 
+// Imports for Flagged Comments
+const { getFlaggedCommentsController } = require('../controllers/admin/getFlaggedCommentsController.js');
+const { unflagCommentController } = require('../controllers/admin/unflagCommentController.js');
+
 // Middleware: Admin only
 router.use(authenticateToken, authorizeRoles('admin'));
 
@@ -38,5 +42,13 @@ router.put('/events/:id/approve', approveEvent);
 
 // PUT /api/admin/events/:id/reject - Reject event (update status, notify user, requires reason in body)
 router.put('/events/:id/reject', rejectEvent);
+
+// --- Flagged Comments Moderation Routes ---
+
+// GET /api/admin/comments/flagged - Fetch flagged comments with pagination
+router.get('/comments/flagged', getFlaggedCommentsController);
+
+// POST /api/admin/comments/:commentId/unflag - Unflag/approve comment
+router.post('/comments/:commentId/unflag', unflagCommentController);
 
 module.exports = router;
