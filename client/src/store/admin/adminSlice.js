@@ -6,6 +6,8 @@ import { getPendingEvents } from './getPendingEventsThunk.js';
 import { approveEvent } from './approveEventThunk.js';
 import { rejectEvent } from './rejectEventThunk.js';
 import { getOrders } from './getOrdersThunk.js';
+import { getFlaggedComments } from './getFlaggedCommentsThunk.js';
+import { unflagComment } from './unflagCommentThunk.js';
 
 const adminSlice = createSlice({
   name: 'admin',
@@ -30,6 +32,13 @@ const adminSlice = createSlice({
     orderLoading: false,
     orderError: null,
     orderFilters: { eventId: '', status: '', page: 1, limit: 20 },
+
+    // New: Flagged Comments state
+    flaggedComments: [],
+    flaggedPagination: null,
+    flaggedLoading: false,
+    flaggedError: null,
+    flaggedFilters: { page: 1, limit: 20 },
   },
   reducers: {
     // Posts reducers
@@ -61,6 +70,19 @@ const adminSlice = createSlice({
     clearOrders: (state) => {
       state.orders = [];
     },
+
+    // New: Flagged Comments reducers
+    setFlaggedFilters: (state, action) => {
+      state.flaggedFilters = { ...state.flaggedFilters, ...action.payload };
+      state.flaggedPagination = null; // Reset pagination
+    },
+    clearFlaggedError: (state) => {
+      state.flaggedError = null;
+    },
+    clearFlaggedComments: (state) => {
+      state.flaggedComments = [];
+      state.flaggedPagination = null;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -71,16 +93,19 @@ const adminSlice = createSlice({
       })
       .addCase(getPendingPosts.fulfilled, (state, action) => {
         state.postLoading = false;
-        state.posts = action.payload.posts; // Direct array
+        state.posts = action.payload.posts;
         state.postPagination = action.payload.pagination;
       })
       .addCase(getPendingPosts.rejected, (state, action) => {
         state.postLoading = false;
         state.postError = action.payload;
+        state.posts = [];
       })
+
       // Approve Post
       .addCase(approvePost.pending, (state) => {
         state.postLoading = true;
+        state.postError = null;
       })
       .addCase(approvePost.fulfilled, (state, action) => {
         state.postLoading = false;
@@ -94,9 +119,11 @@ const adminSlice = createSlice({
         state.postLoading = false;
         state.postError = action.payload;
       })
+
       // Reject Post
       .addCase(rejectPost.pending, (state) => {
         state.postLoading = true;
+        state.postError = null;
       })
       .addCase(rejectPost.fulfilled, (state, action) => {
         state.postLoading = false;
@@ -111,23 +138,26 @@ const adminSlice = createSlice({
         state.postError = action.payload;
       })
 
-      // Get Pending Events 
+      // Get Pending Events
       .addCase(getPendingEvents.pending, (state) => {
         state.eventLoading = true;
         state.eventError = null;
       })
       .addCase(getPendingEvents.fulfilled, (state, action) => {
         state.eventLoading = false;
-        state.events = action.payload.events; // Direct array
+        state.events = action.payload.events;
         state.eventPagination = action.payload.pagination;
       })
       .addCase(getPendingEvents.rejected, (state, action) => {
         state.eventLoading = false;
         state.eventError = action.payload;
+        state.events = [];
       })
+
       // Approve Event
       .addCase(approveEvent.pending, (state) => {
         state.eventLoading = true;
+        state.eventError = null;
       })
       .addCase(approveEvent.fulfilled, (state, action) => {
         state.eventLoading = false;
@@ -141,6 +171,7 @@ const adminSlice = createSlice({
         state.eventLoading = false;
         state.eventError = action.payload;
       })
+
       // Reject Event
       .addCase(rejectEvent.pending, (state) => {
         state.eventLoading = true;
@@ -171,6 +202,37 @@ const adminSlice = createSlice({
       .addCase(getOrders.rejected, (state, action) => {
         state.orderLoading = false;
         state.orderError = action.payload;
+      })
+
+      // Get Flagged Comments
+      .addCase(getFlaggedComments.pending, (state) => {
+        state.flaggedLoading = true;
+        state.flaggedError = null;
+      })
+      .addCase(getFlaggedComments.fulfilled, (state, action) => {
+        state.flaggedLoading = false;
+        state.flaggedComments = action.payload.comments;
+        state.flaggedPagination = action.payload.pagination;
+      })
+      .addCase(getFlaggedComments.rejected, (state, action) => {
+        state.flaggedLoading = false;
+        state.flaggedError = action.payload;
+        state.flaggedComments = [];
+      })
+
+      // Unflag Comment
+      .addCase(unflagComment.pending, (state) => {
+        state.flaggedLoading = true;
+        state.flaggedError = null;
+      })
+      .addCase(unflagComment.fulfilled, (state, action) => {
+        state.flaggedLoading = false;
+        // Remove from flagged list if present
+        state.flaggedComments = state.flaggedComments.filter(c => c._id !== action.meta.arg);
+      })
+      .addCase(unflagComment.rejected, (state, action) => {
+        state.flaggedLoading = false;
+        state.flaggedError = action.payload;
       });
   },
 });
@@ -190,5 +252,10 @@ export { rejectEvent } from './rejectEventThunk.js';
 // Orders export
 export const { setOrderFilters, clearOrderError, clearOrders } = adminSlice.actions;
 export { getOrders } from './getOrdersThunk.js';
+
+// Flagged Comments exports
+export const { setFlaggedFilters, clearFlaggedError, clearFlaggedComments } = adminSlice.actions;
+export { getFlaggedComments } from './getFlaggedCommentsThunk.js';
+export { unflagComment } from './unflagCommentThunk.js';
 
 export default adminSlice.reducer;
