@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { getEventById, getSimilarEvents, clearCurrentEvent } from '../../store/events/eventsSlice';
+import { getEventById, getSimilarEvents, clearCurrentEvent, likeEvent } from '../../store/events/eventsSlice';
 import CommentSection from '../../components/comments/CommentSection.jsx';
 import SimilarItems from '../../components/SimilarItems.jsx';
 import styles from '../../assets/css/EventDetails.module.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faHeart as faHeartSolid } from '@fortawesome/free-solid-svg-icons';
+import { faHeart as faHeartRegular } from '@fortawesome/free-regular-svg-icons';
 
 // SVG Icons
 const CalendarIcon = () => (
@@ -28,6 +31,7 @@ export default function EventDetails() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { currentEvent: event, similarEvents, loading, error } = useSelector((state) => state.events);
+  const { user } = useSelector((state) => state.login);
 
   const [showGallery, setShowGallery] = useState(false);
   const [galleryPosition, setGalleryPosition] = useState(0);
@@ -103,6 +107,18 @@ export default function EventDetails() {
     if (event?.images) {
       const prevIndex = (activeImageIndex - 1 + event.images.length) % event.images.length;
       setActiveImageIndex(prevIndex);
+    }
+  };
+
+  const handleLike = async () => {
+    if (!user) {
+      navigate('/auth/login');
+      return;
+    }
+    try {
+      await dispatch(likeEvent(id)).unwrap();
+    } catch (error) {
+      console.error('Failed to like event:', error);
     }
   };
 
@@ -244,7 +260,27 @@ export default function EventDetails() {
                 )}
               </div>
 
-              <h1 className="text-3xl font-bold text-[#05213C] mb-4">{event.title}</h1>
+              <div className="flex items-start justify-between">
+                <h1 className="text-3xl font-bold text-[#05213C] mb-4 flex-1">{event.title}</h1>
+                
+                {/* Like Button */}
+                {user && (
+                  <button
+                    onClick={handleLike}
+                    className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 ml-4 ${
+                      event.isLiked 
+                        ? 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200' 
+                        : 'bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-200 hover:text-red-600'
+                    }`}
+                  >
+                    <FontAwesomeIcon 
+                      icon={event.isLiked ? faHeartSolid : faHeartRegular} 
+                      className={`w-5 h-5 ${event.isLiked ? 'text-red-600' : ''}`}
+                    />
+                    <span className="font-medium">{event.likeCount || 0}</span>
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Description */}

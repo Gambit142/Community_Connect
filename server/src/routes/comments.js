@@ -16,7 +16,9 @@ router.post('/:relatedType/:relatedId', authenticateToken, (req, res) => {
 });
 
 // Get comments for specific resource
-router.get('/:relatedType/:relatedId', getCommentsGeneric);
+router.get('/:relatedType/:relatedId', (req, res) => {
+  getCommentsGeneric(req, res, req.params.relatedType, req.params.relatedId);
+});
 
 // Update comment
 router.put('/:commentId', authenticateToken, (req, res) => 

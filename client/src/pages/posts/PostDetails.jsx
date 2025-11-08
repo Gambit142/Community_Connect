@@ -1,16 +1,20 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { getPostById, getSimilarPosts, clearCurrentPost } from '../../store/posts/postsSlice.js';
+import { getPostById, getSimilarPosts, clearCurrentPost, likePost } from '../../store/posts/postsSlice.js';
 import CommentSection from '../../components/comments/CommentSection.jsx';
 import SimilarItems from '../../components/SimilarItems.jsx';
 import styles from '../../assets/css/PostDetails.module.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faHeart as faHeartSolid } from '@fortawesome/free-solid-svg-icons';
+import { faHeart as faHeartRegular } from '@fortawesome/free-regular-svg-icons';
 
 export default function PostDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { currentPost, similarPosts, loading } = useSelector((state) => state.posts);
+  const { user } = useSelector((state) => state.login);
 
   const [showGallery, setShowGallery] = useState(false);
   const [galleryPosition, setGalleryPosition] = useState(0);
@@ -86,6 +90,18 @@ export default function PostDetails() {
     if (currentPost?.images) {
       const prevIndex = (activeImageIndex - 1 + currentPost.images.length) % currentPost.images.length;
       setActiveImageIndex(prevIndex);
+    }
+  };
+
+  const handleLike = async () => {
+    if (!user) {
+      navigate('/auth/login');
+      return;
+    }
+    try {
+      await dispatch(likePost(id)).unwrap();
+    } catch (error) {
+      console.error('Failed to like post:', error);
     }
   };
 
@@ -228,7 +244,27 @@ export default function PostDetails() {
               )}
             </div>
 
-            <h1 className="text-3xl font-bold text-[#05213C] mb-4">{currentPost.title}</h1>
+            <div className="flex items-start justify-between">
+              <h1 className="text-3xl font-bold text-[#05213C] mb-4 flex-1">{currentPost.title}</h1>
+              
+              {/* Like Button */}
+              {user && (
+                <button
+                  onClick={handleLike}
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 ml-4 ${
+                    currentPost.isLiked 
+                      ? 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200' 
+                      : 'bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-200 hover:text-red-600'
+                  }`}
+                >
+                  <FontAwesomeIcon 
+                    icon={currentPost.isLiked ? faHeartSolid : faHeartRegular} 
+                    className={`w-5 h-5 ${currentPost.isLiked ? 'text-red-600' : ''}`}
+                  />
+                  <span className="font-medium">{currentPost.likeCount || 0}</span>
+                </button>
+              )}
+            </div>
 
             <div className="flex items-center text-sm text-gray-500 mb-4">
               <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">

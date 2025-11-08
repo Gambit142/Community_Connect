@@ -10,7 +10,7 @@ export const createComment = createAsyncThunk(
       const apiUrl = process.env.NODE_ENV === 'test' ? import.meta.env.VITE_API_URL_TEST : import.meta.env.VITE_API_URL;
       
       const response = await axios.post(
-        `${apiUrl}/${resourceType}s/${resourceId}/comments`,
+        `${apiUrl}/comments/${resourceType}/${resourceId}`,
         { content, parentCommentId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -27,7 +27,7 @@ export const getComments = createAsyncThunk(
     try {
       const apiUrl = process.env.NODE_ENV === 'test' ? import.meta.env.VITE_API_URL_TEST : import.meta.env.VITE_API_URL;
       const response = await axios.get(
-        `${apiUrl}/${resourceType}s/${resourceId}/comments?page=${page}&limit=${limit}`
+        `${apiUrl}/comments/${resourceType}/${resourceId}?page=${page}&limit=${limit}`
       );
       return response.data;
     } catch (err) {
@@ -44,7 +44,7 @@ export const updateComment = createAsyncThunk(
       const apiUrl = process.env.NODE_ENV === 'test' ? import.meta.env.VITE_API_URL_TEST : import.meta.env.VITE_API_URL;
       
       const response = await axios.put(
-        `${apiUrl}/${resourceType}s/${resourceId}/comments/${commentId}`,
+        `${apiUrl}/comments/${commentId}`,
         { content },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -63,7 +63,7 @@ export const deleteComment = createAsyncThunk(
       const apiUrl = process.env.NODE_ENV === 'test' ? import.meta.env.VITE_API_URL_TEST : import.meta.env.VITE_API_URL;
       
       const response = await axios.delete(
-        `${apiUrl}/${resourceType}s/${resourceId}/comments/${commentId}`,
+        `${apiUrl}/comments/${commentId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       return response.data;
@@ -81,7 +81,7 @@ export const toggleCommentLike = createAsyncThunk(
       const apiUrl = process.env.NODE_ENV === 'test' ? import.meta.env.VITE_API_URL_TEST : import.meta.env.VITE_API_URL;
       
       const response = await axios.post(
-        `${apiUrl}/${resourceType}s/${resourceId}/comments/${commentId}/like`,
+        `${apiUrl}/comments/${commentId}/like`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -100,7 +100,7 @@ export const flagComment = createAsyncThunk(
       const apiUrl = process.env.NODE_ENV === 'test' ? import.meta.env.VITE_API_URL_TEST : import.meta.env.VITE_API_URL;
       
       const response = await axios.post(
-        `${apiUrl}/${resourceType}s/${resourceId}/comments/${commentId}/flag`,
+        `${apiUrl}/comments/${resourceType}/${resourceId}/${commentId}/flag`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );

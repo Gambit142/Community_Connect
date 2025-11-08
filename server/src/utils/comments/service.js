@@ -104,9 +104,15 @@ const createComment = async (user, relatedType, relatedId, data) => {
   const { content, parentCommentId } = value;
   const relatedDoc = await validateAccess(user._id, relatedType, relatedId);
 
+  // Validate parent comment if provided
   if (parentCommentId) {
-    const parent = await Comment.findById(parentCommentId).select('relatedType relatedId');
-    if (!parent || parent.relatedType !== relatedType || parent.relatedId.toString() !== relatedId.toString()) {
+    const parent = await Comment.findOne({ 
+      _id: parentCommentId,
+      relatedType,
+      relatedId,
+      deleted: false
+    });
+    if (!parent) {
       throw new Error('Invalid parent comment');
     }
   }
@@ -134,7 +140,7 @@ const createComment = async (user, relatedType, relatedId, data) => {
 };
 
 const getCommentsTree = async (relatedType, relatedId, { page = 1, limit = 10, userId = null }) => {
-  await validateAccess(userId, relatedType, relatedId); // Validates published/public access
+  await validateAccess(userId, relatedType, relatedId);
   const skip = (page - 1) * limit;
 
   const comments = await Comment.find({ relatedType, relatedId, deleted: false })
@@ -183,7 +189,7 @@ const updateComment = async (commentId, userId, data) => {
   const { error, value } = updateCommentSchema.validate(data);
   if (error) throw new Error(error.details[0].message);
 
-  const comment = await Comment.findById(commentId).populate('relatedId');
+  const comment = await Comment.findById(commentId);
   if (!comment || comment.userId.toString() !== userId.toString() || comment.deleted) {
     throw new Error('Unauthorized to update this comment');
   }

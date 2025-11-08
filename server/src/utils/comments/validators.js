@@ -6,7 +6,7 @@ const createCommentSchema = Joi.object({
     'string.min': 'Content must be at least 1 character',
     'string.max': 'Content too long (max 1000 chars)'
   }),
-  parentCommentId: Joi.string().optional().messages({
+  parentCommentId: Joi.string().allow(null).optional().messages({
     'string.base': 'Invalid parent comment ID'
   })
 });
