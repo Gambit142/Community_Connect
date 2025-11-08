@@ -10,7 +10,17 @@ const {
   flagCommentGeneric,
 } = require('../controllers/commentsController.js');
 
-// Create comment for specific resource
+// Like comment (specific: must come before general create route)
+router.post('/:commentId/like', authenticateToken, (req, res) => 
+  toggleCommentLikeGeneric(req, res, req.params.commentId)
+);
+
+// Flag comment (specific: three params + /flag suffix)
+router.post('/:relatedType/:relatedId/:commentId/flag', authenticateToken, (req, res) => 
+  flagCommentGeneric(req, res, req.params.relatedType, req.params.relatedId, req.params.commentId)
+);
+
+// Create comment for specific resource (general: after specifics)
 router.post('/:relatedType/:relatedId', authenticateToken, (req, res) => {
   createCommentGeneric(req, res, req.params.relatedType, req.params.relatedId);
 });
@@ -28,16 +38,6 @@ router.put('/:commentId', authenticateToken, (req, res) =>
 // Delete comment
 router.delete('/:commentId', authenticateToken, (req, res) => 
   deleteCommentGeneric(req, res, req.params.commentId)
-);
-
-// Like comment
-router.post('/:commentId/like', authenticateToken, (req, res) => 
-  toggleCommentLikeGeneric(req, res, req.params.commentId)
-);
-
-// Flag comment
-router.post('/:relatedType/:relatedId/:commentId/flag', authenticateToken, (req, res) => 
-  flagCommentGeneric(req, res, req.params.relatedType, req.params.relatedId, req.params.commentId)
 );
 
 module.exports = router;
