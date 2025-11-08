@@ -1,24 +1,14 @@
-import { createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+const { unflagComment } = require('../../utils/comments/service.js');
 
-export const unflagComment = createAsyncThunk(
-  'admin/unflagComment',
-  async (commentId, { rejectWithValue }) => {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        return rejectWithValue('No auth token found');
-      }
-      const apiUrl = process.env.NODE_ENV === 'test' ? import.meta.env.VITE_API_URL_TEST : import.meta.env.VITE_API_URL;
-      
-      const response = await axios.post(
-        `${apiUrl}/admin/comments/${commentId}/unflag`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      return response.data;
-    } catch (err) {
-      return rejectWithValue(err.response?.data?.message || 'Failed to unflag comment');
-    }
+const unflagCommentController = async (req, res) => {
+  try {
+    const { commentId } = req.params;
+    const updated = await unflagComment(commentId, req.user._id.toString());
+    res.status(200).json({ message: 'Comment approved/unflagged successfully', comment: updated.toObject() });
+  } catch (error) {
+    console.error('Unflag comment error:', error);
+    res.status(error.message.includes('not found') ? 404 : 400).json({ message: error.message });
   }
-);
+};
+
+module.exports = { unflagCommentController };
