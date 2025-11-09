@@ -8,6 +8,7 @@ import { rejectEvent } from './rejectEventThunk.js';
 import { getOrders } from './getOrdersThunk.js';
 import { getFlaggedComments } from './getFlaggedCommentsThunk.js';
 import { unflagComment } from './unflagCommentThunk.js';
+import { deleteFlaggedComment } from './deleteFlaggedCommentThunk.js';
 
 const adminSlice = createSlice({
   name: 'admin',
@@ -233,6 +234,21 @@ const adminSlice = createSlice({
       .addCase(unflagComment.rejected, (state, action) => {
         state.flaggedLoading = false;
         state.flaggedError = action.payload;
+      })
+
+      // Delete Flagged Comment
+      .addCase(deleteFlaggedComment.pending, (state) => {
+        state.flaggedLoading = true;
+        state.flaggedError = null;
+      })
+      .addCase(deleteFlaggedComment.fulfilled, (state, action) => {
+        state.flaggedLoading = false;
+        // Remove from flagged list
+        state.flaggedComments = state.flaggedComments.filter(c => c._id !== action.meta.arg);
+      })
+      .addCase(deleteFlaggedComment.rejected, (state, action) => {
+        state.flaggedLoading = false;
+        state.flaggedError = action.payload;
       });
   },
 });
@@ -257,5 +273,6 @@ export { getOrders } from './getOrdersThunk.js';
 export const { setFlaggedFilters, clearFlaggedError, clearFlaggedComments } = adminSlice.actions;
 export { getFlaggedComments } from './getFlaggedCommentsThunk.js';
 export { unflagComment } from './unflagCommentThunk.js';
+export { deleteFlaggedComment } from './deleteFlaggedCommentThunk.js';
 
 export default adminSlice.reducer;

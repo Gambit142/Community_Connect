@@ -185,7 +185,7 @@ export default function Events() {
                   onClick={() => handlePageChange(page)}
                   className={`px-3 py-1 rounded ${
                     currentPage === page
-                      ? 'bg-blue-500 text-white'
+                      ? 'bg-[#05213C] text-white'
                       : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
                   }`}
                 >

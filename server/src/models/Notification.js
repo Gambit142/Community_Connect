@@ -1,4 +1,3 @@
-// models/Notification.js (Unchanged from previous)
 const mongoose = require('mongoose');
 
 const notificationSchema = new mongoose.Schema({
@@ -18,7 +17,8 @@ const notificationSchema = new mongoose.Schema({
       'comment_on_event',
       'reply_to_comment',
       'tag_in_comment',
-      'comment_flagged'
+      'comment_flagged',
+      'comment_approved' 
     ]
   },
   relatedID: { type: mongoose.Schema.Types.ObjectId, ref: 'Post' }, // e.g., PostID or EventID or CommentID

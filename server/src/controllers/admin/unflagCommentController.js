@@ -1,4 +1,4 @@
-const { unflagComment } = require('../../utils/comments/service.js');
+const { unflagComment } = require('../../utils/admin/flaggedCommentsService.js');
 
 const unflagCommentController = async (req, res) => {
   try {

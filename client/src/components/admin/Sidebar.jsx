@@ -9,7 +9,8 @@ import {
   faCalendarAlt,
   faTable,
   faCog,
-  faTimes
+  faTimes,
+  faFlag
 } from '@fortawesome/free-solid-svg-icons';
 
 const menuItems = [
@@ -20,6 +21,7 @@ const menuItems = [
   { path: '/admin/events', icon: faCalendarAlt, label: 'Events' },
   { path: '/admin/tables', icon: faTable, label: 'Tables' },
   { path: '/admin/settings', icon: faCog, label: 'Settings' },
+  {path: '/admin/flagged-comments', icon: faFlag, label: 'Flagged Comments' }
 ];
 
 export default function Sidebar({ open, onClose }) {

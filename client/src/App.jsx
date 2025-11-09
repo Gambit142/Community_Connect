@@ -49,7 +49,7 @@ import Messages from './pages/admin/Messages';
 import Events from './pages/admin/Events';
 import Tables from './pages/admin/Tables';
 import Settings from './pages/admin/Settings';
-// import FlaggedComments from './pages/admin/FlaggedComments';
+import FlaggedComments from './pages/admin/FlaggedComments';
 
 // Protected Route Component
 import ProtectedRoute from './components/ProtectedRoute';
@@ -84,7 +84,7 @@ function AppContent() {
           <Route path="events" element={<Events />} />
           <Route path="tables" element={<Tables />} />
           <Route path="settings" element={<Settings />} />
-          {/* <Route path="flagged-comments" element={<FlaggedComments />} /> */}
+          <Route path="flagged-comments" element={<FlaggedComments />} />
         </Route>
 
         <Route element={<UserLayout />}>
