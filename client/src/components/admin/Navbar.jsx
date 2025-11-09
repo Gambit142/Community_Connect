@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
@@ -28,6 +28,7 @@ export default function Navbar({ onMenuClick }) {
   const navigate = useNavigate();
   const { notifications, unreadCount, loading } = useSelector((state) => state.notifications);
   const token = localStorage.getItem('token');
+  const notificationsRef = useRef(null); // NEW: Ref for outside clicks
 
   useEffect(() => {
     if (token) {
@@ -35,12 +36,16 @@ export default function Navbar({ onMenuClick }) {
     }
   }, [dispatch, token]);
 
-  const handleMarkAsRead = (notificationId) => {
-    dispatch(markAsReadThunk(notificationId));
+  const handleMarkAsRead = async (notificationId) => {
+    try {
+      await dispatch(markAsReadThunk(notificationId)).unwrap();
+    } catch (err) {
+      console.error('Failed to mark as read:', err);
+    }
   };
 
   const handleNotificationClick = async (notification) => {
-    setShowNotifications(false);
+    // NEW: Perform actions without closing dropdown
     if (notification.relatedType === 'post' && notification.relatedID) {
       try {
         const result = await dispatch(getPostById(notification.relatedID._id)).unwrap();
@@ -66,6 +71,17 @@ export default function Navbar({ onMenuClick }) {
     dispatch(logout());
     navigate('/auth/login');
   };
+
+  // NEW: Close notifications dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (notificationsRef.current && !notificationsRef.current.contains(event.target)) {
+        setShowNotifications(false);
+      }
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
 
   return (
     <>
@@ -96,9 +112,12 @@ export default function Navbar({ onMenuClick }) {
           {/* Right side - Notifications and Profile */}
           <div className="flex items-center space-x-4">
             {/* Notifications dropdown */}
-            <div className="relative">
+            <div className="relative" ref={notificationsRef}>
               <button
-                onClick={() => setShowNotifications(!showNotifications)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowNotifications(!showNotifications);
+                }}
                 className="p-2 text-gray-400 hover:text-gray-600 relative"
                 disabled={loading}
               >
@@ -142,9 +161,9 @@ export default function Navbar({ onMenuClick }) {
                               </span>
                               {!notification.isRead && (
                                 <button
-                                  onClick={(e) => {
+                                  onClick={async (e) => {
                                     e.stopPropagation(); // Prevent nav on mark read
-                                    handleMarkAsRead(notification._id);
+                                    await handleMarkAsRead(notification._id);
                                   }}
                                   className="text-xs text-gray-600 hover:text-gray-800 mt-1 font-medium"
                                 >
@@ -158,7 +177,10 @@ export default function Navbar({ onMenuClick }) {
                     )}
                     <div className="px-4 py-2 text-center border-t border-gray-100">
                       <button 
-                        onClick={() => { setShowNotifications(false); navigate('/admin/messages'); }}
+                        onClick={() => { 
+                          setShowNotifications(false); 
+                          navigate('/admin/messages'); 
+                        }}
                         className="text-sm text-[#05213C] hover:text-gray-700 font-medium"
                       >
                         View all notifications

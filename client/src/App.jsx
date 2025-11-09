@@ -29,9 +29,12 @@ import EventsCalendar from './pages/events/EventsCalendar';
 import EventRegistration from './pages/events/EventRegistration';
 import PaymentConfirmation from './pages/events/PaymentConfirmation';
 
-// NEW PROFILE PAGES
+// PROFILE PAGES
 import ProfilePage from './pages/profile/ProfilePage';
 import EditProfile from './pages/profile/EditProfile';
+
+// NOTIFICATIONS PAGE
+import Notifications from './pages/notifications/Notifications';
 
 // Post imports
 import CreatePost from './pages/posts/CreatePost';
@@ -140,6 +143,11 @@ function AppContent() {
           <Route path="/profile/edit" element={
             <ProtectedRoute>
               <EditProfile />
+            </ProtectedRoute>
+          } />
+          <Route path="/notifications" element={
+            <ProtectedRoute>
+              <Notifications />
             </ProtectedRoute>
           } />
           <Route path="/events/register/:id" element={

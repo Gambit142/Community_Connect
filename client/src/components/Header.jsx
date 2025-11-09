@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { NavLink, useNavigate, Link } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../store/auth/loginSlice.js';
+import NotificationsDropdown from './NotificationsDropdown'; // NEW: Import
 import styles from "../assets/css/Header.module.css";
 
 // SVG Icons for better UI
@@ -17,21 +18,14 @@ const CloseIcon = () => (
   </svg>
 );
 
-// NEW: Bell Icon for notifications
-const BellIcon = () => (
-    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
-);
-
 export default function Header() {
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isProfileOpen, setProfileOpen] = useState(false);
-  const [isNotificationOpen, setNotificationOpen] = useState(false); // NEW: State for notifications
-  
+
   const user = useSelector((state) => state.login.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const profileRef = useRef(null); // Ref for detecting outside clicks
-  const notificationRef = useRef(null); // NEW: Ref for notifications dropdown
+  const profileRef = useRef(null);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -40,18 +34,15 @@ export default function Header() {
     navigate('/auth/login');
   };
 
-  // Close dropdown when clicking outside
+  // Close profile dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (profileRef.current && !profileRef.current.contains(event.target)) {
         setProfileOpen(false);
       }
-      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
-        setNotificationOpen(false);
-      }
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
   }, []);
 
   const navLinks = [
@@ -66,7 +57,7 @@ export default function Header() {
     <header className={styles.header}>
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          
+
           {/* Logo */}
           <div className="flex-shrink-0">
             <Link to="/" className="text-2xl font-bold text-black">
@@ -91,32 +82,21 @@ export default function Header() {
           <div className="hidden md:flex items-center space-x-4">
             {user ? (
               <>
-                {/* Notification Icon */}
-                <div className="relative" ref={notificationRef}>
-                  <button onClick={() => setNotificationOpen(!isNotificationOpen)} className="relative text-gray-600 hover:text-black focus:outline-none">
-                    <BellIcon />
-                    {/* Notification Badge */}
-                    <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-600 ring-2 ring-white"></span>
-                  </button>
-                  {isNotificationOpen && (
-                    <div className={styles.profileDropdown}> {/* Reusing profile dropdown style */}
-                        <div className="px-4 py-2 border-b border-gray-200">
-                            <p className="text-sm font-semibold text-gray-900">Notifications</p>
-                        </div>
-                        <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Your post was approved.</a>
-                        <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">New comment on your event.</a>
-                    </div>
-                  )}
-                </div>
-
+                {/* NEW: Notifications Dropdown */}
+                <NotificationsDropdown />
                 {/* Profile Dropdown */}
                 <div className="relative" ref={profileRef}>
-                  <button onClick={() => setProfileOpen(!isProfileOpen)} className="flex items-center justify-center w-10 h-10 bg-gray-200 rounded-full text-gray-700 font-bold text-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setProfileOpen(!isProfileOpen);
+                    }}
+                    className="flex items-center justify-center w-10 h-10 bg-gray-200 rounded-full text-gray-700 font-bold text-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black transition-colors duration-200 hover:bg-gray-300"
+                  >
                     {user.username?.charAt(0).toUpperCase()}
                   </button>
                   {isProfileOpen && (
                     <div className={styles.profileDropdown}>
-                      {/* ... existing profile dropdown content ... */}
                       <div className="px-4 py-2 border-b border-gray-200">
                         <p className="text-sm font-semibold text-gray-900">{user.username}</p>
                         <p className="text-xs text-gray-500 truncate">{user.email}</p>
@@ -137,33 +117,23 @@ export default function Header() {
               </div>
             )}
           </div>
-          
+
           {/* Right side controls for Mobile */}
           <div className="md:hidden flex items-center space-x-4">
             {user && (
-              /* Notification Icon for Mobile */
-              <div className="relative" ref={notificationRef}>
-                <button onClick={() => setNotificationOpen(!isNotificationOpen)} className="relative text-gray-600 hover:text-black focus:outline-none">
-                  <BellIcon />
-                  <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-600 ring-2 ring-white"></span>
+              <>
+                {/* NEW: Mobile Notifications Dropdown */}
+                <NotificationsDropdown isMobile={true} />
+                {/* Mobile Menu (Hamburger) Button */}
+                <button
+                  onClick={() => setMobileMenuOpen(!isMobileMenuOpen)}
+                  className="text-gray-600 hover:text-black transition-colors duration-200"
+                >
+                  {isMobileMenuOpen ? <CloseIcon /> : <MenuIcon />}
                 </button>
-                {isNotificationOpen && (
-                    <div className={styles.profileDropdown}>
-                        <div className="px-4 py-2 border-b border-gray-200">
-                            <p className="text-sm font-semibold text-gray-900">Notifications</p>
-                        </div>
-                        <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Your post was approved.</a>
-                        <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">New comment on your event.</a>
-                    </div>
-                )}
-              </div>
+              </>
             )}
-            {/* Mobile Menu (Hamburger) Button */}
-            <button onClick={() => setMobileMenuOpen(!isMobileMenuOpen)}>
-              {isMobileMenuOpen ? <CloseIcon /> : <MenuIcon />}
-            </button>
           </div>
-
         </div>
       </nav>
 
