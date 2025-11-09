@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { getEvents } from '../../store/events/eventsSlice';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCalendar, faClock, faMapMarkerAlt, faDollarSign, faTicketAlt, faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
+import { Link } from 'react-router-dom';
 
 export default function EventsCalendar() {
   const dispatch = useDispatch();
@@ -42,13 +43,10 @@ export default function EventsCalendar() {
     });
   };
 
-  // Get first event of the month for initial display
-  const getFirstEventOfMonth = () => {
-    const monthEvents = getEventsForMonth();
-    if (monthEvents.length === 0) return null;
-   
-    // Sort by date and return the first one
-    return monthEvents.sort((a, b) => new Date(a.date) - new Date(b.date))[0];
+  // Get events for today
+  const getEventsForToday = () => {
+    const today = new Date();
+    return getEventsForDate(today);
   };
 
   // Generate days for the current month
@@ -72,7 +70,7 @@ export default function EventsCalendar() {
   };
 
   const monthEvents = getEventsForMonth();
-  const firstEvent = getFirstEventOfMonth();
+  const todayEvents = getEventsForToday();
   const selectedDateEvents = selectedDate ? getEventsForDate(selectedDate) : [];
   const today = new Date();
   const isToday = (day) => {
@@ -147,10 +145,14 @@ export default function EventsCalendar() {
                     selectedDateEvents.length > 0 ? (
                       <div className="space-y-6">
                         <h3 className="text-xl font-semibold mb-4 text-white/70">
-                          Events on {selectedDate.toLocaleDateString()}
+                          {selectedDateEvents.length === 1 ? 'Event on ' : 'Events on '}{selectedDate.toLocaleDateString()}
                         </h3>
                         {selectedDateEvents.map((event, index) => (
-                          <div key={event._id} className="event-card bg-white/10 rounded-lg p-4 backdrop-blur-sm">
+                          <Link 
+                            key={event._id} 
+                            to={`/events/${event._id}`}
+                            className="event-card bg-white/10 rounded-lg p-4 backdrop-blur-sm block hover:bg-white/15 transition-colors"
+                          >
                             <h4 className="font-bold text-lg mb-2">{event.title}</h4>
                             <p className="text-white/80 text-sm mb-3 line-clamp-2">
                               {event.description}
@@ -175,7 +177,7 @@ export default function EventsCalendar() {
                             {selectedDateEvents.length > 1 && index < selectedDateEvents.length - 1 && (
                               <hr className="my-4 border-white/20" />
                             )}
-                          </div>
+                          </Link>
                         ))}
                       </div>
                     ) : (
@@ -185,40 +187,49 @@ export default function EventsCalendar() {
                         <p className="text-white/70">No events scheduled for this date.</p>
                       </div>
                     )
-                  ) : firstEvent ? (
-                    <div className="featured-event">
-                      <h3 className="text-xl font-semibold mb-4">Featured Event</h3>
-                      <div className="event-card bg-white/10 rounded-lg p-4 backdrop-blur-sm">
-                        <h4 className="font-bold text-lg mb-2">{firstEvent.title}</h4>
-                        <p className="text-white/80 text-sm mb-3">
-                          {firstEvent.description.substring(0, 120)}...
-                        </p>
-                        <div className="event-meta space-y-2 text-sm">
-                          <div className="flex items-center">
-                            <FontAwesomeIcon icon={faClock} className="w-4 h-4 mr-2 opacity-70" />
-                            <span>
-                              {new Date(firstEvent.date).toLocaleDateString()} at {firstEvent.time}
-                            </span>
+                  ) : todayEvents.length > 0 ? (
+                    <div className="space-y-6">
+                      <h3 className="text-xl font-semibold mb-4 text-white/70">
+                        {todayEvents.length === 1 ? 'Event on ' : 'Events on '}{today.toLocaleDateString()}
+                      </h3>
+                      {todayEvents.map((event, index) => (
+                        <Link 
+                          key={event._id} 
+                          to={`/events/${event._id}`}
+                          className="event-card bg-white/10 rounded-lg p-4 backdrop-blur-sm block hover:bg-white/15 transition-colors"
+                        >
+                          <h4 className="font-bold text-lg mb-2">{event.title}</h4>
+                          <p className="text-white/80 text-sm mb-3 line-clamp-2">
+                            {event.description}
+                          </p>
+                          <div className="event-meta space-y-2 text-sm">
+                            <div className="flex items-center">
+                              <FontAwesomeIcon icon={faClock} className="w-4 h-4 mr-2 opacity-70" />
+                              <span>{event.time}</span>
+                            </div>
+                            <div className="flex items-center">
+                              <FontAwesomeIcon icon={faMapMarkerAlt} className="w-4 h-4 mr-2 opacity-70" />
+                              <span>{event.location}</span>
+                            </div>
+                            <div className="flex items-center">
+                              <FontAwesomeIcon
+                                icon={event.price > 0 ? faDollarSign : faTicketAlt}
+                                className="w-4 h-4 mr-2 opacity-70"
+                              />
+                              <span>{event.price > 0 ? `$${event.price}` : 'Free'}</span>
+                            </div>
                           </div>
-                          <div className="flex items-center">
-                            <FontAwesomeIcon icon={faMapMarkerAlt} className="w-4 h-4 mr-2 opacity-70" />
-                            <span>{firstEvent.location}</span>
-                          </div>
-                          <div className="flex items-center">
-                            <FontAwesomeIcon
-                              icon={firstEvent.price > 0 ? faDollarSign : faTicketAlt}
-                              className="w-4 h-4 mr-2 opacity-70"
-                            />
-                            <span>{firstEvent.price > 0 ? `$${firstEvent.price}` : 'Free'}</span>
-                          </div>
-                        </div>
-                      </div>
+                          {todayEvents.length > 1 && index < todayEvents.length - 1 && (
+                            <hr className="my-4 border-white/20" />
+                          )}
+                        </Link>
+                      ))}
                     </div>
                   ) : (
                     <div className="text-center py-8">
                       <FontAwesomeIcon icon={faCalendar} className="text-4xl mb-4 opacity-50" />
-                      <h3 className="text-xl font-semibold mb-2 text-white/70">No Events This Month</h3>
-                      <p className="text-white/70">Check back later for upcoming events.</p>
+                      <h3 className="text-xl font-semibold mb-2 text-white/70">No Events Today</h3>
+                      <p className="text-white/70">Check other dates for upcoming events.</p>
                     </div>
                   )}
                 </div>
