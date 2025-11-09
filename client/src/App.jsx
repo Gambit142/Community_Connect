@@ -58,10 +58,7 @@ function AppContent() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      dispatch(verifyToken());
-    }
+    dispatch(verifyToken());
   }, [dispatch]);
 
   return (

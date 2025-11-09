@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { loginUser } from '../../store/auth/loginSlice.js';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
   const { loading, error, successMessage, user } = useSelector((state) => state.login);
 
   async function handleSubmit(e) {
@@ -30,6 +31,7 @@ export default function Login() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {location.state?.message && <div className="text-blue-600 text-sm">{location.state.message}</div>}
       {error && <div className="text-red-600 text-sm">{error}</div>}
       {successMessage && <div className="text-green-600 text-sm">{successMessage}</div>}
       <div>

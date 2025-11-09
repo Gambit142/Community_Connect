@@ -18,8 +18,8 @@ const ProtectedRoute = ({ children }) => {
   }
 
   if (!user) {
-    // Redirect to signup with current location as state for return after login
-    return <Navigate to="/auth/signup" state={{ from: location }} replace />;
+    // Redirect to login with current location and message as state
+    return <Navigate to="/auth/login" state={{ from: location, message: "Please sign in to access this page." }} replace />;
   }
 
   return children;
