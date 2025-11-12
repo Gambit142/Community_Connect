@@ -19,6 +19,9 @@ const { getFlaggedCommentsController } = require('../controllers/admin/getFlagge
 const { unflagCommentController } = require('../controllers/admin/unflagCommentController.js');
 const { deleteFlaggedCommentController } = require('../controllers/admin/deleteFlaggedCommentController.js');
 
+// imports for Analytics
+const { getAnalytics } = require('../controllers/admin/analyticsController.js');
+
 // Middleware: Admin only
 router.use(authenticateToken, authorizeRoles('admin'));
 
@@ -54,5 +57,9 @@ router.post('/comments/:commentId/unflag', unflagCommentController);
 
 // DELETE /api/admin/comments/:commentId - Admin soft-delete flagged comment
 router.delete('/comments/:commentId', deleteFlaggedCommentController);
+
+// --- Analytics Route ---
+// GET /api/admin/analytics - Fetch analytics data
+router.get('/analytics', authenticateToken, authorizeRoles('admin'), getAnalytics);
 
 module.exports = router;
