@@ -9,6 +9,7 @@ import { getOrders } from './getOrdersThunk.js';
 import { getFlaggedComments } from './getFlaggedCommentsThunk.js';
 import { unflagComment } from './unflagCommentThunk.js';
 import { deleteFlaggedComment } from './deleteFlaggedCommentThunk.js';
+import { getAnalytics } from './getAnalyticsThunk.js';
 
 const adminSlice = createSlice({
   name: 'admin',
@@ -20,14 +21,14 @@ const adminSlice = createSlice({
     postError: null,
     postFilters: { search: '', page: 1, limit: 10 },
 
-    // Events state (new)
+    // Events state
     events: [],
     eventPagination: null,
     eventLoading: false,
     eventError: null,
     eventFilters: { search: '', page: 1, limit: 10 },
 
-    // Orders state (new)
+    // Orders state
     orders: [],
     orderPagination: null, // If paginated later
     orderLoading: false,
@@ -40,6 +41,11 @@ const adminSlice = createSlice({
     flaggedLoading: false,
     flaggedError: null,
     flaggedFilters: { page: 1, limit: 20 },
+
+    // New: Analytics state
+    analytics: null,
+    analyticsLoading: false,
+    analyticsError: null,
   },
   reducers: {
     // Posts reducers
@@ -51,7 +57,7 @@ const adminSlice = createSlice({
       state.postError = null;
     },
 
-    // Events reducers (new)
+    // Events reducers
     setEventFilters: (state, action) => {
       state.eventFilters = { ...state.eventFilters, ...action.payload };
       state.eventPagination = null; // Reset pagination
@@ -60,22 +66,23 @@ const adminSlice = createSlice({
       state.eventError = null;
     },
 
-    // Orders reducers (new)
+    // Orders reducers
     setOrderFilters: (state, action) => {
       state.orderFilters = { ...state.orderFilters, ...action.payload };
-      state.orderPagination = null; // Reset pagination
+      state.orderPagination = null;
     },
     clearOrderError: (state) => {
       state.orderError = null;
     },
     clearOrders: (state) => {
       state.orders = [];
+      state.orderPagination = null;
     },
 
-    // New: Flagged Comments reducers
+    // Flagged Comments reducers
     setFlaggedFilters: (state, action) => {
       state.flaggedFilters = { ...state.flaggedFilters, ...action.payload };
-      state.flaggedPagination = null; // Reset pagination
+      state.flaggedPagination = null;
     },
     clearFlaggedError: (state) => {
       state.flaggedError = null;
@@ -83,6 +90,11 @@ const adminSlice = createSlice({
     clearFlaggedComments: (state) => {
       state.flaggedComments = [];
       state.flaggedPagination = null;
+    },
+
+    // Analytics reducers
+    clearAnalyticsError: (state) => {
+      state.analyticsError = null;
     },
   },
   extraReducers: (builder) => {
@@ -110,10 +122,9 @@ const adminSlice = createSlice({
       })
       .addCase(approvePost.fulfilled, (state, action) => {
         state.postLoading = false;
-        const { post } = action.payload;
-        const index = state.posts.findIndex(p => p._id === post._id);
+        const index = state.posts.findIndex(p => p._id === action.meta.arg);
         if (index !== -1) {
-          state.posts[index] = post;
+          state.posts[index].status = 'Published';
         }
       })
       .addCase(approvePost.rejected, (state, action) => {
@@ -128,10 +139,9 @@ const adminSlice = createSlice({
       })
       .addCase(rejectPost.fulfilled, (state, action) => {
         state.postLoading = false;
-        const { post } = action.payload;
-        const index = state.posts.findIndex(p => p._id === post._id);
+        const index = state.posts.findIndex(p => p._id === action.meta.arg);
         if (index !== -1) {
-          state.posts[index] = post;
+          state.posts[index].status = 'Rejected';
         }
       })
       .addCase(rejectPost.rejected, (state, action) => {
@@ -162,10 +172,9 @@ const adminSlice = createSlice({
       })
       .addCase(approveEvent.fulfilled, (state, action) => {
         state.eventLoading = false;
-        const { event } = action.payload;
-        const index = state.events.findIndex(e => e._id === event._id);
+        const index = state.events.findIndex(e => e._id === action.meta.arg);
         if (index !== -1) {
-          state.events[index] = event;
+          state.events[index].status = 'Published';
         }
       })
       .addCase(approveEvent.rejected, (state, action) => {
@@ -176,13 +185,13 @@ const adminSlice = createSlice({
       // Reject Event
       .addCase(rejectEvent.pending, (state) => {
         state.eventLoading = true;
+        state.eventError = null;
       })
       .addCase(rejectEvent.fulfilled, (state, action) => {
         state.eventLoading = false;
-        const { event } = action.payload;
-        const index = state.events.findIndex(e => e._id === event._id);
+        const index = state.events.findIndex(e => e._id === action.meta.arg);
         if (index !== -1) {
-          state.events[index] = event;
+          state.events[index].status = 'Rejected';
         }
       })
       .addCase(rejectEvent.rejected, (state, action) => {
@@ -198,11 +207,12 @@ const adminSlice = createSlice({
       .addCase(getOrders.fulfilled, (state, action) => {
         state.orderLoading = false;
         state.orders = action.payload.orders;
-        state.orderPagination = action.payload.pagination || null;
+        state.orderPagination = action.payload.pagination;
       })
       .addCase(getOrders.rejected, (state, action) => {
         state.orderLoading = false;
         state.orderError = action.payload;
+        state.orders = [];
       })
 
       // Get Flagged Comments
@@ -212,7 +222,7 @@ const adminSlice = createSlice({
       })
       .addCase(getFlaggedComments.fulfilled, (state, action) => {
         state.flaggedLoading = false;
-        state.flaggedComments = action.payload.comments;
+        state.flaggedComments = action.payload.flaggedComments;
         state.flaggedPagination = action.payload.pagination;
       })
       .addCase(getFlaggedComments.rejected, (state, action) => {
@@ -249,6 +259,21 @@ const adminSlice = createSlice({
       .addCase(deleteFlaggedComment.rejected, (state, action) => {
         state.flaggedLoading = false;
         state.flaggedError = action.payload;
+      })
+
+      // Get Analytics
+      .addCase(getAnalytics.pending, (state) => {
+        state.analyticsLoading = true;
+        state.analyticsError = null;
+      })
+      .addCase(getAnalytics.fulfilled, (state, action) => {
+        state.analyticsLoading = false;
+        state.analytics = action.payload;
+      })
+      .addCase(getAnalytics.rejected, (state, action) => {
+        state.analyticsLoading = false;
+        state.analyticsError = action.payload;
+        state.analytics = null;
       });
   },
 });
@@ -274,5 +299,9 @@ export const { setFlaggedFilters, clearFlaggedError, clearFlaggedComments } = ad
 export { getFlaggedComments } from './getFlaggedCommentsThunk.js';
 export { unflagComment } from './unflagCommentThunk.js';
 export { deleteFlaggedComment } from './deleteFlaggedCommentThunk.js';
+
+// Analytics exports
+export const { clearAnalyticsError } = adminSlice.actions;
+export { getAnalytics } from './getAnalyticsThunk.js';
 
 export default adminSlice.reducer;
