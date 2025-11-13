@@ -1,8 +1,9 @@
+// server/src/controllers/admin/analyticsController.js
 const User = require('../../models/User.js');
 const Post = require('../../models/Post.js');
 const Event = require('../../models/Event.js');
 const Comment = require('../../models/Comment.js');
-const Order = require('../../models/Order.js'); // Assuming Order model exists with timestamps and 'tickets' array
+const Order = require('../../models/Order.js'); // Assuming Order model exists with timestamps and 'tickets' field as number
 
 const getAnalytics = async (req, res) => {
   try {
@@ -33,16 +34,16 @@ const getAnalytics = async (req, res) => {
     const eventsGrowth = totalEventsThen > 0 ? Math.round(((totalEvents - totalEventsThen) / totalEventsThen) * 100) : (totalEvents > 0 ? 100 : 0);
     const eventsChangeType = eventsGrowth >= 0 ? 'positive' : 'negative';
 
-    // Event Participation (sum of tickets across completed orders)
+    // Event Participation (sum of tickets across completed orders) - Fixed: assuming tickets is a number, not array
     const totalParticipationAgg = await Order.aggregate([
       { $match: { status: 'completed' } }, // Adjust 'completed' if status differs
-      { $group: { _id: null, total: { $sum: { $size: '$tickets' } } } }
+      { $group: { _id: null, total: { $sum: '$tickets' } } }
     ]);
     const eventParticipation = totalParticipationAgg[0]?.total || 0;
 
     const newParticipationAgg = await Order.aggregate([
       { $match: { status: 'completed', createdAt: { $gte: thirtyDaysAgo } } },
-      { $group: { _id: null, total: { $sum: { $size: '$tickets' } } } }
+      { $group: { _id: null, total: { $sum: '$tickets' } } }
     ]);
     const newParticipation = newParticipationAgg[0]?.total || 0;
     const participationThen = eventParticipation - newParticipation;
@@ -110,10 +111,22 @@ const getAnalytics = async (req, res) => {
       { $sort: { count: -1 } },
       { $limit: 6 }
     ]);
-    const catLabels = postCategoriesAgg.map(g => g._id.charAt(0).toUpperCase() + g._id.slice(1));
-    const catData = postCategoriesAgg.map(g => g.count);
+    const postCatLabels = postCategoriesAgg.map(g => g._id.charAt(0).toUpperCase() + g._id.slice(1));
+    const postCatData = postCategoriesAgg.map(g => g.count);
+
+    // Event categories (top 6, new)
+    const eventCategoriesAgg = await Event.aggregate([
+      { $match: { status: 'Published' } },
+      { $group: { _id: '$category', count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 6 }
+    ]);
+    const eventCatLabels = eventCategoriesAgg.map(g => g._id.charAt(0).toUpperCase() + g._id.slice(1));
+    const eventCatData = eventCategoriesAgg.map(g => g.count);
+
+    // For now, keep post-based for engagement chart; add event to response for potential frontend use
     const engagementDatasets = [{
-      data: catData,
+      data: postCatData,
       backgroundColor: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4'],
       hoverBackgroundColor: ['#2563EB', '#059669', '#D97706', '#DC2626', '#7C3AED', '#0891B2'],
       borderWidth: 0,
@@ -163,7 +176,10 @@ const getAnalytics = async (req, res) => {
       },
       charts: {
         userGrowth: { labels, datasets: userGrowthDatasets },
-        engagement: { labels: catLabels, datasets: engagementDatasets },
+        engagement: { 
+          post: { labels: postCatLabels, datasets: engagementDatasets },
+          event: { labels: eventCatLabels, datasets: [{ data: eventCatData }] }
+        },
         activityMetrics: { labels: dayLabels, datasets: activityMetricsDatasets },
       },
       recentActivity: [], // Can extend later with recent queries
