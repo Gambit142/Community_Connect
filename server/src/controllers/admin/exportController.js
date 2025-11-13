@@ -1,6 +1,8 @@
 const { Parser } = require('json2csv');
 const XLSX = require('xlsx');
-const pdfMake = require('pdfmake/build/pdfmake');
+const pdfMake = require('pdfmake/build/pdfmake'); // No vfs_fonts needed
+const path = require('path'); 
+const fs = require('fs'); // For reading font files
 
 const User = require('../../models/User.js');
 const Post = require('../../models/Post.js');
@@ -57,30 +59,70 @@ const exportAnalytics = async (req, res) => {
       filename = 'analytics-report.xlsx';
       res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     } else if (format === 'pdf') {
+      // Define absolute paths to fonts (from controller location: src/controllers/admin/)
+      const fontsDir = path.join(__dirname, '../../../fonts'); // Back to server root
+      const normalPath = path.join(fontsDir, 'Roboto-Regular.ttf');
+      const boldPath = path.join(fontsDir, 'Roboto-Medium.ttf');
+      const italicsPath = path.join(fontsDir, 'Roboto-Italic.ttf');
+
+      // Load fonts as base64 into virtual file system (VFS)
+      const vfs_fonts = {};
+      try {
+        vfs_fonts['Roboto-Regular.ttf'] = fs.readFileSync(normalPath, { encoding: 'base64' });
+        vfs_fonts['Roboto-Medium.ttf'] = fs.readFileSync(boldPath, { encoding: 'base64' });
+        vfs_fonts['Roboto-Italic.ttf'] = fs.readFileSync(italicsPath, { encoding: 'base64' });
+        pdfMake.vfs = vfs_fonts; // Set the VFS for pdfMake
+        console.log('✅ Fonts loaded into VFS successfully');
+      } catch (fontError) {
+        console.error('❌ Font loading error:', fontError.message);
+        return res.status(500).json({ message: 'Failed to load fonts for PDF generation. Ensure font files exist in /server/fonts/' });
+      }
+
       const docDefinition = {
+        // Define fonts referencing the VFS filenames (not paths)
+        fonts: {
+          Roboto: {
+            normal: 'Roboto-Regular.ttf',
+            bold: 'Roboto-Medium.ttf',
+            italics: 'Roboto-Italic.ttf'
+          }
+        },
         content: [
-          { text: 'CommunityConnect Analytics Report', style: 'header' },
-          { text: `Generated on: ${new Date().toLocaleDateString()}`, style: 'subheader' },
+          { text: 'CommunityConnect Analytics Report', font: 'Roboto', bold: true, fontSize: 18, margin: [0, 0, 0, 10] },
+          { text: `Generated on: ${new Date().toLocaleDateString()}`, font: 'Roboto', italics: true, fontSize: 12, margin: [0, 5, 0, 15] },
           {
             table: {
               headerRows: 1,
               widths: ['*', 'auto', '*'],
               body: [
-                ['Metric', 'Value', 'Description'],
+                [{ text: 'Metric', font: 'Roboto', bold: true }, { text: 'Value', font: 'Roboto', bold: true }, { text: 'Description', font: 'Roboto', bold: true }],
                 ...exportData.map(row => [row.Metric, row.Value, row.Description])
               ]
             },
-            layout: 'lightHorizontalLines'
+            layout: {
+              fillColor: function (rowIndex) {
+                return rowIndex === 0 ? '#f3f4f6' : null;
+              },
+              hLineWidth: function (i, node) {
+                return i === 0 || i === node.table.body.length ? 0.5 : 0.25;
+              },
+              vLineWidth: function (i, node) {
+                return 0.25;
+              },
+              hLineColor: function (i, node) {
+                return '#e5e7eb';
+              },
+              vLineColor: function (i, node) {
+                return '#e5e7eb';
+              }
+            }
           }
         ],
-        styles: {
-          header: { fontSize: 18, bold: true, margin: [0, 0, 0, 10] },
-          subheader: { fontSize: 12, italics: true, margin: [0, 5, 0, 15] }
-        },
-        // No fonts needed; defaults to standard PDF fonts (Helvetica, etc.)
         defaultStyle: {
-          font: 'Helvetica' // Explicitly use a standard font
-        }
+          font: 'Roboto'
+        },
+        pageSize: 'A4',
+        pageMargins: [40, 60, 40, 40]
       };
       const pdfDoc = pdfMake.createPdf(docDefinition);
       buffer = await new Promise((resolve, reject) => {

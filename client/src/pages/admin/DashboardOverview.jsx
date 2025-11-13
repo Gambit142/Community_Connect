@@ -17,6 +17,7 @@ import {
 import MetricsCards from '../../components/admin/MetricsCards';
 import DashboardCharts from '../../components/admin/DashboardCharts';
 import ActivityHealthSection from '../../components/admin/ActivityHealthSection';
+import ExportButton from '../../components/admin/ExportButton';
 
 // Import Chart.js
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement, LineElement, PointElement } from 'chart.js';
