@@ -10,6 +10,7 @@ import { getFlaggedComments } from './getFlaggedCommentsThunk.js';
 import { unflagComment } from './unflagCommentThunk.js';
 import { deleteFlaggedComment } from './deleteFlaggedCommentThunk.js';
 import { getAnalytics } from './getAnalyticsThunk.js';
+import { exportAnalytics } from './exportAnalyticsThunk.js';
 
 const adminSlice = createSlice({
   name: 'admin',
@@ -21,31 +22,36 @@ const adminSlice = createSlice({
     postError: null,
     postFilters: { search: '', page: 1, limit: 10 },
 
-    // Events state
+    // Events state (new)
     events: [],
     eventPagination: null,
     eventLoading: false,
     eventError: null,
     eventFilters: { search: '', page: 1, limit: 10 },
 
-    // Orders state
+    // Orders state (new)
     orders: [],
     orderPagination: null, // If paginated later
     orderLoading: false,
     orderError: null,
     orderFilters: { eventId: '', status: '', page: 1, limit: 20 },
 
-    // New: Flagged Comments state
+    // Flagged Comments state
     flaggedComments: [],
     flaggedPagination: null,
     flaggedLoading: false,
     flaggedError: null,
     flaggedFilters: { page: 1, limit: 20 },
 
-    // New: Analytics state
+    // Analytics state
     analytics: null,
     analyticsLoading: false,
     analyticsError: null,
+
+    // Export state
+    exportLoading: false,
+    exportError: null,
+    exportSuccess: null,
   },
   reducers: {
     // Posts reducers
@@ -95,6 +101,12 @@ const adminSlice = createSlice({
     // Analytics reducers
     clearAnalyticsError: (state) => {
       state.analyticsError = null;
+    },
+
+    // Export reducers
+    clearExportState: (state) => {
+      state.exportError = null;
+      state.exportSuccess = null;
     },
   },
   extraReducers: (builder) => {
@@ -274,6 +286,21 @@ const adminSlice = createSlice({
         state.analyticsLoading = false;
         state.analyticsError = action.payload;
         state.analytics = null;
+      })
+
+      // Export Analytics
+      .addCase(exportAnalytics.pending, (state) => {
+        state.exportLoading = true;
+        state.exportError = null;
+        state.exportSuccess = null;
+      })
+      .addCase(exportAnalytics.fulfilled, (state, action) => {
+        state.exportLoading = false;
+        state.exportSuccess = `Exported as ${action.payload.format.toUpperCase()} successfully`;
+      })
+      .addCase(exportAnalytics.rejected, (state, action) => {
+        state.exportLoading = false;
+        state.exportError = action.payload;
       });
   },
 });
@@ -300,8 +327,12 @@ export { getFlaggedComments } from './getFlaggedCommentsThunk.js';
 export { unflagComment } from './unflagCommentThunk.js';
 export { deleteFlaggedComment } from './deleteFlaggedCommentThunk.js';
 
-// Analytics exports
+//  Analytics exports
 export const { clearAnalyticsError } = adminSlice.actions;
 export { getAnalytics } from './getAnalyticsThunk.js';
+
+// Export exports
+export const { clearExportState } = adminSlice.actions;
+export { exportAnalytics } from './exportAnalyticsThunk.js';
 
 export default adminSlice.reducer;
