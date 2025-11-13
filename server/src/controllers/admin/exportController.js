@@ -1,8 +1,6 @@
 const { Parser } = require('json2csv');
 const XLSX = require('xlsx');
 const pdfMake = require('pdfmake/build/pdfmake');
-const pdfFonts = require('pdfmake/build/vfs_fonts');
-pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
 const User = require('../../models/User.js');
 const Post = require('../../models/Post.js');
@@ -78,11 +76,18 @@ const exportAnalytics = async (req, res) => {
         styles: {
           header: { fontSize: 18, bold: true, margin: [0, 0, 0, 10] },
           subheader: { fontSize: 12, italics: true, margin: [0, 5, 0, 15] }
+        },
+        // No fonts needed; defaults to standard PDF fonts (Helvetica, etc.)
+        defaultStyle: {
+          font: 'Helvetica' // Explicitly use a standard font
         }
       };
       const pdfDoc = pdfMake.createPdf(docDefinition);
-      buffer = await new Promise((resolve) => {
-        pdfDoc.getBuffer((buf) => resolve(buf));
+      buffer = await new Promise((resolve, reject) => {
+        pdfDoc.getBuffer((buf) => {
+          if (buf) resolve(buf);
+          else reject(new Error('Failed to generate PDF buffer'));
+        });
       });
       filename = 'analytics-report.pdf';
       res.setHeader('Content-Type', 'application/pdf');
