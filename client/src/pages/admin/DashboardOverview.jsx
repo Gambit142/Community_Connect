@@ -1,39 +1,36 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { getAnalytics } from '../../store/admin/adminSlice';
-import styles from '../../assets/css/DashboardOverview.module.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faUsers,
   faNewspaper,
   faCalendarAlt,
-  faExclamationCircle,
   faUserCheck,
   faChartLine,
   faFlag,
   faEye,
-  faComments,
-  faArrowUp,
-  faArrowDown,
-  faSync,
-  faDatabase,
-  faRocket
+  faSync
 } from '@fortawesome/free-solid-svg-icons';
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement, LineElement, PointElement } from 'chart.js';
-import { Bar, Doughnut, Line } from 'react-chartjs-2';
 
-// Register Chart.js components
+// Import subcomponents
+import MetricsCards from '../../components/admin/MetricsCards';
+import DashboardCharts from '../../components/admin/DashboardCharts';
+import ActivityHealthSection from '../../components/admin/ActivityHealthSection';
+
+// Import Chart.js
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement, LineElement, PointElement } from 'chart.js';
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement, LineElement, PointElement);
 
-// --- DYNAMIC DATA FROM REDUX ---
+// --- DYNAMIC DATA TRANSFORMATION FUNCTIONS ---
 const getDynamicStats = (metrics) => {
   if (!metrics) return [];
   return [
     {
       label: 'Total Users',
-      value: metrics.totalUsers.value.toLocaleString(),
-      change: metrics.totalUsers.change,
-      changeType: metrics.totalUsers.changeType,
+      value: metrics.totalUsers?.value?.toLocaleString() || '0',
+      change: metrics.totalUsers?.change || '+0%',
+      changeType: metrics.totalUsers?.changeType || 'positive',
       icon: faUsers,
       color: 'bg-blue-500',
       gradient: 'from-blue-500 to-blue-600',
@@ -41,9 +38,9 @@ const getDynamicStats = (metrics) => {
     },
     {
       label: 'Active Users',
-      value: metrics.activeUsers.value.toLocaleString(),
-      change: metrics.activeUsers.change,
-      changeType: metrics.activeUsers.changeType,
+      value: metrics.activeUsers?.value?.toLocaleString() || '0',
+      change: metrics.activeUsers?.change || '+0%',
+      changeType: metrics.activeUsers?.changeType || 'positive',
       icon: faUserCheck,
       color: 'bg-green-500',
       gradient: 'from-green-500 to-green-600',
@@ -51,9 +48,9 @@ const getDynamicStats = (metrics) => {
     },
     {
       label: 'Total Posts',
-      value: metrics.totalPosts.value.toLocaleString(),
-      change: metrics.totalPosts.change,
-      changeType: metrics.totalPosts.changeType,
+      value: metrics.totalPosts?.value?.toLocaleString() || '0',
+      change: metrics.totalPosts?.change || '+0%',
+      changeType: metrics.totalPosts?.changeType || 'positive',
       icon: faNewspaper,
       color: 'bg-purple-500',
       gradient: 'from-purple-500 to-purple-600',
@@ -61,9 +58,9 @@ const getDynamicStats = (metrics) => {
     },
     {
       label: 'Total Events',
-      value: metrics.totalEvents.value.toLocaleString(),
-      change: metrics.totalEvents.change,
-      changeType: metrics.totalEvents.changeType,
+      value: metrics.totalEvents?.value?.toLocaleString() || '0',
+      change: metrics.totalEvents?.change || '+0%',
+      changeType: metrics.totalEvents?.changeType || 'positive',
       icon: faCalendarAlt,
       color: 'bg-amber-500',
       gradient: 'from-amber-500 to-amber-600',
@@ -71,9 +68,9 @@ const getDynamicStats = (metrics) => {
     },
     {
       label: 'Event Participation',
-      value: metrics.eventParticipation.value.toLocaleString(),
-      change: metrics.eventParticipation.change,
-      changeType: metrics.eventParticipation.changeType,
+      value: metrics.eventParticipation?.value?.toLocaleString() || '0',
+      change: metrics.eventParticipation?.change || '+0%',
+      changeType: metrics.eventParticipation?.changeType || 'positive',
       icon: faEye,
       color: 'bg-indigo-500',
       gradient: 'from-indigo-500 to-indigo-600',
@@ -81,9 +78,9 @@ const getDynamicStats = (metrics) => {
     },
     {
       label: 'Flagged Comments',
-      value: metrics.flaggedComments.value.toLocaleString(),
-      change: metrics.flaggedComments.change,
-      changeType: metrics.flaggedComments.changeType,
+      value: metrics.flaggedComments?.value?.toLocaleString() || '0',
+      change: metrics.flaggedComments?.change || '+0%',
+      changeType: metrics.flaggedComments?.changeType || 'positive',
       icon: faFlag,
       color: 'bg-red-500',
       gradient: 'from-red-500 to-red-600',
@@ -98,7 +95,7 @@ const getDynamicUserGrowthData = (charts) => {
 };
 
 const getDynamicPostEngagementData = (charts) => {
-  if (!charts?.engagement?.post) return { labels: [], datasets: [] };
+  if (!charts?.engagement?.post) return { labels: [], datasets: [{ data: [] }] };
   return {
     labels: charts.engagement.post.labels,
     datasets: charts.engagement.post.datasets
@@ -106,7 +103,8 @@ const getDynamicPostEngagementData = (charts) => {
 };
 
 const getDynamicEventEngagementData = (charts) => {
-  if (!charts?.engagement?.event) return { labels: [], datasets: [] };
+  if (!charts?.engagement?.event) return { labels: [], datasets: [{ data: [] }] };
+  
   return {
     labels: charts.engagement.event.labels,
     datasets: [{
@@ -236,7 +234,7 @@ const activityMetricsOptions = {
   },
 };
 
-// Recent activity mock and helpers
+// Recent activity data
 const recentActivity = [
   { type: 'post', text: 'New post "Community Garden Update" submitted for approval', user: 'John Doe', time: '2m ago' },
   { type: 'user', text: 'New user registration completed', user: 'Jane Smith', time: '1h ago' },
@@ -245,34 +243,7 @@ const recentActivity = [
   { type: 'event', text: '15 new participants joined "Weekly Tutoring Session"', user: 'System', time: '1d ago' },
 ];
 
-const getActivityIcon = (type) => {
-  switch (type) {
-    case 'post': return faNewspaper;
-    case 'user': return faUsers;
-    case 'event': return faCalendarAlt;
-    case 'comment': return faComments;
-    default: return faChartLine;
-  }
-};
-
-const getActivityColor = (type) => {
-  switch (type) {
-    case 'post': return 'bg-gradient-to-br from-purple-500 to-purple-600';
-    case 'user': return 'bg-gradient-to-br from-blue-500 to-blue-600';
-    case 'event': return 'bg-gradient-to-br from-amber-500 to-amber-600';
-    case 'comment': return 'bg-gradient-to-br from-red-500 to-red-600';
-    default: return 'bg-gradient-to-br from-gray-500 to-gray-600';
-  }
-};
-
-// Platform metrics
-const platformMetrics = [
-  { label: 'System Uptime', value: '99.9%', change: '+0.1%', icon: faRocket, color: 'bg-gradient-to-br from-blue-500 to-blue-600' },
-  { label: 'Avg Response Time', value: '128ms', change: '-12ms', icon: faDatabase, color: 'bg-gradient-to-br from-green-500 to-green-600' },
-  { label: 'Active Sessions', value: '342', change: '+23', icon: faUserCheck, color: 'bg-gradient-to-br from-amber-500 to-amber-600' },
-  { label: 'Data Accuracy', value: '99.8%', change: '+0.2%', icon: faChartLine, color: 'bg-gradient-to-br from-purple-500 to-purple-600' },
-];
-
+// --- MAIN COMPONENT ---
 export default function DashboardOverview() {
   const dispatch = useDispatch();
   const { analytics, analyticsLoading } = useSelector((state) => state.admin);
@@ -288,7 +259,7 @@ export default function DashboardOverview() {
     setLastUpdated(new Date());
   };
 
-  // Dynamic data only
+  // Dynamic data transformation
   const stats = getDynamicStats(analytics?.metrics);
   const userGrowthData = getDynamicUserGrowthData(analytics?.charts);
   const postEngagementData = getDynamicPostEngagementData(analytics?.charts);
@@ -297,7 +268,7 @@ export default function DashboardOverview() {
 
   return (
     <div className="space-y-8">
-      {/* Header with Refresh */}
+      {/* Header with Export and Refresh */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-gray-200 pb-6">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
@@ -313,186 +284,45 @@ export default function DashboardOverview() {
             Last updated: {lastUpdated.toLocaleTimeString()}
           </p>
         </div>
-        <button
-          onClick={handleRefresh}
-          disabled={analyticsLoading}
-          className="mt-4 sm:mt-0 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <FontAwesomeIcon icon={faSync} className={`h-4 w-4 ${analyticsLoading ? 'animate-spin' : ''}`} />
-          <span>Refresh Data</span>
-        </button>
+        <div className="flex items-center space-x-3 mt-4 sm:mt-0">
+          <button
+            onClick={handleRefresh}
+            disabled={analyticsLoading}
+            className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+          >
+            <FontAwesomeIcon icon={faSync} className={`h-4 w-4 ${analyticsLoading ? 'animate-spin' : ''}`} />
+            <span>Refresh</span>
+          </button>
+          <ExportButton />
+        </div>
       </div>
 
-      {/* Key Metrics Grid */}
+      {/* Key Metrics Section */}
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold text-gray-900">Key Performance Indicators</h2>
           <span className="text-sm text-gray-500">Real-time metrics</span>
         </div>
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-          {stats.map((stat, index) => (
-            <div 
-              key={index} 
-              className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 relative overflow-hidden group"
-            >
-              {/* Gradient accent */}
-              <div className={`absolute top-0 left-0 w-1 h-full bg-gradient-to-b ${stat.gradient}`}></div>
-              
-              <div className="flex items-center justify-between mb-4">
-                <div className={`p-3 rounded-xl ${stat.color} bg-gradient-to-br ${stat.gradient} shadow-md group-hover:shadow-lg transition-shadow duration-300`}>
-                  <FontAwesomeIcon icon={stat.icon} className="h-5 w-5 text-white" />
-                </div>
-                <div className={`flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium ${
-                  stat.changeType === 'positive' 
-                    ? 'bg-green-50 text-green-700' 
-                    : 'bg-red-50 text-red-700'
-                }`}>
-                  <FontAwesomeIcon 
-                    icon={stat.changeType === 'positive' ? faArrowUp : faArrowDown} 
-                    className="h-3 w-3" 
-                  />
-                  <span>{stat.change}</span>
-                </div>
-              </div>
-              
-              <p className="text-2xl font-bold text-gray-900 mb-1">{stat.value}</p>
-              <p className="text-sm font-semibold text-gray-900">{stat.label}</p>
-              <p className="text-xs text-gray-500 mt-1">{stat.description}</p>
-            </div>
-          ))}
-        </div>
+        <MetricsCards stats={stats} loading={analyticsLoading} />
       </div>
 
       {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* User Growth Chart */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 lg:col-span-2">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-gray-900">User Growth Analytics</h2>
-            <div className="flex space-x-4 text-sm">
-              <div className="flex items-center">
-                <div className="w-3 h-3 bg-blue-500 rounded-full mr-2 shadow-sm"></div>
-                <span className="text-gray-600">New Users</span>
-              </div>
-              <div className="flex items-center">
-                <div className="w-3 h-3 bg-green-500 rounded-full mr-2 shadow-sm"></div>
-                <span className="text-gray-600">Active Users</span>
-              </div>
-            </div>
-          </div>
-          <div style={{ height: '350px' }}>
-            <Line data={userGrowthData} options={userGrowthOptions} />
-          </div>
-        </div>
+      <DashboardCharts
+        userGrowthData={userGrowthData}
+        postEngagementData={postEngagementData}
+        eventEngagementData={eventEngagementData}
+        activityMetricsData={activityMetricsData}
+        userGrowthOptions={userGrowthOptions}
+        engagementOptions={engagementOptions}
+        activityMetricsOptions={activityMetricsOptions}
+        loading={analyticsLoading}
+      />
 
-        {/* Post Categories Distribution */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-gray-900">Post Categories</h2>
-            <span className="text-sm text-gray-500">Distribution</span>
-          </div>
-          <div style={{ height: '280px' }}>
-            <Doughnut data={postEngagementData} options={engagementOptions} />
-          </div>
-        </div>
-
-        {/* Event Categories Distribution */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-gray-900">Event Categories</h2>
-            <span className="text-sm text-gray-500">Distribution</span>
-          </div>
-          <div style={{ height: '280px' }}>
-            <Doughnut data={eventEngagementData} options={engagementOptions} />
-          </div>
-        </div>
-
-        {/* Weekly Activity */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 lg:col-span-2">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-gray-900">Weekly Activity Trends</h2>
-            <span className="text-sm text-gray-500">Last 7 days</span>
-          </div>
-          <div style={{ height: '300px' }}>
-            <Bar data={activityMetricsData} options={activityMetricsOptions} />
-          </div>
-        </div>
-      </div>
-
-      {/* Recent Activity & Platform Health */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Recent Activity */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 lg:col-span-2">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-gray-900">Recent Activity</h2>
-            <span className="text-sm text-blue-600 font-medium">{recentActivity.length} items</span>
-          </div>
-          <div className="space-y-4">
-            {recentActivity.map((activity, index) => (
-              <div 
-                key={index} 
-                className="flex items-start space-x-4 p-4 rounded-lg hover:bg-gray-50 transition-all duration-200 border border-transparent hover:border-gray-200 group"
-              >
-                <div className={`p-3 rounded-lg ${getActivityColor(activity.type)} shadow-sm group-hover:shadow transition-shadow duration-200 flex-shrink-0`}>
-                  <FontAwesomeIcon icon={getActivityIcon(activity.type)} className="h-4 w-4 text-white" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 leading-relaxed">{activity.text}</p>
-                  <div className="flex items-center mt-2 space-x-3">
-                    <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-                      By {activity.user}
-                    </span>
-                    <span className="text-xs text-gray-400">{activity.time}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Platform Health */}
-        <div className="space-y-6">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">Platform Health</h2>
-            <div className="space-y-4">
-              {platformMetrics.map((metric, index) => (
-                <div 
-                  key={index} 
-                  className="flex items-center justify-between p-4 rounded-xl border border-gray-100 hover:border-gray-200 transition-colors duration-200 group"
-                >
-                  <div className="flex items-center space-x-4">
-                    <div className={`p-3 rounded-xl ${metric.color} shadow-sm group-hover:shadow transition-shadow duration-200`}>
-                      <FontAwesomeIcon icon={metric.icon} className="h-5 w-5 text-white" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">{metric.label}</p>
-                      <p className="text-2xl font-bold text-gray-900">{metric.value}</p>
-                    </div>
-                  </div>
-                  <span className={`text-sm font-medium ${
-                    metric.change.startsWith('+') ? 'text-green-600' : 'text-red-600'
-                  }`}>
-                    {metric.change}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Data Status */}
-          <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-sm p-6 text-white">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-white">Data Status</h3>
-              <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-            </div>
-            <p className="text-sm text-blue-100 mb-2">All systems operational</p>
-            <div className="flex items-center justify-between text-xs text-blue-200">
-              <span>Last sync: {lastUpdated.toLocaleTimeString()}</span>
-              <span>Live data</span>
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* Activity & Health Section */}
+      <ActivityHealthSection 
+        recentActivity={recentActivity}
+        lastUpdated={lastUpdated}
+      />
     </div>
   );
 }
