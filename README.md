@@ -93,17 +93,6 @@ VITE_API_URL=
 VITE_API_URL_TEST=
 ```
 
-> 🧠 **Tips:**  
-> Generate a secure JWT secret using:
-> ```bash
-> node server/src/utils/generateSecret.js
-> ```
-
-> Create the initial admin user using:
-> ```bash
-> node server/src/utils/seedAdmin.js
-> ```
-
 ---
 
 ## 💻 Running the Project Locally (Without Docker)
@@ -174,6 +163,17 @@ docker-compose -f docker-compose-prod.yaml up --build
 
 ### 2. Environment setup
 Ensure both `.env` files exist before building. Docker Compose will automatically load environment variables and link containers.
+
+> 🧠 **Tips:**  
+> Generate a secure JWT secret using:
+> ```bash
+> node server/src/utils/generateSecret.js
+> ```
+
+> Create the initial admin user using:
+> ```bash
+> node server/src/utils/seedAdmin.js
+> ```
 
 ### 3. Access the application
 Once containers are running:

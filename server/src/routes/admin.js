@@ -22,6 +22,9 @@ const { deleteFlaggedCommentController } = require('../controllers/admin/deleteF
 // imports for Analytics
 const { getAnalytics } = require('../controllers/admin/analyticsController.js');
 
+// imports for Exporting Analytics
+const { exportAnalytics } = require('../controllers/admin/exportController.js');
+
 // Middleware: Admin only
 router.use(authenticateToken, authorizeRoles('admin'));
 
@@ -60,6 +63,10 @@ router.delete('/comments/:commentId', deleteFlaggedCommentController);
 
 // --- Analytics Route ---
 // GET /api/admin/analytics - Fetch analytics data
-router.get('/analytics', authenticateToken, authorizeRoles('admin'), getAnalytics);
+router.get('/analytics', getAnalytics);
+
+// --- Export Analytics Route ---
+// POST /api/admin/analytics/export - Export analytics data in specified format
+router.post('/analytics/export', exportAnalytics);
 
 module.exports = router;
