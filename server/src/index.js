@@ -10,6 +10,7 @@ const postRoutes = require('./routes/posts.js');
 const adminRoutes = require('./routes/admin.js');
 const eventRoutes = require('./routes/events.js');
 const commentsRoutes = require('./routes/comments.js');
+const userRoutes = require('./routes/users.js');
 const { initSocket } = require('./config/socket.js'); // Import init
 
 const app = express();
@@ -41,6 +42,7 @@ app.use('/api/posts', postRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/comments', commentsRoutes);
+app.use('/api/users', userRoutes);
 
 // Health check route
 app.get('/', (req, res) => res.status(200).send('Server is running'));
