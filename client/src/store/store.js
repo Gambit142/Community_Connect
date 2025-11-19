@@ -7,6 +7,7 @@ import eventsReducer from './events/eventsSlice.js';
 import adminReducer from './admin/adminSlice.js';
 import notificationsReducer from './notifications/notificationsSlice.js';
 import commentsReducer from './comments/commentsSlice.js';
+import profileReducer from './profile/profileSlice.js';
 
 const store = configureStore({
   reducer: {
@@ -18,6 +19,7 @@ const store = configureStore({
     admin: adminReducer,
     notifications: notificationsReducer,
     comments: commentsReducer,
+    profile: profileReducer,
   },
 });
 
