@@ -8,7 +8,7 @@ export const fetchProfile = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get(`${apiUrl}/api/users/profile`, {
+      const res = await axios.get(`${apiUrl}/users/profile`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       return res.data;
@@ -29,7 +29,7 @@ export const updateProfileThunk = createAsyncThunk(
           'Content-Type': 'multipart/form-data',
         },
       };
-      const res = await axios.put(`${apiUrl}/api/users/profile`, formData, config);
+      const res = await axios.put(`${apiUrl}/users/profile`, formData, config);
       return res.data;
     } catch (err) {
       return rejectWithValue(err.response?.data?.message || 'Failed to update profile');
@@ -48,7 +48,7 @@ export const updateUserByAdminThunk = createAsyncThunk(
           'Content-Type': 'multipart/form-data',
         },
       };
-      const res = await axios.put(`${apiUrl}/api/users/admin/users/${userId}`, formData, config);
+      const res = await axios.put(`${apiUrl}/users/admin/users/${userId}`, formData, config);
       return res.data;
     } catch (err) {
       return rejectWithValue(err.response?.data?.message || 'Failed to update user');

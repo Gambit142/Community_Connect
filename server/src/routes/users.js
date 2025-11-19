@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { authenticateToken, authorizeRoles } = require('../middleware/authenticateToken.js');
+const { authenticateToken, authorizeRoles } = require('../middleware/auth.js');
 const uploadProfilePic = require('../middleware/uploadProfilePic.js');
 
 const getProfile = require('../controllers/users/getProfile.js');

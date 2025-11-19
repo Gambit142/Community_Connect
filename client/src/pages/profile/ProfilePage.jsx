@@ -1,9 +1,9 @@
-// src/pages/profile/ProfilePage.jsx
-
 import React, { useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchProfile } from '../../store/profile/profileThunks.js';
+import { getMyPosts } from '../../store/posts/postsSlice.js';           // ← Same as MyPosts.jsx
+import { getRegisteredEvents } from '../../store/events/eventsSlice.js'; // ← Same as MyEvents.jsx (via RegisteredEvents)
 import styles from '../../assets/css/ProfilePage.module.css';
 
 // SVG Icons
@@ -19,32 +19,41 @@ const EventIcon = () => (
 );
 
 export default function ProfilePage() {
-  const navigate = useNavigate();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-  const { user, loading } = useSelector((state) => state.profile);
+  // Profile data
+  const { user: profileUser, loading: profileLoading } = useSelector((state) => state.profile);
   const loginUser = useSelector((state) => state.login.user);
+  const currentUser = profileUser || loginUser;
 
-  const currentUser = user || loginUser;
+  const { posts = [], loading: postsLoading } = useSelector((state) => state.posts);
+
+  const { registeredEvents = [], loading: eventsLoading } = useSelector((state) => state.events);
 
   useEffect(() => {
     dispatch(fetchProfile());
+    dispatch(getMyPosts({ limit: 5 }));
+    dispatch(getRegisteredEvents({ limit: 5 })); 
   }, [dispatch]);
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
+    });
   };
 
-  // Replace with real data later when you have posts/events slices
-  const userPosts = currentUser?.posts || [];
-  const userEvents = currentUser?.attendedEvents || [];
+  const isLoading = profileLoading || postsLoading || eventsLoading;
 
-  if (loading && !currentUser) {
-    return <div className="text-center py-20">Loading profile...</div>;
+  if (isLoading && !currentUser) {
+    return <div className="text-center py-20 text-white">Loading your profile...</div>;
   }
 
   return (
     <div className={styles.pageContainer}>
+      {/* Header — unchanged */}
       <header className={styles.profileHeader}>
         <div className={styles.headerContent}>
           <div className={styles.avatar}>
@@ -59,7 +68,7 @@ export default function ProfilePage() {
           <div className={styles.userInfo}>
             <h1 className={styles.username}>{currentUser?.username || 'Guest User'}</h1>
             <p className={styles.bio}>{currentUser?.bio || 'No bio yet. Tell your community about yourself!'}</p>
-            {currentUser?.location && <p className={styles.location}>📍 {currentUser.location}</p>}
+            {currentUser?.location && <p className={styles.location}>Location: {currentUser.location}</p>}
             <button onClick={() => navigate('/profile/edit')} className={styles.editButton}>
               Edit Profile
             </button>
@@ -70,14 +79,21 @@ export default function ProfilePage() {
       <main className={styles.mainContent}>
         <section className={styles.activitySection}>
           <div className={styles.activityGrid}>
+            {/* My Posts */}
             <div>
               <h3 className="font-semibold text-lg mb-4 text-gray-800">My Posts</h3>
-              {userPosts.length > 0 ? (
+              {postsLoading ? (
+                <p className="text-gray-500">Loading posts...</p>
+              ) : posts.length > 0 ? (
                 <div className="space-y-4">
-                  {userPosts.map(post => (
-                    <Link to={`/posts/${post._id}`} key={post._id} className={styles.activityCard}>
+                  {posts.slice(0, 5).map(post => (
+                    <Link
+                      to={`/posts/${post._id}`}
+                      key={post._id}
+                      className={styles.activityCard}
+                    >
                       <div className={`${styles.activityIconContainer} bg-green-500`}>
-                        <PostIcon className="h-5 w-5"/>
+                        <PostIcon className="h-5 w-5" />
                       </div>
                       <div>
                         <p className={styles.activityCardTitle}>{post.title}</p>
@@ -85,6 +101,11 @@ export default function ProfilePage() {
                       </div>
                     </Link>
                   ))}
+                  {posts.length > 5 && (
+                    <Link to="/posts/my-posts" className="text-blue-600 text-sm font-medium hover:underline">
+                      View all posts →
+                    </Link>
+                  )}
                 </div>
               ) : (
                 <div className={styles.emptyState}>
@@ -92,15 +113,22 @@ export default function ProfilePage() {
                 </div>
               )}
             </div>
-            
+
+            {/* My Upcoming Events */}
             <div>
               <h3 className="font-semibold text-lg mb-4 text-gray-800">My Upcoming Events</h3>
-              {userEvents.length > 0 ? (
+              {eventsLoading ? (
+                <p className="text-gray-500">Loading events...</p>
+              ) : registeredEvents.length > 0 ? (
                 <div className="space-y-4">
-                  {userEvents.map(event => (
-                    <Link to={`/events/${event._id}`} key={event._id} className={styles.activityCard}>
+                  {registeredEvents.slice(0, 5).map(event => (
+                    <Link
+                      to={`/events/${event._id}`}
+                      key={event._id}
+                      className={styles.activityCard}
+                    >
                       <div className={`${styles.activityIconContainer} bg-yellow-500`}>
-                        <EventIcon className="h-5 w-5"/>
+                        <EventIcon className="h-5 w-5" />
                       </div>
                       <div>
                         <p className={styles.activityCardTitle}>{event.title}</p>
@@ -108,6 +136,11 @@ export default function ProfilePage() {
                       </div>
                     </Link>
                   ))}
+                  {registeredEvents.length > 5 && (
+                    <Link to="/events/my-events?tab=registered" className="text-blue-600 text-sm font-medium hover:underline">
+                      View all registered events →
+                    </Link>
+                  )}
                 </div>
               ) : (
                 <div className={styles.emptyState}>
