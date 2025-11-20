@@ -3,6 +3,7 @@ const router = express.Router();
 
 // imports for authentication and authorization
 const { authenticateToken, authorizeRoles } = require('../middleware/auth.js');
+const uploadProfilePic = require('../middleware/uploadProfilePic.js');
 
 // imports for Posts
 const { getPendingPosts } = require('../controllers/admin/getPendingPostsController.js');
@@ -24,6 +25,12 @@ const { getAnalytics } = require('../controllers/admin/analyticsController.js');
 
 // imports for Exporting Analytics
 const { exportAnalytics } = require('../controllers/admin/exportController.js');
+
+// imports for User Management
+const updateUserByAdmin = require('../controllers/users/updateUserByAdmin.js');
+const getAllUsers = require('../controllers/admin/getAllUsers.js');
+const createUserByAdmin = require('../controllers/admin/createUserByAdmin.js');
+const deleteUserByAdmin = require('../controllers/admin/deleteUserByAdmin.js');
 
 // Middleware: Admin only
 router.use(authenticateToken, authorizeRoles('admin'));
@@ -68,5 +75,21 @@ router.get('/analytics', getAnalytics);
 // --- Export Analytics Route ---
 // POST /api/admin/analytics/export - Export analytics data in specified format
 router.post('/analytics/export', exportAnalytics);
+
+// Admin routes
+router.get(
+  '/users', 
+  getAllUsers
+);
+
+router.post('/users', createUserByAdmin);
+
+router.put(
+  '/users/:userId',
+  uploadProfilePic,
+  updateUserByAdmin
+);
+
+router.delete('/users/:userId', deleteUserByAdmin);
 
 module.exports = router;

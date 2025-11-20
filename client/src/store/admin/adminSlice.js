@@ -11,6 +11,11 @@ import { unflagComment } from './unflagCommentThunk.js';
 import { deleteFlaggedComment } from './deleteFlaggedCommentThunk.js';
 import { getAnalytics } from './getAnalyticsThunk.js';
 import { exportAnalytics } from './exportAnalyticsThunk.js';
+import { getAllUsers } from './getAllUsersThunk.js';
+import { getUserById } from './getUserByIdThunk.js';
+import { createUser } from './createUserThunk.js';
+import { updateUser } from './updateUserThunk.js';
+import { deleteUser } from './deleteUserThunk.js';
 
 const adminSlice = createSlice({
   name: 'admin',
@@ -47,6 +52,18 @@ const adminSlice = createSlice({
     analytics: null,
     analyticsLoading: false,
     analyticsError: null,
+
+    // === USER PROFILES STATE ===
+    users: [],
+    userPagination: null,
+    userLoading: false,
+    userError: null,
+    userFilters: { search: '', page: 1, limit: 20 },
+
+    // Single user detail for EditUserProfile
+    currentUser: null,
+    currentUserLoading: false,
+    currentUserError: null,
 
     // Export state
     exportLoading: false,
@@ -103,10 +120,27 @@ const adminSlice = createSlice({
       state.analyticsError = null;
     },
 
+    // User Profiles reducers
+    setUserFilters: (state, action) => {
+      state.userFilters = { ...state.userFilters, ...action.payload };
+      state.userPagination = null;
+    },
+    clearUserError: (state) => {
+      state.userError = null;
+    },
+
+    // Clear current user
+    clearCurrentUser: (state) => {
+      state.currentUser = null;
+      state.currentUserLoading = false;
+      state.currentUserError = null;
+    },
+
     // Export reducers
     clearExportState: (state) => {
       state.exportError = null;
       state.exportSuccess = null;
+      state.exportLoading = false;
     },
   },
   extraReducers: (builder) => {
@@ -250,7 +284,6 @@ const adminSlice = createSlice({
       })
       .addCase(unflagComment.fulfilled, (state, action) => {
         state.flaggedLoading = false;
-        // Remove from flagged list if present
         state.flaggedComments = state.flaggedComments.filter(c => c._id !== action.meta.arg);
       })
       .addCase(unflagComment.rejected, (state, action) => {
@@ -265,7 +298,6 @@ const adminSlice = createSlice({
       })
       .addCase(deleteFlaggedComment.fulfilled, (state, action) => {
         state.flaggedLoading = false;
-        // Remove from flagged list
         state.flaggedComments = state.flaggedComments.filter(c => c._id !== action.meta.arg);
       })
       .addCase(deleteFlaggedComment.rejected, (state, action) => {
@@ -301,6 +333,82 @@ const adminSlice = createSlice({
       .addCase(exportAnalytics.rejected, (state, action) => {
         state.exportLoading = false;
         state.exportError = action.payload;
+      })
+
+      // Get All Users
+      .addCase(getAllUsers.pending, (state) => {
+        state.userLoading = true;
+        state.userError = null;
+      })
+      .addCase(getAllUsers.fulfilled, (state, action) => {
+        state.userLoading = false;
+        state.users = action.payload.users;
+        state.userPagination = action.payload.pagination;
+      })
+      .addCase(getAllUsers.rejected, (state, action) => {
+        state.userLoading = false;
+        state.userError = action.payload;
+        state.users = [];
+      })
+
+      // Get Single User by ID
+      .addCase(getUserById.pending, (state) => {
+        state.currentUserLoading = true;
+        state.currentUserError = null;
+      })
+      .addCase(getUserById.fulfilled, (state, action) => {
+        state.currentUserLoading = false;
+        state.currentUser = action.payload;
+      })
+      .addCase(getUserById.rejected, (state, action) => {
+        state.currentUserLoading = false;
+        state.currentUserError = action.payload;
+        state.currentUser = null;
+      })
+
+      // Create User
+      .addCase(createUser.pending, (state) => {
+        state.userLoading = true;
+        state.userError = null;
+      })
+      .addCase(createUser.fulfilled, (state, action) => {
+        state.userLoading = false;
+        state.users.unshift(action.payload);
+      })
+      .addCase(createUser.rejected, (state, action) => {
+        state.userLoading = false;
+        state.userError = action.payload;
+      })
+
+      // Update User
+      .addCase(updateUser.pending, (state) => {
+        state.userLoading = true;
+        state.userError = null;
+      })
+      .addCase(updateUser.fulfilled, (state, action) => {
+        state.userLoading = false;
+        const index = state.users.findIndex(u => u._id === action.payload._id);
+        if (index !== -1) {
+          state.users[index] = action.payload;
+        }
+      })
+      .addCase(updateUser.rejected, (state, action) => {
+        state.userLoading = false;
+        state.userError = action.payload;
+      })
+
+      // Delete User
+      .addCase(deleteUser.pending, (state) => {
+        state.userLoading = true;
+        state.userError = null;
+      })
+      .addCase(deleteUser.fulfilled, (state, action) => {
+        state.userLoading = false;
+        state.users = state.users.filter(u => u._id !== action.payload);
+      })
+      .addCase(deleteUser.rejected, (state, action) => {
+        state.userLoading = false;
+        state.userError = action.payload;
       });
   },
 });
@@ -327,12 +435,20 @@ export { getFlaggedComments } from './getFlaggedCommentsThunk.js';
 export { unflagComment } from './unflagCommentThunk.js';
 export { deleteFlaggedComment } from './deleteFlaggedCommentThunk.js';
 
-//  Analytics exports
+// Analytics exports
 export const { clearAnalyticsError } = adminSlice.actions;
 export { getAnalytics } from './getAnalyticsThunk.js';
 
 // Export exports
 export const { clearExportState } = adminSlice.actions;
 export { exportAnalytics } from './exportAnalyticsThunk.js';
+
+// User Profiles exports
+export const { setUserFilters, clearUserError, clearCurrentUser } = adminSlice.actions;
+export { getAllUsers } from './getAllUsersThunk.js';
+export { getUserById } from './getUserByIdThunk.js';
+export { createUser } from './createUserThunk.js';
+export { updateUser } from './updateUserThunk.js';
+export { deleteUser } from './deleteUserThunk.js';
 
 export default adminSlice.reducer;

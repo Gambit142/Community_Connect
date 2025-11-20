@@ -30,10 +30,10 @@ describe('Protected Routes', () => {
     jest.resetAllMocks();
   });
 
-  describe('Profile Route (/api/profile)', () => {
+  describe('Profile Route (/api/users/profile)', () => {
     it('should return 200 with user profile for valid token', async () => {
       const res = await request(app)
-        .get('/api/profile')
+        .get('/api/users/profile')
         .set('Authorization', `Bearer ${mockToken}`);
       expect(res.status).toEqual(200);
       expect(res.body.message).toBe('Profile retrieved successfully');
@@ -43,7 +43,7 @@ describe('Protected Routes', () => {
     });
 
     it('should return 401 without token', async () => {
-      const res = await request(app).get('/api/profile');
+      const res = await request(app).get('/api/users/profile');
       expect(res.status).toEqual(401);
       expect(res.body.message).toBe('Access token required');
     });
@@ -51,7 +51,7 @@ describe('Protected Routes', () => {
     it('should return 403 with invalid token', async () => {
       jwt.verify.mockImplementation(() => { throw new Error('Invalid'); });
       const res = await request(app)
-        .get('/api/profile')
+        .get('/api/users/profile')
         .set('Authorization', `Bearer ${mockToken}`);
       expect(res.status).toEqual(403);
       expect(res.body.message).toBe('Invalid or expired token');
@@ -60,7 +60,7 @@ describe('Protected Routes', () => {
     it('should return 401 if user not found', async () => {
       User.findById.mockResolvedValue(null);
       const res = await request(app)
-        .get('/api/profile')
+        .get('/api/users/profile')
         .set('Authorization', `Bearer ${mockToken}`);
       expect(res.status).toEqual(401);
       expect(res.body.message).toBe('Invalid token');

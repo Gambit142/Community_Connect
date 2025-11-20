@@ -5,29 +5,6 @@ const User = require('../models/User.js');
 const { getNotifications, markAsRead } = require('../controllers/notifications/getNotificationsController.js');
 const { markAllAsRead } = require('../controllers/notifications/markAllAsReadController.js'); 
 
-// Example protected route: Get user profile (any authenticated user)
-router.get('/profile', authenticateToken, (req, res) => {
-  res.status(200).json({
-    message: 'Profile retrieved successfully',
-    user: {
-      id: req.user._id,
-      username: req.user.username,
-      email: req.user.email,
-      role: req.user.role,
-      userType: req.user.userType,
-    },
-  });
-});
-
-// Example admin-only route: Get all users
-router.get('/admin/users', authenticateToken, authorizeRoles('admin'), (req, res) => {
-  // In production, query all users here (e.g., User.find({}).select('-passwordHash'))
-  res.status(200).json({
-    message: 'All users retrieved successfully',
-    users: [], // Placeholder; replace with actual query
-  });
-});
-
 // GET /api/notifications - Get user's notifications
 router.get('/notifications', authenticateToken, getNotifications);
 

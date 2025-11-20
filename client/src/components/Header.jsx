@@ -2,10 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { NavLink, useNavigate, Link } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../store/auth/loginSlice.js';
-import NotificationsDropdown from './NotificationsDropdown'; // NEW: Import
+import NotificationsDropdown from './NotificationsDropdown';
 import styles from "../assets/css/Header.module.css";
 
-// SVG Icons for better UI
 const MenuIcon = () => (
   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" />
@@ -22,7 +21,7 @@ export default function Header() {
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isProfileOpen, setProfileOpen] = useState(false);
 
-  const user = useSelector((state) => state.login.user);
+  const user = useSelector((state) => state.login.user || state.profile.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const profileRef = useRef(null);
@@ -34,7 +33,6 @@ export default function Header() {
     navigate('/auth/login');
   };
 
-  // Close profile dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (profileRef.current && !profileRef.current.contains(event.target)) {
@@ -58,86 +56,77 @@ export default function Header() {
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
 
-          {/* Logo */}
           <div className="flex-shrink-0">
             <Link to="/" className="text-2xl font-bold text-black">
               Community<span className="text-gray-700">Connect</span>
             </Link>
           </div>
 
-          {/* Desktop Navigation Links */}
           <div className="hidden md:flex md:items-center md:space-x-4">
             {navLinks.map((link) => (
               <NavLink
                 key={link.name}
                 to={link.path}
-                className={({ isActive }) => `${styles.navLink} ${isActive ? styles.activeLink : ''}`}
+                className={({ isActive }) => `px-3 py-2 rounded-md text-sm font-medium ${isActive ? 'text-black bg-gray-100' : 'text-gray-600 hover:text-black hover:bg-gray-50'}`}
               >
                 {link.name}
               </NavLink>
             ))}
-          </div>
 
-          {/* Right side controls for Desktop */}
-          <div className="hidden md:flex items-center space-x-4">
             {user ? (
-              <>
-                {/* NEW: Notifications Dropdown */}
-                <NotificationsDropdown />
-                {/* Profile Dropdown */}
-                <div className="relative" ref={profileRef}>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setProfileOpen(!isProfileOpen);
-                    }}
-                    className="flex items-center justify-center w-10 h-10 bg-gray-200 rounded-full text-gray-700 font-bold text-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black transition-colors duration-200 hover:bg-gray-300"
-                  >
-                    {user.username?.charAt(0).toUpperCase()}
-                  </button>
-                  {isProfileOpen && (
-                    <div className={styles.profileDropdown}>
-                      <div className="px-4 py-2 border-b border-gray-200">
-                        <p className="text-sm font-semibold text-gray-900">{user.username}</p>
-                        <p className="text-xs text-gray-500 truncate">{user.email}</p>
-                      </div>
-                      <NavLink to="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setProfileOpen(false)}>My Profile</NavLink>
-                      <NavLink to="/posts/my-posts" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setProfileOpen(false)}>My Posts</NavLink>
-                      <NavLink to="/events/my-events" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setProfileOpen(false)}>My Events</NavLink>
-                      <NavLink to="/events/calendar" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setProfileOpen(false)}>Events Calendar</NavLink>
-                      <button onClick={handleLogout} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">Logout</button>
+              <div className="relative" ref={profileRef}>
+                <button
+                  onClick={() => setProfileOpen(!isProfileOpen)}
+                  className="flex items-center space-x-3 text-sm font-medium text-gray-700 hover:text-black transition"
+                >
+                  {user.profilePic ? (
+                    <img src={user.profilePic} alt={user.username} className="w-9 h-9 rounded-full object-cover border-2 border-gray-300" />
+                  ) : (
+                    <div className="w-9 h-9 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">
+                      {user.username?.[0]?.toUpperCase() || 'U'}
                     </div>
                   )}
-                </div>
-              </>
-            ) : (
-              <div className="space-x-2">
-                <Link to="/auth/login" className={styles.buttonSecondary}>Login</Link>
-                <Link to="/auth/signup" className={styles.buttonPrimary}>Sign Up</Link>
+                  <span className="hidden lg:block">{user.username}</span>
+                </button>
+
+                {isProfileOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                    <NavLink to="/profile" onClick={() => setProfileOpen(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                      My Profile
+                    </NavLink>
+                    <NavLink to="/posts/my-posts" onClick={() => setProfileOpen(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                      My Posts
+                    </NavLink>
+                    <NavLink to="/events/my-events" onClick={() => setProfileOpen(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                      My Events
+                    </NavLink>
+                    <div className="border-t border-gray-200 mt-1 pt-1">
+                      <button onClick={handleLogout} className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+                        Logout
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
+            ) : (
+              <>
+                <Link to="/auth/login" className={`${styles.buttonSecondary} ml-4`}>Login</Link>
+                <Link to="/auth/signup" className={`${styles.buttonPrimary} ml-2`}>Sign Up</Link>
+              </>
             )}
           </div>
 
-          {/* Right side controls for Mobile */}
-          <div className="md:hidden flex items-center space-x-4">
-            {user && (
-              <>
-                {/* NEW: Mobile Notifications Dropdown */}
-                <NotificationsDropdown isMobile={true} />
-                {/* Mobile Menu (Hamburger) Button */}
-                <button
-                  onClick={() => setMobileMenuOpen(!isMobileMenuOpen)}
-                  className="text-gray-600 hover:text-black transition-colors duration-200"
-                >
-                  {isMobileMenuOpen ? <CloseIcon /> : <MenuIcon />}
-                </button>
-              </>
-            )}
+          <div className="md:hidden">
+            <button
+              onClick={() => setMobileMenuOpen(!isMobileMenuOpen)}
+              className="text-gray-600 hover:text-black transition-colors duration-200"
+            >
+              {isMobileMenuOpen ? <CloseIcon /> : <MenuIcon />}
+            </button>
           </div>
         </div>
       </nav>
 
-      {/* Mobile Menu */}
       <div className={`${styles.mobileMenu} ${isMobileMenuOpen ? 'scale-y-100' : 'scale-y-0'}`}>
         <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
           {navLinks.map((link) => (
@@ -153,6 +142,16 @@ export default function Header() {
           <div className="border-t border-gray-200 pt-4 mt-4">
             {user ? (
               <div className="px-3 space-y-2">
+                <div className="flex items-center space-x-3 px-3 py-2">
+                  {user.profilePic ? (
+                    <img src={user.profilePic} alt={user.username} className="w-10 h-10 rounded-full object-cover border-2 border-gray-300" />
+                  ) : (
+                    <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white text-xl font-bold">
+                      {user.username?.[0]?.toUpperCase() || 'U'}
+                    </div>
+                  )}
+                  <span className="font-medium text-gray-900">{user.username}</span>
+                </div>
                 <NavLink to="/profile" className="block py-2 text-base font-medium text-gray-600 hover:bg-gray-50 rounded-md" onClick={() => setMobileMenuOpen(false)}>My Profile</NavLink>
                 <NavLink to="/posts/my-posts" className="block py-2 text-base font-medium text-gray-600 hover:bg-gray-50 rounded-md" onClick={() => setMobileMenuOpen(false)}>My Posts</NavLink>
                 <NavLink to="/events/my-events" className="block py-2 text-base font-medium text-gray-600 hover:bg-gray-50 rounded-md" onClick={() => setMobileMenuOpen(false)}>My Events</NavLink>

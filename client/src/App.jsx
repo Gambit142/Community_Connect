@@ -53,6 +53,8 @@ import Events from './pages/admin/Events';
 import Tables from './pages/admin/Tables';
 import Settings from './pages/admin/Settings';
 import FlaggedComments from './pages/admin/FlaggedComments';
+import EditAdminProfile from './pages/admin/EditAdminProfile.jsx';
+import EditUserProfile from './pages/admin/EditUserProfile.jsx';
 
 // Protected Route Component
 import ProtectedRoute from './components/ProtectedRoute';
@@ -85,6 +87,8 @@ function AppContent() {
           <Route path="tables" element={<Tables />} />
           <Route path="settings" element={<Settings />} />
           <Route path="flagged-comments" element={<FlaggedComments />} />
+          <Route path="profile/edit" element={<EditAdminProfile />} />
+          <Route path="users/edit/:userId" element={<EditUserProfile />} />
         </Route>
 
         <Route element={<UserLayout />}>

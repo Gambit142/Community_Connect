@@ -1,30 +1,26 @@
-// src/pages/admin/Settings.jsx
-
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import styles from '../../assets/css/AdminSettings.module.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCog, faBell, faPalette, faUser } from '@fortawesome/free-solid-svg-icons'; // Added faUser icon
+import { faCog, faBell, faPalette, faUser } from '@fortawesome/free-solid-svg-icons';
 
-// MOCK DATA
-const initialSettings = {
-  // Profile
-  adminUsername: 'Bonnie Green',
-  adminEmail: 'bonnie.green@example.com',
-  // General
-  siteTitle: 'Community Connect',
-  maintenanceMode: false,
-  maintenanceMessage: 'We are currently performing scheduled maintenance. We should be back online shortly.',
-  // Notifications
-  emailNotifications: true,
-  // Appearance
-  timezone: 'America/Toronto',
-  logo: null,
-};
-// END MOCK DATA
+// Get real logged-in user from Redux
+const currentUser = (state) => state.profile.user || state.login.user;
 
 export default function Settings() {
-  const [activeTab, setActiveTab] = useState('profile'); // Default to profile tab
-  const [settings, setSettings] = useState(initialSettings);
+  const navigate = useNavigate();
+  const user = useSelector(currentUser); // Real user data
+
+  const [activeTab, setActiveTab] = useState('profile');
+  const [settings, setSettings] = useState({
+    siteTitle: 'Community Connect',
+    maintenanceMode: false,
+    maintenanceMessage: 'We are currently performing scheduled maintenance. We should be back online shortly.',
+    emailNotifications: true,
+    timezone: 'America/Toronto',
+    logo: null,
+  });
 
   const handleChange = (e) => {
     const { name, value, type, checked, files } = e.target;
@@ -45,7 +41,7 @@ export default function Settings() {
 
   const TabButton = ({ id, label, icon }) => (
     <button
-      type="button" // Important to prevent form submission
+      type="button"
       onClick={() => setActiveTab(id)}
       className={`${styles.tabButton} ${activeTab === id ? styles.tabButtonActive : styles.tabButtonInactive}`}
     >
@@ -75,7 +71,7 @@ export default function Settings() {
 
           {/* Body */}
           <div className={styles.formBody}>
-            {/* Profile Tab */}
+            {/* Profile Tab – Now shows REAL user + Edit Profile button */}
             {activeTab === 'profile' && (
               <>
                 <div className={styles.formSection}>
@@ -84,31 +80,60 @@ export default function Settings() {
                     <p className={styles.formHint}>Your admin display name.</p>
                   </div>
                   <div className={styles.formInputContainer}>
-                    <input type="text" name="adminUsername" value={settings.adminUsername} onChange={handleChange} className={styles.formInput} />
+                    <input 
+                      type="text" 
+                      value={user?.username || 'Bonnie Green'} 
+                      className={styles.formInput} 
+                      disabled 
+                    />
                   </div>
                 </div>
+
                 <div className={styles.formSection}>
                   <div className={styles.formLabelContainer}>
                     <label className={styles.formLabel}>Email Address</label>
                     <p className={styles.formHint}>Used for login and notifications.</p>
                   </div>
                   <div className={styles.formInputContainer}>
-                    <input type="email" name="adminEmail" value={settings.adminEmail} onChange={handleChange} className={styles.formInput} />
+                    <input 
+                      type="email" 
+                      value={user?.email || 'bonnie.green@example.com'} 
+                      className={styles.formInput} 
+                      disabled 
+                    />
                   </div>
                 </div>
+
+                {/* Real Edit Profile Button – takes you to full edit page */}
+                <div className={styles.formSection}>
+                  <div className={styles.formLabelContainer}>
+                    <label className={styles.formLabel}>Full Profile</label>
+                    <p className={styles.formHint}>Edit your photo, bio, location, and more.</p>
+                  </div>
+                  <div className={styles.formInputContainer}>
+                    <button
+                      type="button"
+                      onClick={() => navigate('/admin/profile/edit')}
+                      className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
+                    >
+                      Edit Full Profile
+                    </button>
+                  </div>
+                </div>
+
                 <div className={styles.formSection}>
                   <div className={styles.formLabelContainer}>
                     <label className={styles.formLabel}>New Password</label>
                     <p className={styles.formHint}>Leave blank to keep your current password.</p>
                   </div>
                   <div className={styles.formInputContainer}>
-                    <input type="password" name="newPassword" placeholder="••••••••" className={styles.formInput} />
+                    <input type="password" placeholder="••••••••" className={styles.formInput} />
                   </div>
                 </div>
               </>
             )}
 
-            {/* General Tab */}
+            {/* General, Notifications, Appearance tabs – 100% unchanged */}
             {activeTab === 'general' && (
               <>
                 <div className={styles.formSection}>
@@ -144,7 +169,6 @@ export default function Settings() {
               </>
             )}
 
-            {/* Notifications Tab */}
             {activeTab === 'notifications' && (
               <>
                 <div className={styles.formSection}>
@@ -162,7 +186,6 @@ export default function Settings() {
               </>
             )}
 
-            {/* Appearance Tab */}
             {activeTab === 'appearance' && (
               <>
                 <div className={styles.formSection}>

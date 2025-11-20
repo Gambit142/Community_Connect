@@ -10,7 +10,7 @@ export const verifyToken = createAsyncThunk(
         return rejectWithValue('No token found');
       }
       const apiUrl = process.env.NODE_ENV === 'test' ? import.meta.env.VITE_API_URL_TEST : import.meta.env.VITE_API_URL;
-      const response = await axios.get(`${apiUrl}/profile`, {
+      const response = await axios.get(`${apiUrl}/users/profile`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       // Returns the data directly for loginSlice to handle it in extraReducers
