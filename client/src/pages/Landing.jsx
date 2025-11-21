@@ -1,8 +1,7 @@
-// src/pages/Landing.jsx
-
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { getEvents } from '../store/events/eventsSlice';
 import styles from '../assets/css/Landing.module.css';
 
 // Import slider components and styles
@@ -15,14 +14,6 @@ const ShareIcon = () => ( <svg className={styles.featureIcon} xmlns="http://www.
 const CalendarIcon = () => ( <svg className={styles.featureIcon} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg> );
 const TrustIcon = () => ( <svg className={styles.featureIcon} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> );
 const LocationIcon = () => ( <svg className={styles.cardLocationIcon} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0zM15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg> );
-
-// --- MOCK DATA FOR EVENTS SLIDER ---
-const mockEvents = [
-  { _id: '1', title: 'Community Garden Workshop', category: 'Workshop', location: 'Central Park', date: '2025-11-05T14:00:00Z', image: 'https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?q=80&w=2070&auto=format&fit=crop' },
-  { _id: '2', title: 'Neighborhood Cleanup Day', category: 'Volunteer', location: 'City Hall', date: '2025-11-12T09:00:00Z', image: 'https://images.unsplash.com/photo-1618479122201-cf6d52a236d7?q=80&w=2070&auto=format&fit=crop' },
-  { _id: '3', title: 'Local Farmers Market', category: 'Market', location: 'Downtown Square', date: '2025-11-15T11:00:00Z', image: 'https://images.unsplash.com/photo-1567306226416-28f0efdc88ce?q=80&w=2070&auto=format&fit=crop' },
-  { _id: '4', title: 'Annual Charity Run 5K', category: 'Charity', location: 'Lakeside Path', date: '2025-11-22T08:00:00Z', image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?q=80&w=2070&auto=format&fit=crop' },
-];
 
 // --- FAQ DATA & COMPONENT ---
 const faqData = [
@@ -49,7 +40,15 @@ export default function Landing() {
   const [unauthorizedType, setUnauthorizedType] = useState(''); // 'not-signed-in' or 'wrong-role'
   const location = useLocation();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const { user } = useSelector((state) => state.login);
+  const { events, loading } = useSelector((state) => state.events);
+
+  // Fetch events on component mount
+  useEffect(() => {
+    // Get first 5 upcoming events
+    dispatch(getEvents({ limit: 5, page: 1 }));
+  }, [dispatch]);
 
   // Check for unauthorized state on mount only
   useEffect(() => {
@@ -80,13 +79,13 @@ export default function Landing() {
 
   const sliderSettings = {
     dots: true,
-    infinite: true,
+    infinite: events.length > 1,
     speed: 500,
-    slidesToShow: 3,
+    slidesToShow: Math.min(3, events.length),
     slidesToScroll: 1,
     autoplay: true,
     responsive: [
-      { breakpoint: 1024, settings: { slidesToShow: 2 } },
+      { breakpoint: 1024, settings: { slidesToShow: Math.min(2, events.length) } },
       { breakpoint: 640, settings: { slidesToShow: 1 } },
     ],
   };
@@ -105,6 +104,27 @@ export default function Landing() {
       return 'Admin access requires login. Please <a href="/auth/login" className="underline">sign in</a> with an admin account.';
     }
     return '';
+  };
+
+  // Get default image based on category
+  const getEventImage = (event) => {
+    if (event.images && event.images.length > 0) {
+      return event.images[0];
+    }
+    
+    // Fallback images based on category
+    const categoryImages = {
+      'Workshop': 'https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?q=80&w=2070&auto=format&fit=crop',
+      'Volunteer': 'https://images.unsplash.com/photo-1618479122201-cf6d52a236d7?q=80&w=2070&auto=format&fit=crop',
+      'Market': 'https://images.unsplash.com/photo-1567306226416-28f0efdc88ce?q=80&w=2070&auto=format&fit=crop',
+      'Charity': 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?q=80&w=2070&auto=format&fit=crop',
+      'Tech': 'https://images.unsplash.com/photo-1518709268805-4e9042af2176?q=80&w=2068&auto=format&fit=crop',
+      'Fair': 'https://images.unsplash.com/photo-1531058020387-3be344556be6?q=80&w=2070&auto=format&fit=crop',
+      'Social': 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=2070&auto=format&fit=crop',
+      'Other': 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=2070&auto=format&fit=crop'
+    };
+    
+    return categoryImages[event.category] || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=2070&auto=format&fit=crop';
   };
 
   return (
@@ -156,8 +176,8 @@ export default function Landing() {
 
             <div className={styles.featureCard}>
               <TrustIcon />
-              <h3 className={styles.featureTitle}>Rating & Review System</h3>
-              <p className={styles.featureDescription}>Build accountability and trust with a transparent feedback system for services and resources shared within the community.</p>
+              <h3 className={styles.featureTitle}>Comments & Replies</h3>
+              <p className={styles.featureDescription}>Encourage engagement with user comments on posts and events, featuring threaded replies for meaningful conversations.</p>
             </div>
 
           </div>
@@ -181,29 +201,48 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className={styles.sectionTitle}>Upcoming Events</h2>
           <p className={styles.sectionSubtitle}>Get involved and meet your neighbors.</p>
-          <div className="mt-8">
-            <Slider {...sliderSettings}>
-              {mockEvents.map((event) => {
-                const { month, day } = formatDate(event.date);
-                return (
-                  <div key={event._id}>
-                    <div className={styles.eventCard}>
-                      <div className={styles.cardImageContainer}>
-                        <img src={event.image} alt={event.title} className={styles.cardImage} />
-                        <div className={styles.cardDateBadge}><span className={styles.dateMonth}>{month}</span><span className={styles.dateDay}>{day}</span></div>
-                      </div>
-                      <div className={styles.cardContent}>
-                        <p className={styles.cardCategory}>{event.category}</p>
-                        <h3 className={styles.cardTitle}>{event.title}</h3>
-                        <div className={styles.cardLocation}><LocationIcon /><span>{event.location}</span></div>
-                        <Link to={`/events/${event._id}`} className={styles.cardButton}>View Details</Link>
+          {loading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#05213C] mx-auto"></div>
+              <p className="mt-4 text-gray-600">Loading events...</p>
+            </div>
+          ) : events.length > 0 ? (
+            <div className="mt-8">
+              <Slider {...sliderSettings}>
+                {events.map((event) => {
+                  const { month, day } = formatDate(event.date);
+                  return (
+                    <div key={event._id}>
+                      <div className={styles.eventCard}>
+                        <div className={styles.cardImageContainer}>
+                          <img 
+                            src={getEventImage(event)} 
+                            alt={event.title} 
+                            className={styles.cardImage} 
+                            onError={(e) => {
+                              // Fallback if image fails to load
+                              e.target.src = 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=2070&auto=format&fit=crop';
+                            }}
+                          />
+                          <div className={styles.cardDateBadge}><span className={styles.dateMonth}>{month}</span><span className={styles.dateDay}>{day}</span></div>
+                        </div>
+                        <div className={styles.cardContent}>
+                          <p className={styles.cardCategory}>{event.category}</p>
+                          <h3 className={styles.cardTitle}>{event.title}</h3>
+                          <div className={styles.cardLocation}><LocationIcon /><span>{event.location}</span></div>
+                          <Link to={`/events/${event._id}`} className={styles.cardButton}>View Details</Link>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
-            </Slider>
-          </div>
+                  );
+                })}
+              </Slider>
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-gray-600">No upcoming events found. Check back later!</p>
+            </div>
+          )}
         </div>
       </section>
 

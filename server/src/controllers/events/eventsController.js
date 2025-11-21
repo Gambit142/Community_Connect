@@ -19,8 +19,11 @@ const getEvents = async (req, res) => {
     const { search, category, tags, page = 1, limit = 6 } = req.query;
     const skip = (page - 1) * limit;
 
-    // Build query: only published events
-    let query = { status: 'Published' };
+    // Build query: only published events and future events
+    let query = { 
+      status: 'Published',
+      date: { $gte: new Date() } // Only future events
+    };
 
     // Category filter
     if (category && category !== '') {
