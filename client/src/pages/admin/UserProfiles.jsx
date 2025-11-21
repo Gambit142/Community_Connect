@@ -11,7 +11,18 @@ import {
 } from '../../store/admin/adminSlice.js';
 import styles from '../../assets/css/UserProfiles.module.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { 
+  faPlus, 
+  faEdit, 
+  faTrash, 
+  faUser, 
+  faEnvelope, 
+  faKey, 
+  faShield, 
+  faUsers,
+  faTimes,
+  faSave
+} from '@fortawesome/free-solid-svg-icons';
 
 export default function UserProfiles() {
   const dispatch = useDispatch();
@@ -177,52 +188,144 @@ export default function UserProfiles() {
         </div>
       </div>
 
-      {/* Add/Edit Modal */}
+      {/* Add/Edit Modal - Modern Design */}
       {isModalOpen && (
         <div className={styles.modalOverlay}>
           <div className={styles.modalContent}>
-            <form onSubmit={handleSaveUser}>
-              <div className={styles.modalHeader}>
-                <h2 className={styles.modalTitle}>{editingUser ? 'Edit User' : 'Add New User'}</h2>
-                <button type="button" onClick={() => setIsModalOpen(false)}>&times;</button>
+            <div className={styles.modalHeader}>
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
+                  <FontAwesomeIcon icon={editingUser ? faEdit : faUser} className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h2 className={styles.modalTitle}>{editingUser ? 'Edit User' : 'Create New User'}</h2>
+                  <p className="text-sm text-gray-500">
+                    {editingUser ? 'Update user information' : 'Add a new user to the system'}
+                  </p>
+                </div>
               </div>
+              <button 
+                type="button" 
+                onClick={() => setIsModalOpen(false)} 
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <FontAwesomeIcon icon={faTimes} className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveUser}>
               <div className={styles.modalBody}>
-                <div className={styles.formGrid}>
-                  <div>
-                    <label className={styles.formLabel}>Username</label>
-                    <input type="text" name="username" value={formData.username} onChange={handleChange} className={styles.formInput} required />
+                <div className="space-y-6">
+                  {/* Username Field */}
+                  <div className="space-y-2">
+                    <label className="flex items-center text-sm font-medium text-gray-700">
+                      <FontAwesomeIcon icon={faUser} className="w-4 h-4 mr-2 text-gray-400" />
+                      Username
+                    </label>
+                    <input 
+                      type="text" 
+                      name="username" 
+                      value={formData.username} 
+                      onChange={handleChange} 
+                      className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                      placeholder="Enter username"
+                      required 
+                    />
                   </div>
-                  <div>
-                    <label className={styles.formLabel}>Email</label>
-                    <input type="email" name="email" value={formData.email} onChange={handleChange} className={styles.formInput} required />
+
+                  {/* Email Field */}
+                  <div className="space-y-2">
+                    <label className="flex items-center text-sm font-medium text-gray-700">
+                      <FontAwesomeIcon icon={faEnvelope} className="w-4 h-4 mr-2 text-gray-400" />
+                      Email Address
+                    </label>
+                    <input 
+                      type="email" 
+                      name="email" 
+                      value={formData.email} 
+                      onChange={handleChange} 
+                      className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                      placeholder="Enter email address"
+                      required 
+                    />
                   </div>
+
+                  {/* Password Field - Only for new users */}
                   {!editingUser && (
-                    <div>
-                      <label className={styles.formLabel}>Password</label>
-                      <input type="password" name="password" value={formData.password} onChange={handleChange} className={styles.formInput} placeholder="Leave blank for auto-generated" />
+                    <div className="space-y-2">
+                      <label className="flex items-center text-sm font-medium text-gray-700">
+                        <FontAwesomeIcon icon={faKey} className="w-4 h-4 mr-2 text-gray-400" />
+                        Password
+                      </label>
+                      <input 
+                        type="password" 
+                        name="password" 
+                        value={formData.password} 
+                        onChange={handleChange} 
+                        className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                        placeholder="Leave blank for auto-generated password"
+                      />
+                      <p className="text-xs text-gray-500">
+                        If left blank, a random password will be generated and emailed to the user.
+                      </p>
                     </div>
                   )}
-                  <div>
-                    <label className={styles.formLabel}>Role</label>
-                    <select name="role" value={formData.role} onChange={handleChange} className={styles.formInput}>
-                      <option value="member">Member</option>
-                      <option value="admin">Admin</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className={styles.formLabel}>User Type</label>
-                    <select name="userType" value={formData.userType} onChange={handleChange} className={styles.formInput}>
-                      <option value="individual">Individual</option>
-                      <option value="organization">Organization</option>
-                      <option value="company">Company</option>
-                    </select>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Role Field */}
+                    <div className="space-y-2">
+                      <label className="flex items-center text-sm font-medium text-gray-700">
+                        <FontAwesomeIcon icon={faShield} className="w-4 h-4 mr-2 text-gray-400" />
+                        Role
+                      </label>
+                      <select 
+                        name="role" 
+                        value={formData.role} 
+                        onChange={handleChange} 
+                        className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                      >
+                        <option value="member">Member</option>
+                        <option value="admin">Admin</option>
+                      </select>
+                    </div>
+
+                    {/* User Type Field */}
+                    <div className="space-y-2">
+                      <label className="flex items-center text-sm font-medium text-gray-700">
+                        <FontAwesomeIcon icon={faUsers} className="w-4 h-4 mr-2 text-gray-400" />
+                        User Type
+                      </label>
+                      <select 
+                        name="userType" 
+                        value={formData.userType} 
+                        onChange={handleChange} 
+                        className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                      >
+                        <option value="individual">Individual</option>
+                        <option value="organization">Organization</option>
+                        <option value="company">Company</option>
+                      </select>
+                    </div>
                   </div>
                 </div>
               </div>
+
               <div className={styles.modalFooter}>
-                <button type="button" onClick={() => setIsModalOpen(false)} className={styles.cancelButton}>Cancel</button>
-                <button type="submit" disabled={loading} className={styles.saveButton}>
-                  {loading ? 'Saving...' : 'Save'}
+                <button 
+                  type="button" 
+                  onClick={() => setIsModalOpen(false)} 
+                  className="px-6 py-3 bg-white text-gray-700 border border-gray-300 rounded-xl hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 font-medium flex items-center"
+                >
+                  <FontAwesomeIcon icon={faTimes} className="w-4 h-4 mr-2" />
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  disabled={loading} 
+                  className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-200 font-medium shadow-sm hover:shadow-md flex items-center disabled:opacity-50"
+                >
+                  <FontAwesomeIcon icon={faSave} className="w-4 h-4 mr-2" />
+                  {loading ? 'Saving...' : (editingUser ? 'Update User' : 'Create User')}
                 </button>
               </div>
             </form>
@@ -230,21 +333,59 @@ export default function UserProfiles() {
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
+      {/* Delete Confirmation Modal - Modern Design */}
       {isDeleteModalOpen && (
         <div className={styles.modalOverlay}>
           <div className={styles.modalContent}>
             <div className={styles.modalHeader}>
-              <h2 className={styles.modalTitle}>Confirm Deletion</h2>
-              <button type="button" onClick={() => setIsDeleteModalOpen(false)}>&times;</button>
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-gradient-to-r from-red-600 to-pink-600 rounded-xl flex items-center justify-center">
+                  <FontAwesomeIcon icon={faTrash} className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h2 className={styles.modalTitle}>Confirm Deletion</h2>
+                  <p className="text-sm text-gray-500">This action cannot be undone</p>
+                </div>
+              </div>
+              <button 
+                type="button" 
+                onClick={() => setIsDeleteModalOpen(false)} 
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <FontAwesomeIcon icon={faTimes} className="w-5 h-5 text-gray-500" />
+              </button>
             </div>
+
             <div className={styles.modalBody}>
-              <p>Are you sure you want to delete the user <strong>{userToDelete?.username}</strong>? This action cannot be undone.</p>
+              <div className="text-center py-4">
+                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <FontAwesomeIcon icon={faTrash} className="w-8 h-8 text-red-600" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Delete User</h3>
+                <p className="text-gray-600">
+                  Are you sure you want to delete the user <strong className="text-gray-900">"{userToDelete?.username}"</strong>? 
+                  This will permanently remove all their data from the system.
+                </p>
+              </div>
             </div>
+
             <div className={styles.modalFooter}>
-              <button type="button" onClick={() => setIsDeleteModalOpen(false)} className={styles.cancelButton}>Cancel</button>
-              <button type="button" onClick={confirmDeleteUser} disabled={loading} className={styles.confirmDeleteButton}>
-                {loading ? 'Deleting...' : 'Delete'}
+              <button 
+                type="button" 
+                onClick={() => setIsDeleteModalOpen(false)} 
+                className="px-6 py-3 bg-white text-gray-700 border border-gray-300 rounded-xl hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 font-medium flex items-center"
+              >
+                <FontAwesomeIcon icon={faTimes} className="w-4 h-4 mr-2" />
+                Cancel
+              </button>
+              <button 
+                type="button" 
+                onClick={confirmDeleteUser} 
+                disabled={loading}
+                className="px-6 py-3 bg-gradient-to-r from-red-600 to-pink-600 text-white rounded-xl hover:from-red-700 hover:to-pink-700 transition-all duration-200 font-medium shadow-sm hover:shadow-md flex items-center disabled:opacity-50"
+              >
+                <FontAwesomeIcon icon={faTrash} className="w-4 h-4 mr-2" />
+                {loading ? 'Deleting...' : 'Delete User'}
               </button>
             </div>
           </div>

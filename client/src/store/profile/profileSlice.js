@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { fetchProfile, updateProfileThunk, updateUserByAdminThunk } from './profileThunks.js';
+import { fetchProfile, updateProfileThunk } from './profileThunks.js';
 
 const profileSlice = createSlice({
   name: 'profile',
@@ -41,9 +41,6 @@ const profileSlice = createSlice({
       .addCase(updateProfileThunk.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-      })
-      .addCase(updateUserByAdminThunk.fulfilled, (state, action) => {
-        state.successMessage = action.payload.message;
       });
   },
 });

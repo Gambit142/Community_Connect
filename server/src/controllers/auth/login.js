@@ -44,6 +44,7 @@ const login = async (req, res) => {
         email: user.email,
         role: user.role,
         userType: user.userType,
+        profilePic: user.profilePic,
       },
       message: 'Login successful',
     });

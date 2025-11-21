@@ -36,22 +36,3 @@ export const updateProfileThunk = createAsyncThunk(
     }
   }
 );
-
-export const updateUserByAdminThunk = createAsyncThunk(
-  'profile/updateUserByAdmin',
-  async ({ userId, formData }, { rejectWithValue }) => {
-    try {
-      const token = localStorage.getItem('token');
-      const config = {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data',
-        },
-      };
-      const res = await axios.put(`${apiUrl}/users/admin/users/${userId}`, formData, config);
-      return res.data;
-    } catch (err) {
-      return rejectWithValue(err.response?.data?.message || 'Failed to update user');
-    }
-  }
-);

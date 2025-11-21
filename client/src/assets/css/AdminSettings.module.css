@@ -1,28 +1,28 @@
 /* src/assets/css/AdminSettings.module.css */
 
 .card {
-  @apply bg-white rounded-lg shadow-sm border border-gray-200;
+  @apply bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden;
 }
 
 .gridContainer {
-  @apply grid lg:grid-cols-4;
+  @apply grid lg:grid-cols-4 gap-0;
 }
 
 /* Tabs Navigation */
 .tabsNav {
-  @apply lg:col-span-1 p-4 border-r border-gray-200;
+  @apply lg:col-span-1 p-8 bg-gradient-to-b from-blue-50 to-white rounded-l-2xl border-r border-gray-200;
 }
 
 .tabButton {
-  @apply w-full text-left px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center;
+  @apply w-full text-left px-4 py-4 rounded-xl text-sm font-medium transition-all duration-300 flex items-center mb-2;
 }
 
 .tabButtonActive {
-  @apply bg-gray-100 text-[#05213C] font-semibold;
+  @apply bg-white shadow-lg text-blue-600 font-semibold border border-blue-100;
 }
 
 .tabButtonInactive {
-  @apply text-gray-600 hover:bg-gray-50 hover:text-gray-900;
+  @apply text-gray-600 hover:bg-white hover:text-gray-900 hover:shadow-md;
 }
 
 .tabIcon {
@@ -35,23 +35,23 @@
 }
 
 .contentHeader {
-  @apply p-6 border-b border-gray-200;
+  @apply p-8 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-purple-50;
 }
 
 .title {
-  @apply text-xl font-bold text-gray-900;
+  @apply text-2xl font-bold text-gray-900 flex items-center;
 }
 
 .subtitle {
-  @apply mt-1 text-sm text-gray-600;
+  @apply mt-2 text-sm text-gray-600;
 }
 
 .formBody {
-  @apply p-6 space-y-6;
+  @apply p-8 space-y-8;
 }
 
 .formSection {
-  @apply grid grid-cols-1 md:grid-cols-3 gap-4 items-start;
+  @apply grid grid-cols-1 md:grid-cols-3 gap-6 items-start;
 }
 
 .formLabelContainer {
@@ -59,11 +59,11 @@
 }
 
 .formLabel {
-  @apply font-medium text-gray-700;
+  @apply block font-semibold text-gray-700 text-sm flex items-center;
 }
 
 .formHint {
-  @apply text-xs text-gray-500;
+  @apply text-xs text-gray-500 mt-1;
 }
 
 .formInputContainer {
@@ -71,19 +71,23 @@
 }
 
 .formInput, .formTextarea, .formSelect {
-  @apply w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-black focus:border-black max-w-lg;
+  @apply w-full p-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white;
+}
+
+.formTextarea {
+  @apply resize-y;
 }
 
 .formFooter {
-  @apply p-6 bg-gray-50 border-t border-gray-200 flex justify-end gap-3;
+  @apply p-6 bg-gray-50 border-t border-gray-200 flex justify-end gap-4;
 }
 
 .cancelButton {
-  @apply px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors;
+  @apply px-6 py-3 bg-white text-gray-700 border border-gray-300 rounded-xl hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 font-medium flex items-center;
 }
 
 .saveButton {
-  @apply px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors;
+  @apply px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-200 font-medium shadow-sm hover:shadow-md flex items-center;
 }
 
 /* Toggle Switch */
@@ -92,9 +96,46 @@
 }
 
 .toggleSwitch {
-  @apply relative inline-flex items-center h-6 rounded-full w-11 cursor-pointer transition-colors;
+  @apply relative inline-flex items-center h-6 rounded-full w-11 cursor-pointer transition-colors bg-gray-200;
+}
+
+.toggleSwitchOn {
+  @apply bg-blue-600;
 }
 
 .toggleCircle {
-  @apply inline-block w-4 h-4 transform bg-white rounded-full transition-transform;
+  @apply inline-block w-4 h-4 transform bg-white rounded-full transition-transform translate-x-1;
+}
+
+.toggleCircleOn {
+  @apply translate-x-6;
+}
+
+/* Profile Picture Styles */
+.profilePictureContainer {
+  @apply flex items-center gap-6;
+}
+
+.profilePicture {
+  @apply w-28 h-28 rounded-2xl object-cover border-4 border-white shadow-lg;
+}
+
+.profilePlaceholder {
+  @apply w-28 h-28 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center text-white text-3xl font-bold shadow-lg;
+}
+
+/* Animation */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out;
 }
