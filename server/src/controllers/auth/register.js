@@ -1,27 +1,9 @@
 const bcrypt = require('bcryptjs');
-const nodemailer = require('nodemailer');
 const Joi = require('joi');
 const User = require('../../models/User.js');
 const PendingUser = require('../../models/PendingUser.js');
 const crypto = require('crypto');
-
-// Reuse transporter globally — NO verify() on every request!
-let transporter = null;
-const getTransporter = () => {
-  if (!transporter) {
-    const useTls = process.env.EMAIL_USE_TLS?.toString().toLowerCase() === 'true';
-    transporter = nodemailer.createTransport({
-      host: process.env.EMAIL_HOST,
-      port: Number(process.env.EMAIL_PORT) || 587,
-      secure: !useTls,
-      auth: {
-        user: process.env.EMAIL_HOST_USER,
-        pass: process.env.EMAIL_HOST_PASSWORD,
-      },
-    });
-  }
-  return transporter;
-};
+const { sendEmail } = require('../../utils/emailService.js');
 
 const registerSchema = Joi.object({
   username: Joi.string().min(3).max(30).required(),
@@ -45,7 +27,6 @@ const register = async (req, res) => {
   const { username, email, password, userType, bio, location, interests, profilePic, organizationDetails } = req.body;
 
   try {
-    // Check existing user
     const existingUser = await User.findOne({ email });
     if (existingUser) return res.status(400).json({ message: 'User already exists' });
 
@@ -66,43 +47,35 @@ const register = async (req, res) => {
       verificationToken,
     });
 
-    // Save pending user FIRST
     await pendingUser.save();
 
-    // === SEND EMAIL IN BACKGROUND (fire and forget) ===
     const verificationUrl = `${process.env.BACKEND_URL || 'http://localhost:5000'}/api/auth/verify/${verificationToken}`;
 
-    getTransporter().sendMail({
-      from: `"CommunityConnect" <${process.env.EMAIL_HOST_USER}>`,
+    // Fire-and-forget verification email
+    sendEmail({
       to: email,
       subject: 'Verify Your Email - CommunityConnect',
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
-          <h2 style="color: #1e40af;">Welcome to CommunityConnect!</h2>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 12px; background: #f9fafb;">
+          <h2 style="color: #1e40af; text-align: center;">Welcome to CommunityConnect!</h2>
           <p>Hi <strong>${username}</strong>,</p>
-          <p>You're almost there! Please confirm your email address to activate your account.</p>
+          <p>You're almost there! Please confirm your email to activate your account:</p>
           <div style="text-align: center; margin: 30px 0;">
-            <a href="${verificationUrl}" style="background:#3b82f6; color:white; padding:14px 28px; text-decoration:none; border-radius:8px; font-weight:bold; display:inline-block;">
+            <a href="${verificationUrl}" style="background:#3b82f6; color:white; padding:14px 32px; text-decoration:none; border-radius:8px; font-weight:bold; font-size:16px;">
               Verify Email Address
             </a>
           </div>
-          <p>Or copy and paste this link:<br/>
-            <a href="${verificationUrl}">${verificationUrl}</a>
-          </p>
+          <p>Or copy and paste:<br><a href="${verificationUrl}" style="color:#3b82f6; word-break:break-all;">${verificationUrl}</a></p>
           <p><small>This link expires in 24 hours.</small></p>
-          <hr/>
-          <small>If you didn't sign up, ignore this email.</small>
+          <hr style="border: 1px dashed #ddd; margin: 30px 0;">
+          <small style="color:#6b7280;">If you didn't sign up, ignore this email.</small>
         </div>
       `,
-    }).catch(err => {
-      console.error('Failed to send verification email:', err.message);
     });
 
-    // === INSTANT SUCCESS RESPONSE ===
     return res.status(201).json({
-      message: 'Registration successful! Verification email sent.',
+      message: 'Registration successful! Please check your email to verify your account.',
     });
-
   } catch (err) {
     console.error('Registration error:', err);
     return res.status(500).json({ message: 'Server error. Please try again.' });
@@ -113,14 +86,12 @@ const verify = async (req, res) => {
   const { token } = req.params;
 
   try {
-    console.log('Verification attempt:', token);
-
     const pendingUser = await PendingUser.findOne({ verificationToken: token });
     if (!pendingUser) {
       return res.status(400).send(`
         <h2>Invalid or Expired Link</h2>
         <p>This verification link is no longer valid.</p>
-        <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}">Go Home</a>
+        <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}">← Go Home</a>
       `);
     }
 
@@ -140,22 +111,23 @@ const verify = async (req, res) => {
     await newUser.save();
     await PendingUser.deleteOne({ verificationToken: token });
 
-    console.log('User verified:', newUser.email);
-
-    // Welcome email -- fire and forget
-    getTransporter().sendMail({
-      from: `"CommunityConnect" <${process.env.EMAIL_HOST_USER}>`,
+    // Welcome email
+    sendEmail({
       to: newUser.email,
-      subject: 'Welcome! Your Account is Active',
+      subject: 'Welcome to CommunityConnect!',
       html: `
-        <h2>Welcome, ${newUser.username}!</h2>
-        <p>Your email has been verified successfully.</p>
-        <p>You can now log in and start connecting!</p>
-        <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/auth/login" style="background:#10b981;color:white;padding:14px 28px;text-decoration:none;border-radius:8px;display:inline-block;">
-          Login Now
-        </a>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #10b981; border-radius: 12px; background: #f0fdf4;">
+          <h2 style="color: #10b981; text-align: center;">Welcome, ${newUser.username}!</h2>
+          <p>Your email has been verified successfully.</p>
+          <p>You're now part of the community!</p>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/auth/login" style="background:#10b981; color:white; padding:14px 32px; text-decoration:none; border-radius:8px; font-weight:bold;">
+              Login Now
+            </a>
+          </div>
+        </div>
       `,
-    }).catch(err => console.error('Welcome email failed:', err));
+    });
 
     res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/auth/login?verified=true`);
   } catch (err) {
