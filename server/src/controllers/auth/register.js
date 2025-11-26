@@ -5,6 +5,24 @@ const User = require('../../models/User.js');
 const PendingUser = require('../../models/PendingUser.js');
 const crypto = require('crypto');
 
+// Reuse transporter globally — NO verify() on every request!
+let transporter = null;
+const getTransporter = () => {
+  if (!transporter) {
+    const useTls = process.env.EMAIL_USE_TLS?.toString().toLowerCase() === 'true';
+    transporter = nodemailer.createTransport({
+      host: process.env.EMAIL_HOST,
+      port: Number(process.env.EMAIL_PORT) || 587,
+      secure: !useTls,
+      auth: {
+        user: process.env.EMAIL_HOST_USER,
+        pass: process.env.EMAIL_HOST_PASSWORD,
+      },
+    });
+  }
+  return transporter;
+};
+
 const registerSchema = Joi.object({
   username: Joi.string().min(3).max(30).required(),
   email: Joi.string().email().required(),
@@ -27,13 +45,13 @@ const register = async (req, res) => {
   const { username, email, password, userType, bio, location, interests, profilePic, organizationDetails } = req.body;
 
   try {
-    let user = await User.findOne({ email });
-    if (user) return res.status(400).json({ message: 'User already exists' });
+    // Check existing user
+    const existingUser = await User.findOne({ email });
+    if (existingUser) return res.status(400).json({ message: 'User already exists' });
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
-
-    const verificationToken = crypto.randomBytes(20).toString('hex');
+    const verificationToken = crypto.randomBytes(32).toString('hex');
 
     const pendingUser = new PendingUser({
       username,
@@ -48,37 +66,46 @@ const register = async (req, res) => {
       verificationToken,
     });
 
+    // Save pending user FIRST
     await pendingUser.save();
 
-    const transporter = nodemailer.createTransport({
-      host: 'sandbox.smtp.mailtrap.io',
-      port: 2525,
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
+    // === SEND EMAIL IN BACKGROUND (fire and forget) ===
+    const verificationUrl = `${process.env.BACKEND_URL || 'http://localhost:5000'}/api/auth/verify/${verificationToken}`;
+
+    getTransporter().sendMail({
+      from: `"CommunityConnect" <${process.env.EMAIL_HOST_USER}>`,
+      to: email,
+      subject: 'Verify Your Email - CommunityConnect',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+          <h2 style="color: #1e40af;">Welcome to CommunityConnect!</h2>
+          <p>Hi <strong>${username}</strong>,</p>
+          <p>You're almost there! Please confirm your email address to activate your account.</p>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${verificationUrl}" style="background:#3b82f6; color:white; padding:14px 28px; text-decoration:none; border-radius:8px; font-weight:bold; display:inline-block;">
+              Verify Email Address
+            </a>
+          </div>
+          <p>Or copy and paste this link:<br/>
+            <a href="${verificationUrl}">${verificationUrl}</a>
+          </p>
+          <p><small>This link expires in 24 hours.</small></p>
+          <hr/>
+          <small>If you didn't sign up, ignore this email.</small>
+        </div>
+      `,
+    }).catch(err => {
+      console.error('Failed to send verification email:', err.message);
     });
 
-    try {
-      await transporter.verify();
-      console.log('Mailtrap SMTP connection successful');
-    } catch (err) {
-      console.error('Mailtrap SMTP connection failed:', err.message);
-      return res.status(500).json({ message: 'Failed to connect to email service' });
-    }
+    // === INSTANT SUCCESS RESPONSE ===
+    return res.status(201).json({
+      message: 'Registration successful! Verification email sent.',
+    });
 
-    const mailOptions = {
-      from: 'no-reply@demomailtrap.com',
-      to: email,
-      subject: 'Confirm Your Registration',
-      text: `Please confirm your registration by clicking the link: http://localhost:5000/api/auth/verify/${verificationToken}`,
-    };
-
-    await transporter.sendMail(mailOptions);
-    res.status(201).json({ message: 'Registration successful. Please check your email to confirm.' });
   } catch (err) {
-    console.error('Registration error:', err.message);
-    res.status(500).json({ message: err.message });
+    console.error('Registration error:', err);
+    return res.status(500).json({ message: 'Server error. Please try again.' });
   }
 };
 
@@ -86,60 +113,54 @@ const verify = async (req, res) => {
   const { token } = req.params;
 
   try {
+    console.log('Verification attempt:', token);
+
     const pendingUser = await PendingUser.findOne({ verificationToken: token });
-    if (!pendingUser) return res.status(400).json({ message: 'Invalid or expired verification token' });
+    if (!pendingUser) {
+      return res.status(400).send(`
+        <h2>Invalid or Expired Link</h2>
+        <p>This verification link is no longer valid.</p>
+        <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}">Go Home</a>
+      `);
+    }
 
-    const { username, email, passwordHash, userType, bio, location, interests, profilePic, organizationDetails } = pendingUser;
-
-    let user = await User.findOne({ email });
-    if (user) return res.status(400).json({ message: 'User already exists' });
-
-    user = new User({
-      username,
-      email,
-      passwordHash,
-      userType,
-      bio,
-      location,
-      interests,
-      profilePic,
-      organizationDetails,
-      verificationToken: token,
+    const newUser = new User({
+      username: pendingUser.username,
+      email: pendingUser.email,
+      passwordHash: pendingUser.passwordHash,
+      userType: pendingUser.userType,
+      bio: pendingUser.bio,
+      location: pendingUser.location,
+      interests: pendingUser.interests,
+      profilePic: pendingUser.profilePic,
+      organizationDetails: pendingUser.organizationDetails,
       isVerified: true,
     });
 
-    await user.save();
+    await newUser.save();
     await PendingUser.deleteOne({ verificationToken: token });
 
-    const transporter = nodemailer.createTransport({
-      host: 'sandbox.smtp.mailtrap.io',
-      port: 2525,
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
+    console.log('User verified:', newUser.email);
 
-    try {
-      await transporter.verify();
-      console.log('Mailtrap SMTP connection successful for verification');
-    } catch (err) {
-      console.error('Mailtrap SMTP connection failed for verification:', err.message);
-      return res.status(500).json({ message: 'Failed to connect to email service' });
-    }
+    // Welcome email -- fire and forget
+    getTransporter().sendMail({
+      from: `"CommunityConnect" <${process.env.EMAIL_HOST_USER}>`,
+      to: newUser.email,
+      subject: 'Welcome! Your Account is Active',
+      html: `
+        <h2>Welcome, ${newUser.username}!</h2>
+        <p>Your email has been verified successfully.</p>
+        <p>You can now log in and start connecting!</p>
+        <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/auth/login" style="background:#10b981;color:white;padding:14px 28px;text-decoration:none;border-radius:8px;display:inline-block;">
+          Login Now
+        </a>
+      `,
+    }).catch(err => console.error('Welcome email failed:', err));
 
-    const mailOptions = {
-      from: 'no-reply@demomailtrap.com',
-      to: email,
-      subject: 'Registration Confirmed',
-      text: 'Your registration has been confirmed. You can now log in at: http://localhost:5173/auth/login',
-    };
-
-    await transporter.sendMail(mailOptions);
-    res.redirect('http://localhost:5173/auth/login');
+    res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/auth/login?verified=true`);
   } catch (err) {
-    console.error('Verification error:', err.message);
-    res.status(500).json({ message: err.message });
+    console.error('Verification error:', err);
+    res.status(500).send('<h2>Server Error</h2><p>Please try again later.</p>');
   }
 };
 
