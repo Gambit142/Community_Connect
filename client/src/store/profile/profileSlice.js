@@ -14,6 +14,11 @@ const profileSlice = createSlice({
       state.error = null;
       state.successMessage = null;
     },
+    clearProfile: (state) => {
+      state.user = null;
+      state.error = null;
+      state.successMessage = null;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -45,5 +50,5 @@ const profileSlice = createSlice({
   },
 });
 
-export const { clearMessages } = profileSlice.actions;
+export const { clearMessages, clearProfile } = profileSlice.actions;
 export default profileSlice.reducer;

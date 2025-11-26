@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { authenticateToken, authorizeRoles } = require('../middleware/auth.js');
+const { authenticateToken } = require('../middleware/auth.js');
 const User = require('../models/User.js');
 const { getNotifications, markAsRead } = require('../controllers/notifications/getNotificationsController.js');
 const { markAllAsRead } = require('../controllers/notifications/markAllAsReadController.js'); 

@@ -5,8 +5,9 @@ export const verifyToken = createAsyncThunk(
   'login/verifyToken',
   async (_, { rejectWithValue }) => {
     const token = localStorage.getItem('token');
+
     if (!token) {
-      return rejectWithValue('No token found');
+      return rejectWithValue('NO_TOKEN'); // ← special silent code
     }
 
     try {
@@ -14,7 +15,6 @@ export const verifyToken = createAsyncThunk(
         ? import.meta.env.VITE_API_URL_TEST
         : import.meta.env.VITE_API_URL;
 
-      // CORRECT ENDPOINT: /api/users/profile
       const response = await axios.get(`${apiUrl}/users/profile`, {
         headers: { Authorization: `Bearer ${token}` },
       });

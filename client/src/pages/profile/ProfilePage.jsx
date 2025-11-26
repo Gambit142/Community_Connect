@@ -2,8 +2,10 @@ import React, { useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchProfile } from '../../store/profile/profileThunks.js';
-import { getMyPosts } from '../../store/posts/postsSlice.js';           // ← Same as MyPosts.jsx
-import { getRegisteredEvents } from '../../store/events/eventsSlice.js'; // ← Same as MyEvents.jsx (via RegisteredEvents)
+import { getMyPosts } from '../../store/posts/postsSlice.js';
+import { getRegisteredEvents } from '../../store/events/eventsSlice.js';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faUser, faEnvelope, faMapMarkerAlt, faCalendar, faEdit, faUserTag } from '@fortawesome/free-solid-svg-icons';
 import styles from '../../assets/css/ProfilePage.module.css';
 
 // SVG Icons
@@ -23,12 +25,11 @@ export default function ProfilePage() {
   const navigate = useNavigate();
 
   // Profile data
-  const { user: profileUser, loading: profileLoading } = useSelector((state) => state.profile);
+  const { user: profileUser, loading: profileLoading, error } = useSelector((state) => state.profile);
   const loginUser = useSelector((state) => state.login.user);
   const currentUser = profileUser || loginUser;
 
   const { posts = [], loading: postsLoading } = useSelector((state) => state.posts);
-
   const { registeredEvents = [], loading: eventsLoading } = useSelector((state) => state.events);
 
   useEffect(() => {
@@ -53,23 +54,72 @@ export default function ProfilePage() {
 
   return (
     <div className={styles.pageContainer}>
-      {/* Header — unchanged */}
+      {/* Enhanced Header Section */}
       <header className={styles.profileHeader}>
         <div className={styles.headerContent}>
-          <div className={styles.avatar}>
-            {currentUser?.profilePic ? (
-              <img src={currentUser.profilePic} alt={currentUser.username} className={styles.avatarImg} />
-            ) : (
-              <div className={styles.avatarPlaceholder}>
-                {currentUser?.username?.[0]?.toUpperCase() || 'U'}
+          <div className={styles.avatarSection}>
+            <div className={styles.avatar}>
+              {currentUser?.profilePic ? (
+                <img src={currentUser.profilePic} alt={currentUser.username} className={styles.avatarImg} />
+              ) : (
+                <div className={styles.avatarPlaceholder}>
+                  {currentUser?.username?.[0]?.toUpperCase() || 'U'}
+                </div>
+              )}
+            </div>
+            <div className={styles.avatarOverlay}>
+              <FontAwesomeIcon icon={faUser} className={styles.avatarIcon} />
+            </div>
+          </div>
+          
+          <div className={styles.userInfo}>
+            <div className={styles.userHeader}>
+              <h1 className={styles.username}>{currentUser?.username || 'Guest User'}</h1>
+              <span className={styles.userBadge}>
+                <FontAwesomeIcon icon={faUserTag} className={styles.badgeIcon} />
+                {currentUser?.userType || 'Member'}
+              </span>
+            </div>
+            
+            <p className={styles.bio}>{currentUser?.bio || 'No bio yet. Tell your community about yourself!'}</p>
+            
+            <div className={styles.userDetails}>
+              {currentUser?.email && (
+                <div className={styles.detailItem}>
+                  <FontAwesomeIcon icon={faEnvelope} className={styles.detailIcon} />
+                  <span>{currentUser.email}</span>
+                </div>
+              )}
+              
+              {currentUser?.location && (
+                <div className={styles.detailItem}>
+                  <FontAwesomeIcon icon={faMapMarkerAlt} className={styles.detailIcon} />
+                  <span>{currentUser.location}</span>
+                </div>
+              )}
+              
+              {currentUser?.createdAt && (
+                <div className={styles.detailItem}>
+                  <FontAwesomeIcon icon={faCalendar} className={styles.detailIcon} />
+                  <span>Joined {formatDate(currentUser.createdAt)}</span>
+                </div>
+              )}
+            </div>
+
+            {error && (
+              <div className={styles.errorMessage}>
+                <svg className={styles.errorIcon} fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+                {error}
               </div>
             )}
-          </div>
-          <div className={styles.userInfo}>
-            <h1 className={styles.username}>{currentUser?.username || 'Guest User'}</h1>
-            <p className={styles.bio}>{currentUser?.bio || 'No bio yet. Tell your community about yourself!'}</p>
-            {currentUser?.location && <p className={styles.location}>Location: {currentUser.location}</p>}
-            <button onClick={() => navigate('/profile/edit')} className={styles.editButton}>
+
+            <button 
+              onClick={() => navigate('/profile/edit')} 
+              className={styles.editButton}
+            >
+              <FontAwesomeIcon icon={faEdit} className={styles.editIcon} />
               Edit Profile
             </button>
           </div>

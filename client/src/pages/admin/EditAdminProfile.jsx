@@ -159,23 +159,23 @@ export default function EditAdminProfile() {
               </div>
             </div>
 
-            {/* Username */}
+            {/* Username - Fixed padding */}
             <div className={styles.formSection}>
               <div className={styles.formLabelContainer}>
                 <label className={styles.formLabel}>Username</label>
                 <p className={styles.formHint}>Your display name across the platform</p>
               </div>
               <div className={styles.formInputContainer}>
-                <div className="relative">
+                <div className={styles.iconInputContainer}>
                   <FontAwesomeIcon 
                     icon={faUser} 
-                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" 
+                    className={styles.inputIcon} 
                   />
                   <input 
                     name="username" 
                     value={formData.username} 
                     onChange={handleChange} 
-                    className={`${styles.formInput} pl-10`}
+                    className={`${styles.formInput} ${styles.iconInput}`}
                     placeholder="Enter your username"
                     required 
                   />
@@ -183,24 +183,24 @@ export default function EditAdminProfile() {
               </div>
             </div>
 
-            {/* Email */}
+            {/* Email - Fixed padding */}
             <div className={styles.formSection}>
               <div className={styles.formLabelContainer}>
                 <label className={styles.formLabel}>Email Address</label>
                 <p className={styles.formHint}>Your primary contact email</p>
               </div>
               <div className={styles.formInputContainer}>
-                <div className="relative">
+                <div className={styles.iconInputContainer}>
                   <FontAwesomeIcon 
                     icon={faEnvelope} 
-                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" 
+                    className={styles.inputIcon} 
                   />
                   <input 
                     name="email" 
                     type="email" 
                     value={formData.email} 
                     onChange={handleChange} 
-                    className={`${styles.formInput} pl-10`}
+                    className={`${styles.formInput} ${styles.iconInput}`}
                     placeholder="Enter your email address"
                     required 
                   />
@@ -226,23 +226,23 @@ export default function EditAdminProfile() {
               </div>
             </div>
 
-            {/* Location */}
+            {/* Location - Fixed padding */}
             <div className={styles.formSection}>
               <div className={styles.formLabelContainer}>
                 <label className={styles.formLabel}>Location</label>
                 <p className={styles.formHint}>Your city and country</p>
               </div>
               <div className={styles.formInputContainer}>
-                <div className="relative">
+                <div className={styles.iconInputContainer}>
                   <FontAwesomeIcon 
                     icon={faMapMarkerAlt} 
-                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" 
+                    className={styles.inputIcon} 
                   />
                   <input 
                     name="location" 
                     value={formData.location} 
                     onChange={handleChange} 
-                    className={`${styles.formInput} pl-10`}
+                    className={`${styles.formInput} ${styles.iconInput}`}
                     placeholder="e.g., Brampton, ON, Canada"
                   />
                 </div>

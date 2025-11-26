@@ -4,33 +4,186 @@
   @apply min-h-screen bg-gray-50;
 }
 
-/* Profile Header */
+/* Enhanced Profile Header */
 .profileHeader {
-  @apply bg-white shadow-sm;
+  @apply bg-gradient-to-r from-blue-50 to-purple-50 shadow-sm border-b border-gray-200;
 }
 
 .headerContent {
-  @apply max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center gap-6;
+  @apply max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-start gap-8;
+}
+
+/* Enhanced Avatar Section */
+.avatarSection {
+  position: relative;
+  display: inline-block;
 }
 
 .avatar {
-  @apply w-24 h-24 sm:w-32 sm:h-32 bg-gray-800 rounded-full flex items-center justify-center text-white text-4xl sm:text-5xl font-bold flex-shrink-0;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 4px solid white;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  @apply flex-shrink-0;
 }
 
+.avatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatarPlaceholder {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 2.5rem;
+  font-weight: bold;
+}
+
+.avatarOverlay {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.avatarIcon {
+  color: white;
+  width: 14px;
+  height: 14px;
+}
+
+/* Enhanced User Info */
 .userInfo {
-  @apply text-center sm:text-left;
+  @apply flex-1 text-center sm:text-left;
+}
+
+.userHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+  @apply justify-center sm:justify-start;
 }
 
 .username {
-  @apply text-3xl font-bold text-gray-900;
+  font-size: 2rem;
+  font-weight: bold;
+  color: #1f2937;
+  margin: 0;
 }
 
-.userBio {
-  @apply mt-1 text-gray-600 max-w-xl;
+.userBadge {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
 }
 
-.editProfileButton {
-  @apply mt-4 bg-gray-200 text-gray-800 px-4 py-2 rounded-md text-sm font-semibold hover:bg-gray-300 transition-colors;
+.badgeIcon {
+  width: 10px;
+  height: 10px;
+}
+
+.bio {
+  color: #6b7280;
+  font-size: 1rem;
+  line-height: 1.6;
+  margin: 8px 0;
+  max-width: 500px;
+  @apply text-center sm:text-left;
+}
+
+.userDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 16px 0;
+  @apply items-center sm:items-start;
+}
+
+.detailItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.detailIcon {
+  width: 14px;
+  height: 14px;
+  color: #9ca3af;
+}
+
+.errorMessage {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  padding: 12px 16px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 16px 0;
+  font-size: 0.875rem;
+  font-weight: 500;
+  @apply justify-center sm:justify-start;
+}
+
+.errorIcon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.editButton {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  @apply mx-auto sm:mx-0;
+}
+
+.editButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+}
+
+.editIcon {
+  width: 14px;
+  height: 14px;
 }
 
 /* Main Content */
@@ -65,101 +218,9 @@
 }
 
 .activityGrid {
-  @apply grid grid-cols-1 md:grid-cols-2 gap-6;
+  @apply grid grid-cols-1 md:grid-cols-2 gap-8;
 }
 
-.activityCard {
-  @apply bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow;
-}
-
-.activityCardTitle {
-  @apply font-semibold text-gray-800;
-}
-
-.activityCardDate {
-  @apply text-sm text-gray-500 mt-1;
-}
-
-.emptyState {
-  @apply bg-white p-8 rounded-lg shadow-md text-center text-gray-500;
-}
-
-.link {
-  @apply text-blue-600 hover:underline;
-}
-
-
-/* src/assets/css/ProfilePage.module.css */
-
-.pageContainer {
-  @apply min-h-screen bg-gray-50;
-}
-
-/* Profile Header */
-.profileHeader {
-  @apply bg-white shadow-sm;
-}
-
-.headerContent {
-  @apply max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center gap-6;
-}
-
-.avatar {
-  @apply w-24 h-24 sm:w-32 sm:h-32 bg-gray-800 rounded-full flex items-center justify-center text-white text-4xl sm:text-5xl font-bold flex-shrink-0;
-}
-
-.userInfo {
-  @apply text-center sm:text-left;
-}
-
-.username {
-  @apply text-3xl font-bold text-gray-900;
-}
-
-.userBio {
-  @apply mt-1 text-gray-600 max-w-xl;
-}
-
-.editProfileButton {
-  @apply mt-4 bg-gray-200 text-gray-800 px-4 py-2 rounded-md text-sm font-semibold hover:bg-gray-300 transition-colors;
-}
-
-/* Main Content */
-.mainContent {
-  @apply max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8;
-}
-
-/* Stats Section */
-.statsGrid {
-  @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8;
-}
-
-.statCard {
-  @apply bg-white p-6 rounded-lg shadow-md flex items-center;
-}
-
-.statIcon {
-  @apply h-10 w-10 text-white bg-black rounded-lg p-2 mr-4;
-}
-
-.statValue {
-  @apply text-2xl font-bold text-gray-900;
-}
-
-.statLabel {
-  @apply text-gray-600;
-}
-
-/* --- REBUILT ACTIVITY SECTION STYLES --- */
-.activityTitle {
-  @apply text-2xl font-bold text-gray-900 mb-4;
-}
-
-.activityGrid {
-  @apply grid grid-cols-1 md:grid-cols-2 gap-8; /* Restored 2-column grid with more gap */
-}
-
-/* This is the new, corrected card style */
 .activityCard {
   @apply bg-white p-4 rounded-lg shadow-sm border border-gray-200 hover:shadow-md hover:border-gray-300 transition-all flex items-center gap-4;
 }
@@ -183,5 +244,3 @@
 .link {
   @apply text-blue-600 hover:underline;
 }
-
-

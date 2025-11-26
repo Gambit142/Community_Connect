@@ -1,14 +1,17 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 import { verifyToken } from './verifyTokenThunk.js';
+import { clearProfile } from '../profile/profileSlice.js';  // ← ADD THIS IMPORT
 
 export const loginUser = createAsyncThunk(
   'login/loginUser',
   async (userData, { rejectWithValue }) => {
     try {
-      const apiUrl = process.env.NODE_ENV === 'test' ? import.meta.env.VITE_API_URL_TEST : import.meta.env.VITE_API_URL;
+      const apiUrl = process.env.NODE_ENV === 'test' 
+        ? import.meta.env.VITE_API_URL_TEST 
+        : import.meta.env.VITE_API_URL;
+
       const response = await axios.post(`${apiUrl}/auth/login`, userData);
-      // Store token in localStorage for persistence
       localStorage.setItem('token', response.data.token);
       return response.data;
     } catch (err) {
@@ -40,6 +43,7 @@ const loginSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      // Login flow
       .addCase(loginUser.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -55,7 +59,8 @@ const loginSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-      // Handle verifyToken
+
+      // Verify token on app start / refresh
       .addCase(verifyToken.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -71,11 +76,23 @@ const loginSlice = createSlice({
         state.user = null;
         state.token = null;
         state.isInitialized = true;
-        state.error = action.payload;
+
+        if (action.payload !== 'NO_TOKEN') {
+          state.error = action.payload;
+        }
+
         localStorage.removeItem('token');
+      })
+
+      .addCase(logout, (state) => {
       });
   },
 });
+
+export const logoutUser = () => (dispatch) => {
+  dispatch(logout());
+  dispatch(clearProfile()); 
+};
 
 export const { clearError, logout } = loginSlice.actions;
 export default loginSlice.reducer;

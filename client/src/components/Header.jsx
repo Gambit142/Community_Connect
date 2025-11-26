@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { NavLink, useNavigate, Link } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { logout } from '../store/auth/loginSlice.js';
+import { logoutUser } from '../store/auth/loginSlice.js'; 
 import NotificationsDropdown from './NotificationsDropdown';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBars, faTimes, faUser, faSignOutAlt, faFileAlt, faCalendarAlt } from '@fortawesome/free-solid-svg-icons';
@@ -11,13 +11,18 @@ export default function Header() {
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isProfileOpen, setProfileOpen] = useState(false);
 
-  const user = useSelector((state) => state.login.user || state.profile.user);
+  // Get user from either profile slice or login slice
+  const profileUser = useSelector((state) => state.profile.user);
+  const loginUser = useSelector((state) => state.login.user);
+  const user = profileUser || loginUser; 
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const profileRef = useRef(null);
 
+  // Use the new logout that also clears profile slice
   const handleLogout = () => {
-    dispatch(logout());
+    dispatch(logoutUser());
     setProfileOpen(false);
     setMobileMenuOpen(false);
     navigate('/auth/login');
@@ -201,7 +206,7 @@ export default function Header() {
       </nav>
 
       {/* Mobile Menu */}
-      <div className={`${styles.mobileMenu} ${isMobileMenuOpen ? 'scale-y-100 opacity-100' : 'scale-y-0 opacity-0'} md:hidden`}>
+      <div className={`${styles.mobileMenu} ${isMobileMenuOpen ? 'scale-y-100 opacity-100' : 'scale-y-100 opacity-0'} md:hidden`}>
         <div className="px-4 pt-4 pb-6 space-y-2">
           {navLinks.map((link) => (
             <NavLink

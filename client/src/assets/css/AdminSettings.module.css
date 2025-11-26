@@ -124,6 +124,19 @@
   @apply w-28 h-28 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center text-white text-3xl font-bold shadow-lg;
 }
 
+/* Icon Input Styles */
+.iconInputContainer {
+  @apply relative;
+}
+
+.iconInput {
+  @apply pl-12 pr-4;
+}
+
+.inputIcon {
+  @apply absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4;
+}
+
 /* Animation */
 @keyframes fade-in {
   from {
