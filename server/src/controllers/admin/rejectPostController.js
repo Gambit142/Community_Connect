@@ -1,80 +1,95 @@
 const Post = require('../../models/Post.js');
 const Notification = require('../../models/Notification.js');
-const nodemailer = require('nodemailer');
 const User = require('../../models/User.js');
+const { sendEmail } = require('../../utils/emailService.js');
 
-// Use global io to avoid circular dependency
 const io = global.io;
-
-// Nodemailer transporter
-const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST || 'smtp.mailtrap.io',
-  port: process.env.EMAIL_PORT || 2525,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
 
 const rejectPost = async (req, res) => {
   try {
     const { id } = req.params;
-    const { reason } = req.body; // New: Rejection reason
+    const { reason } = req.body;
 
     if (!reason || reason.trim().length < 10) {
       return res.status(400).json({ message: 'Rejection reason must be at least 10 characters' });
     }
 
-    // Find and update post
-    const post = await Post.findOneAndUpdate(
-      { _id: id, status: 'Pending Approval' },
-      { status: 'Rejected', rejectionReason: reason.trim() },
+    // Find and update post + populate user
+    const post = await Post.findByIdAndUpdate(
+      id,
+      { 
+        $set: { 
+          status: 'Rejected', 
+          rejectionReason: reason.trim() 
+        } 
+      },
       { new: true }
-    ).populate('userID', 'username email');
+    ).populate({ path: 'userID', select: 'username email' });
 
     if (!post) {
       return res.status(404).json({ message: 'Post not found or already processed' });
     }
 
-    // Create notification
+    // CRITICAL: Handle case where user was deleted
+    if (!post.userID) {
+      console.warn(`Post ${post._id} has no user (was deleted). Skipping notifications.`);
+      
+      return res.status(200).json({
+        message: 'Post rejected (user no longer exists)',
+        post,
+        note: 'No notifications sent — user account was deleted'
+      });
+    }
+
+    const user = post.userID;
+
+    // Background email (safe)
+    sendEmail({
+      to: user.email,
+      subject: 'Your Post Has Been Rejected - CommunityConnect',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #fca5a5; border-radius: 12px; background: #fef2f2;">
+          <h2 style="color: #dc2626; text-align: center;">Post Rejected</h2>
+          <p>Hi <strong>${user.username}</strong>,</p>
+          <p>We're sorry, but your post has been rejected.</p>
+          <div style="background:#fee2e2; padding:15px; border-left:4px solid #dc2626; margin:20px 0; border-radius:8px;">
+            <p><strong>Title:</strong> ${post.title}</p>
+            <p><strong>Category:</strong> ${post.category}</p>
+            <p><strong>Reason:</strong><br>${reason.trim()}</p>
+          </div>
+          <p><a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/posts/my-posts">View My Posts</a></p>
+          <hr style="border:1px dashed #fca5a5;">
+          <small>CommunityConnect Team</small>
+        </div>
+      `,
+    });
+
+    // Create notification (only if user exists)
     const notification = new Notification({
-      userID: post.userID._id,
-      message: `Your post "${post.title}" has been rejected: ${reason}`,
+      userID: user._id,
+      message: `Your post "${post.title}" was rejected: ${reason.trim()}`,
       type: 'post_status',
       relatedID: post._id,
       relatedType: 'post',
+      isRead: false,
     });
     await notification.save();
 
-    // Emit socket notification if user online
-    io.to(`user-${post.userID._id}`).emit('newNotification', notification);
+    // Real-time notification
+    io.to(`user-${user._id}`).emit('newNotification', notification);
 
-    // Send email notification
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: post.userID.email,
-      subject: 'Post Rejected - Community Connect',
-      html: `
-        <h1>Your Post Has Been Rejected</h1>
-        <p>Dear ${post.userID.username},</p>
-        <p>Your post "<strong>${post.title}</strong>" in the <strong>${post.category}</strong> category did not meet our guidelines.</p>
-        <p><strong>Reason:</strong> ${reason}</p>
-        <p>Please review our community standards and resubmit if appropriate.</p>
-        <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/posts/my-posts" style="background-color: #05213C; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">View My Posts</a>
-        <p>Best regards,<br>Community Connect Team</p>
-      `,
-    };
-    await transporter.sendMail(mailOptions);
-    console.log(`Rejection email sent to ${post.userID.email}`);
-
+    // Instant response
     res.status(200).json({
       message: 'Post rejected successfully',
       post,
       notification,
     });
+
   } catch (error) {
     console.error('Reject post error:', error);
-    res.status(500).json({ message: 'Server error during rejection' });
+    if (!res.headersSent) {
+      res.status(500).json({ message: 'Server error' });
+    }
   }
 };
 

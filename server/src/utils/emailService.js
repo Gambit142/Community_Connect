@@ -15,6 +15,14 @@ const getTransporter = () => {
         user: process.env.EMAIL_HOST_USER,
         pass: process.env.EMAIL_HOST_PASSWORD,
       },
+      pool: true,                 // ← ENABLE POOLING
+      maxConnections: 5,          // ← Limit concurrent connections
+      maxMessages: 100,           // ← Per connection
+      rateLimit: 1000,            // ← Max 1 email per 1 second (adjust as needed)
+      // Optional: retry on failure
+      tls: {
+        rejectUnauthorized: false,
+      },
     });
   }
   return transporter;
