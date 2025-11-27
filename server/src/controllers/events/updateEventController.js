@@ -1,11 +1,11 @@
 const Joi = require('joi');
 const Event = require('../../models/Event.js');
 const Notification = require('../../models/Notification.js');
-const nodemailer = require('nodemailer');
 const User = require('../../models/User.js');
 const { cloudinary } = require('../../config/cloudinary.js');
+const { sendEmail } = require('../../utils/emailService.js'); 
 
-// Joi validation schema for update event (similar to create, but partial)
+// Joi validation schema
 const updateEventSchema = Joi.object({
   title: Joi.string().trim().max(200).messages({ 'string.max': 'Title too long (max 200 chars)' }),
   description: Joi.string().trim().max(2000).messages({ 'string.max': 'Description too long (max 2000 chars)' }),
@@ -14,17 +14,7 @@ const updateEventSchema = Joi.object({
   location: Joi.string().trim().max(200).messages({ 'string.max': 'Location too long (max 200 chars)' }),
   category: Joi.string().valid('Workshop', 'Volunteer', 'Market', 'Tech', 'Charity', 'Fair', 'Social', 'Other').messages({ 'any.only': 'Invalid category—choose from available options' }),
   price: Joi.number().min(0).messages({ 'number.min': 'Price cannot be negative' }),
-  status: Joi.string().valid('Pending Approval', 'Published', 'Rejected').optional().allow(null), // Optional for user updates
-});
-
-// Nodemailer transporter
-const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST || 'smtp.mailtrap.io',
-  port: process.env.EMAIL_PORT || 2525,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
+  status: Joi.string().valid('Pending Approval', 'Published', 'Rejected').optional().allow(null),
 });
 
 const updateEvent = async (req, res) => {
@@ -35,23 +25,21 @@ const updateEvent = async (req, res) => {
       return res.status(400).json({ message: error.details[0].message });
     }
 
-    // Find and check ownership
+    // Find and check ownership of existing event
     const existingEvent = await Event.findOne({ _id: id, userID: req.user._id });
     if (!existingEvent) {
       return res.status(404).json({ message: 'Event not found or you do not own this event' });
     }
 
-    // Handle image updates (delete old if new uploaded)
+    // Handle image updates 
     let imageUrls = existingEvent.images || [];
     if (req.files && req.files.length > 0) {
-      // Delete old images from Cloudinary
       if (imageUrls.length > 0) {
         for (let url of imageUrls) {
           const publicId = url.split('/').pop().split('.')[0];
           await cloudinary.uploader.destroy(publicId);
         }
       }
-      // Upload new images
       const uploadPromises = req.files.map(file => {
         return new Promise((resolve, reject) => {
           cloudinary.uploader.upload_stream({ resource_type: 'image' }, (error, result) => {
@@ -63,10 +51,10 @@ const updateEvent = async (req, res) => {
       imageUrls = await Promise.all(uploadPromises);
     }
 
-    // Check if resubmission (status changing to Pending Approval)
+    // Check if resubmission
     const isResubmission = existingEvent.status !== 'Pending Approval' && req.body.status === 'Pending Approval';
 
-    // Update event
+    // Update event 
     const updatedEvent = await Event.findByIdAndUpdate(
       id,
       {
@@ -78,20 +66,19 @@ const updateEvent = async (req, res) => {
         category: req.body.category || existingEvent.category,
         price: req.body.price !== undefined ? req.body.price : existingEvent.price,
         images: imageUrls,
-        status: req.body.status || existingEvent.status, // Allow status update only if provided
-        ...(isResubmission && { rejectionReason: '' }), // Clear rejection reason on resubmission
+        status: req.body.status || existingEvent.status,
+        ...(isResubmission && { rejectionReason: '' }),
       },
       { new: true, runValidators: true }
-    ).select('-userID'); // Hide userID
+    ).select('-userID');
 
     if (!updatedEvent) {
       return res.status(404).json({ message: 'Event update failed' });
     }
 
-    // Send confirmation email to user
+    // Use centralized sendEmail (fire-and-forget)
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-    const userMailOptions = {
-      from: process.env.EMAIL_USER,
+    sendEmail({
       to: req.user.email,
       subject: isResubmission ? 'Event Resubmitted - Community Connect' : 'Event Updated - Community Connect',
       html: `
@@ -110,15 +97,12 @@ const updateEvent = async (req, res) => {
         ${isResubmission ? `<p><a href="${frontendUrl}/events/my-events" style="background-color: #05213C; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">View My Events</a></p>` : ''}
         <p>Best regards,<br>Community Connect Team</p>
       `,
-    };
-    await transporter.sendMail(userMailOptions);
-    console.log(`Update confirmation email sent to ${req.user.email}`);
+    });
 
-    // Notify admins if pending (in-app only, no email)
+    // Notify admins if pending
     if (updatedEvent.status === 'Pending Approval') {
       const admins = await User.find({ role: 'admin' }).select('_id');
       if (admins.length > 0) {
-        // In-app notifications for admins
         const adminNotifications = admins.map(admin => new Notification({
           userID: admin._id,
           message: `${isResubmission ? 'Resubmitted' : 'Updated'} event "${updatedEvent.title}" in ${updatedEvent.category} category awaiting your review.`,
@@ -129,9 +113,7 @@ const updateEvent = async (req, res) => {
         }));
 
         await Notification.insertMany(adminNotifications);
-        console.log(`Created ${adminNotifications.length} in-app notifications for admins`);
 
-        // Socket to admins (real-time)
         global.io.to('role-admin').emit('new-event-pending', {
           eventID: updatedEvent._id,
           title: updatedEvent.title,
@@ -140,7 +122,6 @@ const updateEvent = async (req, res) => {
           timestamp: new Date().toISOString(),
           isResubmission,
         });
-        console.log('Socket.io notification emitted to admins');
       }
     }
 

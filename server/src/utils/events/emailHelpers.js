@@ -1,16 +1,4 @@
-const nodemailer = require('nodemailer');
-
-// Nodemailer transporter (shared)
-const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST || 'smtp.mailtrap.io',
-  port: process.env.EMAIL_PORT || 2525,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-  debug: true, // Enable for verbose logs
-  logger: true, // Log to console
-});
+const { sendEmail } = require('../../utils/emailService.js');  
 
 const sendConfirmationEmail = async (user, event, order) => {
   const confirmationNumber = `CC-${order._id.toString().slice(-8)}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
@@ -66,19 +54,12 @@ const sendConfirmationEmail = async (user, event, order) => {
     </html>
   `;
 
-  try {
-    const info = await transporter.sendMail({
-      from: `"Community Connect" <${process.env.EMAIL_USER}>`,
-      to: user.email,
-      subject: `Receipt: Registration for ${event.title}`,
-      html: htmlContent,
-    });
-    console.log(`Receipt email sent successfully to ${user.email} (Message ID: ${info.messageId})`);
-  } catch (emailError) {
-    console.error('Failed to send receipt email to', user.email, ':', emailError.message);
-    // Optional: Log full error for debug
-    console.error('Full email error:', emailError);
-  }
+  // Use centralized sendEmail (fire-and-forget)
+  sendEmail({
+    to: user.email,
+    subject: `Registration Confirmed for ${event.title}`,
+    html: htmlContent,
+  });
 };
 
 const sendReceiptEmail = async (user, event, order) => {
@@ -135,19 +116,12 @@ const sendReceiptEmail = async (user, event, order) => {
     </html>
   `;
 
-  try {
-    const info = await transporter.sendMail({
-      from: `"Community Connect" <${process.env.EMAIL_USER}>`,
-      to: user.email,
-      subject: `Receipt: Payment Confirmation for ${event.title}`,
-      html: htmlContent,
-    });
-    console.log(`Receipt email sent successfully to ${user.email} (Message ID: ${info.messageId})`);
-  } catch (emailError) {
-    console.error('Failed to send receipt email to', user.email, ':', emailError.message);
-    // Optional: Log full error for debug
-    console.error('Full email error:', emailError);
-  }
+  // Use centralized sendEmail (fire-and-forget)
+  sendEmail({
+    to: user.email,
+    subject: `Receipt: Payment Confirmation for ${event.title}`,
+    html: htmlContent,
+  });
 };
 
 module.exports = { sendConfirmationEmail, sendReceiptEmail };

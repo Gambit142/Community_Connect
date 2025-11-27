@@ -1,15 +1,5 @@
 const Event = require('../../models/Event.js');
-const nodemailer = require('nodemailer');
-
-// Nodemailer transporter
-const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST || 'smtp.mailtrap.io',
-  port: process.env.EMAIL_PORT || 2525,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
+const { sendEmail } = require('../../utils/emailService.js');
 
 const deleteEvent = async (req, res) => {
   try {
@@ -24,9 +14,8 @@ const deleteEvent = async (req, res) => {
     // Delete event
     await Event.findByIdAndDelete(id);
 
-    // Send confirmation email
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
+    // Use centralized sendEmail (fire-and-forget)
+    sendEmail({
       to: req.user.email,
       subject: 'Event Deleted - Community Connect',
       html: `
@@ -37,9 +26,7 @@ const deleteEvent = async (req, res) => {
         <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/events/create" style="background-color: #05213C; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Create New Event</a>
         <p>Best regards,<br>Community Connect Team</p>
       `,
-    };
-    await transporter.sendMail(mailOptions);
-    console.log(`Delete confirmation email sent to ${req.user.email}`);
+    });
 
     res.status(200).json({
       message: 'Event deleted successfully',

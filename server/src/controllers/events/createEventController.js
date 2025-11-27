@@ -1,11 +1,11 @@
 const Joi = require('joi');
 const Event = require('../../models/Event.js');
 const Notification = require('../../models/Notification.js');
-const nodemailer = require('nodemailer');
 const User = require('../../models/User.js');
 const { cloudinary } = require('../../config/cloudinary.js');
+const { sendEmail } = require('../../utils/emailService.js'); 
 
-// Joi validation schema for create event
+// Joi validation schema
 const createEventSchema = Joi.object({
   title: Joi.string().trim().max(200).required().messages({ 'string.max': 'Title too long (max 200 chars)' }),
   description: Joi.string().trim().max(2000).required().messages({ 'string.max': 'Description too long (max 2000 chars)' }),
@@ -14,16 +14,6 @@ const createEventSchema = Joi.object({
   location: Joi.string().trim().max(200).required().messages({ 'string.max': 'Location too long (max 200 chars)' }),
   category: Joi.string().valid('Workshop', 'Volunteer', 'Market', 'Tech', 'Charity', 'Fair', 'Social', 'Other').required().messages({ 'any.only': 'Invalid category' }),
   price: Joi.number().min(0).messages({ 'number.min': 'Price cannot be negative' }),
-});
-
-// Nodemailer transporter (same as posts)
-const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST || 'smtp.mailtrap.io',
-  port: process.env.EMAIL_PORT || 2525,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
 });
 
 const createEvent = async (req, res) => {
@@ -35,9 +25,8 @@ const createEvent = async (req, res) => {
     }
 
     const { title, description, date, time, location, category, price } = req.body;
-    const images = req.files ? req.files.map(file => file.path) : []; // From multer, but since cloudinary, handle upload below
 
-    // Handle image uploads to Cloudinary (similar to posts)
+    // Handle image uploads to Cloudinary
     let imageUrls = [];
     if (req.files && req.files.length > 0) {
       for (const file of req.files) {
@@ -71,10 +60,9 @@ const createEvent = async (req, res) => {
 
     await newEvent.save();
 
-    // Send confirmation email to user (non-blocking: wrap in try-catch to handle failures gracefully)
+    // Use centralized sendEmail (fire-and-forget, wrapped in try-catch for legacy)
     try {
-      const userMailOptions = {
-        from: process.env.EMAIL_USER,
+      sendEmail({
         to: req.user.email,
         subject: 'Event Created - Community Connect',
         html: `
@@ -84,15 +72,12 @@ const createEvent = async (req, res) => {
           <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/events/my-events" style="background-color: #05213C; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">View My Events</a>
           <p>Best regards,<br>Community Connect Team</p>
         `,
-      };
-      await transporter.sendMail(userMailOptions);
-      console.log(`Event confirmation email sent to ${req.user.email}`);
+      });
     } catch (emailError) {
       console.error('Failed to send user confirmation email:', emailError.message);
-      // Do not throw; continue with success response
     }
 
-    // Notify admins (in-app notifications and socket) - also non-blocking
+    // Notify admins of new event pending approval
     try {
       const admins = await User.find({ role: 'admin' }).select('_id');
       if (admins.length > 0) {
@@ -106,9 +91,7 @@ const createEvent = async (req, res) => {
         }));
 
         await Notification.insertMany(adminNotifications);
-        console.log(`Created ${adminNotifications.length} in-app notifications for admins`);
 
-        // Socket to admins (real-time)
         global.io.to('role-admin').emit('new-event-pending', {
           eventID: newEvent._id,
           title: newEvent.title,
@@ -116,14 +99,11 @@ const createEvent = async (req, res) => {
           user: { username: req.user.username, email: req.user.email },
           timestamp: new Date().toISOString(),
         });
-        console.log('Socket.io notification emitted to admins');
       }
     } catch (notificationError) {
       console.error('Failed to create admin notifications:', notificationError.message);
-      // Do not throw; continue with success response
     }
 
-    // Respond with success (event is created regardless of email/notification issues)
     res.status(201).json({
       message: 'Event created successfully and pending approval',
       event: newEvent,

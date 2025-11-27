@@ -1,20 +1,7 @@
 const Event = require('../../models/Event.js');
 const Notification = require('../../models/Notification.js');
-const nodemailer = require('nodemailer');
-const User = require('../../models/User.js'); // Not strictly needed but kept for context
-
-// Use global io to avoid circular dependency
-const io = global.io;
-
-// Nodemailer transporter (same config as post controllers)
-const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST || 'smtp.mailtrap.io',
-  port: process.env.EMAIL_PORT || 2525,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
+const User = require('../../models/User.js');
+const { sendEmail } = require('../../utils/emailService.js');
 
 const approveEvent = async (req, res) => {
   try {
@@ -35,18 +22,17 @@ const approveEvent = async (req, res) => {
     const notification = new Notification({
       userID: event.userID._id,
       message: `Your event "${event.title}" has been approved and published!`,
-      type: 'event_status', // Use 'event_status'
+      type: 'event_status',
       relatedID: event._id,
-      relatedType: 'event', // Set relatedType to 'event'
+      relatedType: 'event',
     });
     await notification.save();
 
-    // Emit socket notification if user online
-    io.to(`user-${event.userID._id}`).emit('newNotification', notification);
+    // Emit socket notification
+    global.io.to(`user-${event.userID._id}`).emit('newNotification', notification);
 
-    // Send email notification
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
+    // Use centralized sendEmail (fire-and-forget)
+    sendEmail({
       to: event.userID.email,
       subject: 'Event Approved - Community Connect',
       html: `
@@ -58,9 +44,7 @@ const approveEvent = async (req, res) => {
         <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/events/${event._id}" style="background-color: #05213C; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">View Your Event</a>
         <p>Best regards,<br>Community Connect Team</p>
       `,
-    };
-    await transporter.sendMail(mailOptions);
-    console.log(`Event approval email sent to ${event.userID.email}`);
+    });
 
     res.status(200).json({
       message: 'Event approved successfully',
