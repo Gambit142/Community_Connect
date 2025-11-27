@@ -22,7 +22,13 @@ connectDB();
 // Middleware
 app.use(helmet());
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:5174'],
+  // origin: [process.env.FRONTEND_URL, ],
+  origin: [
+    'http://localhost:10200',        // ← Local development
+    'http://localhost:5174',
+    'http://comcon_client:10200',    // ← Docker container
+    'https://comcon.nasgrid.tech'    // ← Production domain
+  ],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true,
 }));
