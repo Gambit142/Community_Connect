@@ -11,6 +11,7 @@ server/*.zip
 # Ignore environment files
 .env
 client/.env
+client/.env.docker
 server/.env
 
 # ignore logs

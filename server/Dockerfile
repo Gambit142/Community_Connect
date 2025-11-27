@@ -1,37 +1,20 @@
-# Development stage
-FROM node:20-alpine AS development
+# Use official Node.js LTS image
+FROM node:20-alpine
+
+# Set working directory
 WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
 
-# Install all dependencies (including devDependencies)
+# Install ALL dependencies (including dev for dev mode)
 RUN npm install
 
-# Copy source code
+# Copy application code
 COPY . .
 
 # Expose port
-EXPOSE 5000
+EXPOSE 10100
 
-# Use nodemon for development (auto-restart)
-CMD ["npm", "run", "dev"]
-
-# Production stage
-FROM node:20-alpine AS production
-WORKDIR /app
-
-# Copy package files
-COPY package*.json ./
-
-# Install only production dependencies
-RUN npm ci --only=production
-
-# Copy source code
-COPY . .
-
-# Expose port
-EXPOSE 5000
-
-# Run the application
-CMD ["node", "src/index.js"]
+# Start with npm start
+CMD ["npm", "start"]
