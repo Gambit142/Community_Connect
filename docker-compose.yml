@@ -8,8 +8,6 @@ services:
       dockerfile: Dockerfile
     ports:
       - "10100:10100"
-    env_file:
-      - ./server/.env
     networks:
       - public_network
     restart: unless-stopped
@@ -24,8 +22,6 @@ services:
       dockerfile: Dockerfile
     ports:
       - "10200:10200"
-    env_file:
-      - ./client/.env
     networks:
       - public_network
     restart: unless-stopped

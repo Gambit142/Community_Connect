@@ -13,6 +13,7 @@ server/*.zip
 client/.env
 client/.env.docker
 server/.env
+server/.env.docker
 
 # ignore logs
 *.log
