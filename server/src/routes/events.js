@@ -13,6 +13,10 @@ const { registerEvent } = require('../controllers/events/registerEventController
 const { getRegisteredEvents } = require('../controllers/events/getRegisteredEventsController.js');
 const { toggleResourceLikeGeneric } = require('../controllers/commentsController.js');
 
+// Stripe webhook for paid event fulfillment (public, no auth - signature verified in middleware)
+// NOTE: Raw body parsing is handled in index.js BEFORE this route
+router.post('/webhook', stripeWebhook);
+
 // Create event (member only, pending approval) with image upload (up to 5 images)
 router.post('/', authenticateToken, uploadMiddleware, createEvent);
 
@@ -42,8 +46,5 @@ router.post('/:id/register', authenticateToken, registerEvent);
 
 // Like event (toggle)
 router.post('/:id/like', authenticateToken, (req, res) => toggleResourceLikeGeneric(req, res, 'event', req.params.id));
-
-// Stripe webhook for paid event fulfillment (public, no auth - signature verified in middleware)
-router.post('/webhook', express.raw({type: 'application/json'}), stripeWebhook);
 
 module.exports = router;

@@ -11,37 +11,47 @@ const adminRoutes = require('./routes/admin.js');
 const eventRoutes = require('./routes/events.js');
 const commentsRoutes = require('./routes/comments.js');
 const userRoutes = require('./routes/users.js');
-const { initSocket } = require('./config/socket.js'); // Import init
+const { initSocket } = require('./config/socket.js');
 
 const app = express();
-const server = http.createServer(app); // HTTP server
+const server = http.createServer(app);
 
-// Connect to DB
 connectDB();
 
-// Middleware
 app.use(helmet());
-app.use(cors({
-  // origin: [process.env.FRONTEND_URL, ],
-  origin: [
-    'http://localhost:10200',        // ← Local development
+
+const getAllowedOrigins = () => {
+  const origins = [
+    'http://localhost:10200',
     'http://localhost:5174',
-    'http://comcon_client:10200',    // ← Docker container
-    'https://comcon.nasgrid.tech'    // ← Production domain
-  ],
+    'http://localhost:5173',
+  ];
+  
+  if (process.env.NODE_ENV === 'production') {
+    origins.push('https://comcon.nasgrid.tech');
+  }
+  
+  return origins;
+};
+
+app.use(cors({
+  origin: getAllowedOrigins(),
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true,
 }));
+
+// Stripe webhook route BEFORE express.json()
+app.use('/api/events/webhook', express.raw({type: 'application/json'}));
+
+// All other routes use JSON parser
 app.use(express.json());
 
-// Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
 });
 app.use(limiter);
 
-// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api', protectedRoutes);
 app.use('/api/posts', postRoutes);
@@ -50,14 +60,11 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/comments', commentsRoutes);
 app.use('/api/users', userRoutes);
 
-// Health check route
 app.get('/', (req, res) => res.status(200).send('Server is running'));
 
-// Initialize Socket.io
-const io = initSocket(server); // Get io instance
-global.io = io; // Export globally to avoid circular dependency issues
+const io = initSocket(server);
+global.io = io;
 
-// HTTPS in production
 if (process.env.NODE_ENV === 'production') {
   app.use((req, res, next) => {
     if (req.header('x-forwarded-proto') !== 'https') {
@@ -68,12 +75,11 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
-// Listen only if not in test mode
 if (process.env.NODE_ENV !== 'test') {
   const PORT = process.env.PORT || 5000;
   server.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running on port ${PORT} in ${process.env.NODE_ENV || 'undefined'} mode`);
+    console.log(`Server running on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
   });
 }
 
-module.exports = { app, server, io }; // Export io for use in routes
+module.exports = { app, server, io };

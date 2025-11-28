@@ -1,20 +1,23 @@
-# Use official Node.js LTS image
+# Dockerfile for the server application
 FROM node:20-alpine
 
 # Set working directory
 WORKDIR /app
 
-# Copy package files
+# Copy package files and install dependencies
 COPY package*.json ./
 
-# Install ALL dependencies (including dev for dev mode)
+# Install dependencies
 RUN npm install
 
-# Copy application code
+# Copy the rest of the application code
 COPY . .
 
-# Expose port
+# Copy environment variables for Docker
+RUN if [ -f .env.docker ]; then cp .env.docker .env; fi
+
+# Expose the application port
 EXPOSE 10100
 
-# Start with npm start
+# Start the server
 CMD ["npm", "start"]
